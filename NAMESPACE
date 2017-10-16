@@ -1,0 +1,11 @@
+useDynLib(bigIntegerAlgos, .registration=TRUE)
+
+importMethodsFrom("methods", coerce)
+importFrom("methods",
+           setOldClass, setGeneric, setMethod)
+
+export(getDivisors,
+       print.bigz,
+       as.bigz,
+       multPolyQuadSieve,
+       quadResidue)
