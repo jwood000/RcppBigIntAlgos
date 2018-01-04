@@ -1,17 +1,19 @@
 Package: bigIntegerAlgos
 Type: Package
-Title: R tool for factoring big integers
+Title: R Tool for Factoring Big Integers
 Version: 0.1.0
 Author: Joseph Wood
 Maintainer: Joseph Wood <jwood000@gmail.com>
-Description: The 'bigIntegerAlgos’ package features the quadratic
-    sieve algorithm along with other optimized functions for factoring
-    big integers. Makes use of the C library GMP (GNU Multiple
-    Precision Arithmetic) as well as classes created by Antoine  
-    Lucas \emph{et al.} in the gmp package for R. 
-License: GPL (>=) 2
+Description: The 'bigIntegerAlgos’ package features the multiple
+    polynomial quadratic sieve algorithm for factoring large
+    integers, a generalized factoring function that returns the
+    complete factorization of an integer, and a function for
+    finding the square roots of a quadratic residue. Makes use
+    of the C library GMP (GNU Multiple Precision Arithmetic)
+    as well as classes created by Antoine Lucas et al. found
+    in the gmp package.
+License: GPL (>= 2)
 BuildResaveData: no
-LazyDataNote: not available, as we use data/*.R *and* our classes
 Encoding: UTF-8
 SystemRequirements: gmp (>= 4.2.3)
 Suggests: gmp

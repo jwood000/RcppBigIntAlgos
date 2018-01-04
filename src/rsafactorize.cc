@@ -27,6 +27,6 @@ SEXP QuadraticSieveContainer (SEXP n) {
     mpz_init_set(nmpz, nBig[0].value.getValue());
     bigvec result;
     
-    quadraticSieve (nmpz, 0, 0, 0, result);
+    quadraticSieve (nmpz, 0.0, 0.0, 0, result);
     return bigintegerR::create_SEXP(result);
 }

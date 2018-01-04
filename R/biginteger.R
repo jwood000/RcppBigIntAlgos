@@ -89,4 +89,4 @@ modulus.bigz <- function(a) attr(a, "mod")
 
 getDivisors <- function(n) .Call("getDivisorsC", n, PACKAGE = "bigIntegerAlgos")
 multPolyQuadSieve <- function(n) .Call("QuadraticSieveContainer", n, PACKAGE = "bigIntegerAlgos")
-quadResidue <- function(n, p) .Call("QuadraticResidueContainer", n, p, PACKAGE = "bigIntegerAlgos")
+quadResSquareRoot <- function(n, p) .Call("QuadraticResidueContainer", n, p, PACKAGE = "bigIntegerAlgos")
