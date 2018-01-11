@@ -39,7 +39,7 @@ int flag_prove_primality = 1;
 #define MR_REPS 25
 
 void
-factor_using_division (mpz_t t, bigvec & factors)
+factor_using_division (mpz_t t, int numPrimes, bigvec & factors)
 {
   mpz_t q;
   unsigned long int p;
@@ -56,7 +56,7 @@ factor_using_division (mpz_t t, bigvec & factors)
     }
 
   p = 3;
-  for (i = 1; i < PRIMES_PTAB_ENTRIES;)
+  for (i = 1; i < numPrimes;)
     {
       if (! mpz_divisible_ui_p (t, p))
 	{
@@ -283,7 +283,7 @@ factor_using_pollard_rho (mpz_t n, unsigned long a, bigvec & factors)
 
 void getPrimeFactors (mpz_t t, bigvec & factors) {
   if (mpz_sgn (t) != 0) {
-      factor_using_division (t, factors);
+      factor_using_division (t, PRIMES_PTAB_ENTRIES, factors);
         if (mpz_cmp_ui (t, 1) != 0) {
     	    if (mp_prime_p (t))
     	        factors.push_back( t);

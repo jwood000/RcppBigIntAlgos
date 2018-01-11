@@ -21,7 +21,7 @@ extern "C" {
 
 /** \brief Function used to test factorization with small numbers
  */
-void factor_using_division (mpz_t t, unsigned int limit,  bigvec & result) ;
+void factor_using_division (mpz_t t, int numPrimes,  bigvec & result) ;
 
 /** \brief Function used for factorization
  */

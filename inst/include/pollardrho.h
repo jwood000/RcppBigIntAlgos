@@ -11,4 +11,6 @@
  */
 void getPrimeFactors (mpz_t t, bigvec & factors);
 
+void factor_using_division (mpz_t t, int numPrimes, bigvec & factors);
+
 #endif
