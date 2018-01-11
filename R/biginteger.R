@@ -87,6 +87,6 @@ modulus.bigz <- function(a) attr(a, "mod")
 `modulus<-`      <- function(a, value) UseMethod("modulus<-")
 `modulus<-.bigz` <- function(a, value) as.bigz(a, value)
 
-getDivisors <- function(n) .Call("getDivisorsC", n, PACKAGE = "bigIntegerAlgos")
-multPolyQuadSieve <- function(n) .Call("QuadraticSieveContainer", n, PACKAGE = "bigIntegerAlgos")
+factorizeAllBig <- function(n) .Call("getDivisorsC", n, PACKAGE = "bigIntegerAlgos")
+quadraticSieve <- function(n) .Call("QuadraticSieveContainer", n, PACKAGE = "bigIntegerAlgos")
 quadResSquareRoot <- function(n, p) .Call("QuadraticResidueContainer", n, p, PACKAGE = "bigIntegerAlgos")
