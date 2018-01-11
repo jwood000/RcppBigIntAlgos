@@ -1,7 +1,7 @@
 useDynLib(bigIntegerAlgos, .registration=TRUE)
 
-export(getDivisors,
+export(factorizeAllBig,
        print.bigz,
        as.bigz,
-       multPolyQuadSieve,
+       quadraticSieve,
        quadResSquareRoot)
