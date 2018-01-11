@@ -9,5 +9,5 @@
 ## OTOH: This *still* helps to define single-dispatch methods for  asNumeric() :
 ##       {why does it work there ??}
 
-setOldClass("bigz")#, prototype=as.bigz(integer()))
-##                cannot use as.bigz() yet which is only defined in ./bigz.R
+setOldClass("bigz") #, prototype=as.bigz(integer()))
+## cannot use as.bigz() yet which is only defined in ./bigz.R
