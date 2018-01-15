@@ -17,18 +17,13 @@
 
 #include "Rgmp.h"
 #include "pollardrho.h"
-#include <stdio.h>
-#include <string.h>
 #include "factorization.h"
 
 unsigned long int intSize = sizeof(int); // starting with vector-size-header
 unsigned long int numb = 8*intSize;
 
-int myRaw(char* raw, mpz_t value) {
-    int totals = intSize;
-    
-    totals =  intSize * (2 + (mpz_sizeinbase(value,2)+numb-1) / numb);
-    memset(raw, 0, totals );
+int myRaw(char* raw, mpz_t value, unsigned long int totals) {
+    memset(raw, 0, totals);
     
     int* r = (int*)raw;
     r[0] = totals/intSize - 2;
@@ -37,6 +32,127 @@ int myRaw(char* raw, mpz_t value) {
     mpz_export(&r[2], 0, 1, intSize, 0, 0, value);
     
     return totals;
+}
+
+std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> indPass,
+                 unsigned int numSecs, unsigned int secSize) {
+    
+    unsigned int i, j, k, x, y, left, count, tempSize, totalSize;
+    tempSize = totalSize = numSecs * secSize;
+    std::vector<unsigned int> leftOver, myInd(totalSize);
+    for (i = 0; i < secSize; i++) {myInd[i] = indPass[i];}
+    for (i = secSize; i < totalSize; i++) {myInd[i] = i;}
+    
+    while (numSecs > 1) {
+
+        if (numSecs % 2 != 0) {
+            leftOver.push_back(tempSize);
+            tempSize -= secSize;
+        }
+        
+        std::vector<unsigned int> endPoints(numSecs, secSize);
+        
+        for (i = 1; i < numSecs; i++) {
+            x = endPoints[i-1] + secSize;
+            endPoints[i] = x;
+        }
+        
+        k = std::floor(numSecs/2);
+        left = x = 0;
+        
+        for (i = 0; i < k; i++) {
+            count = 0;
+            y = endPoints[2*i];
+            std::vector<unsigned int> tempInd(secSize*2, 0);
+                     
+            while (x < endPoints[2*i] && y < endPoints[2*i + 1]) {
+                if (mpz_cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
+                    tempInd[count] = myInd[x];
+                    x++;
+                } else {
+                    tempInd[count] = myInd[y];
+                    y++;
+                }
+                count++;
+            }
+            
+            for (j = 0; j < count; j++) {myInd[left + j] = tempInd[j];}
+            x = left = endPoints[2*i + 1];
+        }
+        
+        // if (k > 1) {
+        //     for (i = 1; i < k; i++) {
+        //         x = endPoints[2*i - 1];
+        //         for (j = 0; j < count; j++) {
+        //             myInd[x + j] = tempInd[j] + x;
+        //         }
+        //     }
+        // }
+
+        secSize *= 2;
+        numSecs = std::floor(numSecs/2);
+    }
+
+    if (leftOver.size() > 0) {
+        std::reverse(leftOver.begin(), leftOver.end());
+
+        for (j = 0; j < leftOver.size(); j++) {
+            x = count = 0;
+            y = tempSize;
+            std::vector<unsigned int> tempInd(leftOver[j]);
+
+            while (x < tempSize && y < leftOver[j]) {
+                if (mpz_cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
+                    tempInd[count] = myInd[x];
+                    x++;
+                } else {
+                    tempInd[count] = myInd[y];
+                    y++;
+                }
+                count++;
+            }
+            
+            for (k = 0; k < count; k++) {myInd[k] = tempInd[k];}
+            tempSize = leftOver[j];
+        }
+
+    }
+
+    return myInd;
+}
+
+void quickSort(mpz_t arr[], int left, int right) {
+
+    int i = left, j = right, mid;
+    mpz_t pivot;
+    mpz_init(pivot);
+
+    mid = (left + right) / 2;
+    mpz_set(pivot, arr[mid]);
+
+    /* partition */
+    while (i <= j) {
+        while (mpz_cmp(arr[i], pivot) < 0) {i++;}
+
+        while (mpz_cmp(arr[j], pivot) > 0) {
+            j--;
+            if (j < 0) {break;}
+        }
+
+        if (i <= j) {
+            mpz_swap(arr[i], arr[j]);
+            i++;
+            j--;
+        }
+    }
+
+    mpz_clear(pivot);
+
+    /* recursion */
+    if (left < j)
+        quickSort(arr, left, j);
+    if (i < right)
+        quickSort(arr, i, right);
 }
 
 SEXP getDivisorsC (SEXP n) {
@@ -61,6 +177,7 @@ SEXP getDivisorsC (SEXP n) {
                 mpz_abs(val,val);
                 primeFacs.value.push_back(biginteger(-1));
             }
+            
             getPrimeFactors (val,primeFacs);
             
             std::vector<int> lengths;
@@ -97,10 +214,13 @@ SEXP getDivisorsC (SEXP n) {
             mpz_t temp, myPow;
             mpz_init(temp);
             mpz_init(myPow);
+            std::vector<unsigned int> myIndex;
             
+            myIndex.reserve(lengths[0] + 1);
             for (i = 0; i <= lengths[0]; ++i) {
                 mpz_pow_ui(temp, bigFacs[0], i);
                 mpz_set(myMPZ[i], temp);
+                myIndex.push_back(i);
             }
             
             if (numUni > 0) {
@@ -110,24 +230,30 @@ SEXP getDivisorsC (SEXP n) {
                         ind = i*facSize;
                         mpz_pow_ui(myPow, bigFacs[j], i);
                         for (k = 0; k < facSize; k++) {
-                            mpz_mul(temp, myPow, myMPZ[k]);
+                            mpz_mul(temp, myPow, myMPZ[myIndex[k]]);
                             mpz_set(myMPZ[ind + k], temp);
                         }
                     }
+                    myIndex = myMergeSort(myMPZ, myIndex, lengths[j] + 1, facSize);
                 }
             }
             
-            unsigned long int size = intSize;
-            
-            for (i = 0; i < numFacs; ++i) // adding each bigint's needed size
-                size += intSize * (2 + (mpz_sizeinbase(myMPZ[i],2)+numb-1) / numb);
+            unsigned long int tempSize, size = intSize;
+            std::vector<unsigned long int> mySizes(numFacs);
+                
+            for (i = 0; i < numFacs; ++i) { // adding each bigint's needed size
+                tempSize = intSize * (2 + (mpz_sizeinbase(myMPZ[i],2)+numb-1) / numb);
+                size += tempSize;
+                mySizes[i] = tempSize;
+            }
                 
             SEXP ans = PROTECT(Rf_allocVector(RAWSXP, size));
             char* r = (char*)(RAW(ans));
             ((int*)(r))[0] = numFacs; // first int is vector-size-header
+            
             unsigned long int pos = intSize; // current position in r[] (starting after vector-size-header)
             for (i = 0; i < numFacs; ++i)
-                pos += myRaw(&r[pos], myMPZ[i]);
+                pos += myRaw(&r[pos], myMPZ[myIndex[i]], mySizes[myIndex[i]]);
             
             Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("bigz"));
             UNPROTECT(1);
@@ -135,6 +261,3 @@ SEXP getDivisorsC (SEXP n) {
         }
     }
 }
-
-// library(gmp)
-// test <- prod.bigz(2^14,3^5,7^4,nextprime(813274)^2,nextprime(2834)^4,13^5)
