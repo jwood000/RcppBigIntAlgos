@@ -16,7 +16,7 @@ License: GPL (>= 2)
 BuildResaveData: no
 Encoding: UTF-8
 SystemRequirements: gmp (>= 4.2.3)
-Suggests: gmp
+Depends: gmp
 NeedsCompilation: yes
 URL: https://github.com/jwood000/bigIntegerAlgos
 BugReports: https://github.com/jwood000/bigIntegerAlgos/issues

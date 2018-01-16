@@ -1,7 +1,5 @@
 useDynLib(bigIntegerAlgos, .registration=TRUE)
 
 export(factorizeAllBig,
-       print.bigz,
-       as.bigz,
        quadraticSieve,
        quadResSquareRoot)
