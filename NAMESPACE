@@ -1,5 +1,5 @@
 useDynLib(bigIntegerAlgos, .registration=TRUE)
 
-export(factorizeAllBig,
+export(divisorsBig,
        quadraticSieve,
        quadResSquareRoot)
