@@ -1,6 +1,7 @@
 #ifndef POLLARDRHO_GMP_R
 #define POLLARDRHO_GMP_R 1
-#include "bigvec.h"
+
+#include "bigintegerR.h"
 
 /**
  * Get Prime Factorization
@@ -9,8 +10,11 @@
  *
  * Note: this is adapted from demo "factorize.c" file from gmplib
  */
-void getPrimeFactors (mpz_t t, bigvec & factors);
+void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned int& numPs,
+                      std::vector<unsigned int>& myLens);
 
-void factor_using_division (mpz_t t, int numPrimes, bigvec & factors);
+void factor_using_division (mpz_t t, int numPrimes,
+                            mpz_t factors[], unsigned int& numPs,
+                            std::vector<unsigned int>& myLens);
 
 #endif
