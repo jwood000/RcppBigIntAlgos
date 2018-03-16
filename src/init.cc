@@ -67,7 +67,7 @@ static R_CallMethodDef CallEntries[] = {
   CALLDEF(biginteger_log, 1),
 
 // factorization.h :
-  CALLDEF(getDivisorsC, 1),
+  CALLDEF(getDivisorsC, 2),
 
 // quadres.h :
   CALLDEF(QuadraticResidueContainer, 2),
