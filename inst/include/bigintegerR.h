@@ -29,7 +29,7 @@ typedef bool (*biginteger_logical_binary_fn)(const biginteger&, const biginteger
 /**
  * \brief set of function useful for manipulation of SEXP and bigvec
  */
-namespace bigintegerR{
+namespace bigintegerR {
 
   /** \brief create a vector of bigmod, all without a modulus.
    */
