@@ -16,23 +16,24 @@
 #include "bigintegerR.h"
 
 extern "C" {
-    SEXP getDivisorsC (SEXP n);
+    SEXP getDivisorsC (SEXP Rv, SEXP RNamed);
 }
 
 /** \brief Function used to test factorization with small numbers
  */
-void factor_using_division (mpz_t t, int numPrimes,  bigvec & result) ;
-
-/** \brief Function used for factorization
- */
-void factor_using_division_2kp (mpz_t t, unsigned int limit, unsigned long p,  bigvec & result) ;
+void factor_using_division (mpz_t t, int numPrimes,
+                            mpz_t factors[], unsigned int& numPs,
+                            std::vector<unsigned int>& myLens) ;
 
 /** \brief Pollard Rho method for factorization
  */
-void factor_using_pollard_rho (mpz_t n, int a_int, unsigned long p, bigvec & result);
+void factor_using_pollard_rho (mpz_t n, unsigned long a,
+                               mpz_t factors[], unsigned int& numPs,
+                               std::vector<unsigned int>& myLens);
 
 /** \brief Function that call an algorithm for factorization
  */
-void getPrimeFactors (mpz_t t, bigvec & result);
+void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned int& numPs,
+                           std::vector<unsigned int>& myLens);
 
 #endif
