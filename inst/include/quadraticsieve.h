@@ -1,6 +1,7 @@
 #ifndef QUADRATICSIEVE_GMP_R
 #define QUADRATICSIEVE_GMP_R 1
-#include "bigvec.h"
+
+#include "Rgmp.h"
 
 /**
  * Factor large number into two smaller numbers (possibly prime)
@@ -16,6 +17,6 @@
 
 void quadraticSieve (mpz_t myNum, double fudge1,
                      double fudge2,
-                     unsigned long int LenB, bigvec & factors);
+                     unsigned long int LenB, mpz_t factors[]);
 
 #endif

@@ -13,7 +13,8 @@
 #ifndef GMP_R_FACTORIZATION_HEADER_
 #define GMP_R_FACTORIZATION_HEADER_ 1
 
-#include "bigintegerR.h"
+#include "Rgmp.h"
+#include <vector>
 
 extern "C" {
     SEXP getDivisorsC (SEXP Rv, SEXP RNamed);

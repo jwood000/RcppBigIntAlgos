@@ -13,15 +13,12 @@
 #ifndef GMP_R_RSAFACTORIZE_HEADER_
 #define GMP_R_RSAFACTORIZE_HEADER_ 1
 
-#include "bigintegerR.h"
-
-typedef std::vector<signed long int> v1d;
-typedef std::vector<v1d> v2d;
+#include "Rgmp.h"
 
 extern "C" {
     SEXP QuadraticSieveContainer (SEXP n);
 }
 
-void quadraticSieve (mpz_t a, double e1, double e2, unsigned long lb, bigvec & factors);
+void quadraticSieve (mpz_t a, double e1, double e2, unsigned long lb, mpz_t factors[]);
 
 #endif

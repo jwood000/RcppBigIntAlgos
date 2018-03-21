@@ -1,7 +1,8 @@
 #ifndef POLLARDRHO_GMP_R
 #define POLLARDRHO_GMP_R 1
 
-#include "bigintegerR.h"
+#include "Rgmp.h"
+#include <vector>
 
 /**
  * Get Prime Factorization
