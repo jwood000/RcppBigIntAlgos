@@ -1,5 +1,4 @@
 useDynLib(bigIntegerAlgos, .registration=TRUE)
 
 export(divisorsBig,
-       quadraticSieve,
-       quadResSquareRoot)
+       quadraticSieve)
