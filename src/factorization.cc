@@ -15,25 +15,13 @@
  *  \note Licence: GPL (>=) 2
  */
 
-#include "Rgmp.h"
 #include "pollardrho.h"
 #include "factorization.h"
+#include "importExportMPZ.h"
 
 unsigned long int intSize = sizeof(int); // starting with vector-size-header
 unsigned long int numb = 8*intSize;
 unsigned long int mpzChunk = 50;
-
-int myRaw(char* raw, mpz_t value, unsigned long int totals) {
-    memset(raw, 0, totals);
-    
-    int* r = (int*)raw;
-    r[0] = totals/intSize - 2;
-    
-    r[1] = (int) mpz_sgn(value);
-    mpz_export(&r[2], 0, 1, intSize, 0, 0, value);
-    
-    return totals;
-}
 
 void quickSort(mpz_t arr[], int left, int right,
                std::vector<unsigned int>& lens) {
@@ -165,9 +153,20 @@ std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> ind
 SEXP factorNum (mpz_t val) {
     
     if (mpz_cmp_ui(val, 1) == 0) {
-        bigvec myFacs;
-        myFacs.push_back(1);
-        return bigintegerR::create_SEXP(myFacs);
+        mpz_t mpzOne;
+        mpz_init_set_si(mpzOne, 1);
+        unsigned long int oneSize, totalSize = intSize;
+        oneSize = intSize * (2 + (mpz_sizeinbase(mpzOne, 2) + numb - 1) / numb);
+        totalSize += oneSize;
+        SEXP myFacs = PROTECT(Rf_allocVector(RAWSXP, totalSize));
+        char* r = (char*)(RAW(myFacs));
+        ((int*)(r))[0] = 1;
+        unsigned long int pos = intSize;
+        pos += myRaw(&r[pos], mpzOne, oneSize);
+        Rf_setAttrib(myFacs, R_ClassSymbol, Rf_mkString("bigz"));
+        mpz_clear (mpzOne);
+        UNPROTECT(1);
+        return myFacs;
     } else {
         int sgn = mpz_sgn(val);
         unsigned int i, j, k;
@@ -277,51 +276,63 @@ SEXP factorNum (mpz_t val) {
 
 SEXP getDivisorsC (SEXP Rv, SEXP RNamed) {
     
-    bigvec bigV = bigintegerR::create_bignum(Rv);
-    unsigned int vSize = bigV.size();
+    mpz_t *myVec;
+    unsigned int vSize;
+    
+    switch (TYPEOF(Rv)) {
+        case RAWSXP: {
+            const char* raw = (char*)RAW(Rv);
+            vSize = ((int*)raw)[0];
+            break;
+        }
+        default:
+            vSize = LENGTH(Rv);
+    }
+    
+    myVec = (mpz_t *) malloc(sizeof(mpz_t) * vSize);
+    for (std::size_t i = 0; i < vSize; i++)
+        mpz_init(myVec[i]);
+    
+    createMPZArray(Rv, myVec, vSize);
     
     if (vSize > 0) {
-        if (vSize == 1) {
-            mpz_t val;
-            mpz_init(val);
-            mpz_t_sentry val_s(val);
-            mpz_set(val,bigV[0].value.getValueTemp()); 
-            return factorNum(val);
-        } else {
+        if (vSize == 1)
+            return factorNum(myVec[0]);
+        else {
             int* myLogical = INTEGER(RNamed);
-            std::vector<int> isNamed = std::vector<int>(myLogical, 
+            std::vector<int> isNamed = std::vector<int>(myLogical,
                                                         myLogical + LENGTH(RNamed));
-            
             SEXP res = PROTECT(Rf_allocVector(VECSXP, vSize));
             mpz_t val;
             mpz_init(val);
-            
+
             if (isNamed[0]) {
                 int base = 10;
                 SEXP myNames = PROTECT(Rf_allocVector(STRSXP, vSize));
-                for (std::size_t i = 0; i < vSize; i++)
-                    SET_STRING_ELT(myNames, i, Rf_mkChar(bigV.str(i,base).c_str()));
-                
+
                 for (std::size_t i = 0; i < vSize; i++) {
-                    mpz_set(val,bigV[i].value.getValueTemp());
-                    SET_VECTOR_ELT(res, i, factorNum(val));
+                    char* mpzChar = new char[mpz_sizeinbase(myVec[i], base) + 2];
+                    mpz_get_str(mpzChar, base, myVec[i]);
+                    SET_STRING_ELT(myNames, i, Rf_mkChar(mpzChar));
                 }
-                
+
+                for (std::size_t i = 0; i < vSize; i++)
+                    SET_VECTOR_ELT(res, i, factorNum(myVec[i]));
+
                 Rf_setAttrib(res, R_NamesSymbol, myNames);
                 UNPROTECT(2);
             } else {
-                for (std::size_t i = 0; i < vSize; i++) {
-                    mpz_set(val,bigV[i].value.getValueTemp());
-                    SET_VECTOR_ELT(res, i, factorNum(val));
-                }
-                
+                for (std::size_t i = 0; i < vSize; i++)
+                    SET_VECTOR_ELT(res, i, factorNum(myVec[i]));
+
                 UNPROTECT(1);
             }
-            
+
             return res;
         }
     }
     
-    bigvec trivialReturn;
-    return bigintegerR::create_SEXP(trivialReturn);
+    SEXP resTrivial = PROTECT(Rf_allocVector(INTSXP, 1));
+    UNPROTECT(1);
+    return resTrivial;
 }
