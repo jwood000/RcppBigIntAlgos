@@ -19,10 +19,9 @@
 #include <cstring>
 // This is needed as cinttypes is C++11
 #include <inttypes.h>
-#include "Rgmp.h"
 #include "tonellishanks.h"
 
-void TonelliShanksC (mpz_t a, mpz_t p, bigvec & quadRes) {
+void TonelliShanksC (mpz_t a, mpz_t p, mpz_t quadRes[]) {
     mpz_t P1, s, myAns1, myAns2, temp;
     mpz_t Legendre2, n, b, g, x, Test, big2;
 
@@ -90,6 +89,6 @@ void TonelliShanksC (mpz_t a, mpz_t p, bigvec & quadRes) {
         mpz_mod(myAns2, temp, p);
     }
 
-    quadRes.push_back(myAns1);
-    quadRes.push_back(myAns2);
+    mpz_set(quadRes[0], myAns1);
+    mpz_set(quadRes[1], myAns1);
 }
