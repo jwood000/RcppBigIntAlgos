@@ -45,9 +45,10 @@ this program.  If not, see http://www.gnu.org/licenses/.
 */
 
 // This is needed as cinttypes is C++11
+#include <vector>
+#include <algorithm>
 #include <inttypes.h>
 #include <cmath>
-#include "Rgmp.h"
 #include "tonellishanks.h"
 #include "quadraticsieve.h"
 
@@ -163,7 +164,7 @@ static inline v1d myIntToBit (unsigned long int x,
     return binaryVec;
 }
 
-static void solutionSearch (v2d mat, mpz_t n, v1d FB, mpz_t * test, bigvec & factors) { 
+static void solutionSearch (v2d mat, mpz_t n, v1d FB, mpz_t * test, mpz_t factors[]) { 
     unsigned long int nr1 = mat.size(), numCol = mat[0].size();
     signed long int i, j, k, r = 0;
     v2d nullMat;
@@ -316,9 +317,13 @@ static void solutionSearch (v2d mat, mpz_t n, v1d FB, mpz_t * test, bigvec & fac
                     }
 
                     if (mpz_cmp_ui(mpzMin, 1) > 0) {
-                        factors.push_back(mpzTemp1);
-                        factors.push_back(mpzTemp2);
-                        std::sort(factors.value.begin(), factors.value.end());
+                        if (mpz_cmp(mpzTemp1, mpzTemp2) < 0) {
+                            mpz_set(factors[0], mpzTemp1);
+                            mpz_set(factors[1], mpzTemp2);
+                        } else {
+                            mpz_set(factors[1], mpzTemp1);
+                            mpz_set(factors[0], mpzTemp2);
+                        }
                         bExit = true;
                     }
                 }
@@ -425,7 +430,7 @@ static v3d sieveLists (signed long int facLim,
 
 void quadraticSieve (mpz_t myNum, double fudge1,
                      double fudge2,
-                     unsigned long int LenB, bigvec & factors)
+                     unsigned long int LenB, mpz_t factors[])
 {
     unsigned long int digCount = mpz_sizeinbase(myNum, 10);
     unsigned long int bits = mpz_sizeinbase(myNum, 2);
@@ -521,9 +526,9 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                 0.1085362*std::pow(digCount,3) - 0.0005955*std::pow(digCount,4) - 1650.8252165));
         }
     }
-    
+
     facSize2 = facSize = facBase.size();
-    
+
     // facBase2 will be used if multiple polynomials are needed.
     // With every iteration, a prime will be added to the factor
     // base for additional factorization. The original facBase
@@ -625,7 +630,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
 
     mpz_t *largeInterval;
     mpz_t *sqrDiff;
-    
+
     largeInterval = (mpz_t *) malloc(LenB2 * sizeof(mpz_t));
     sqrDiff = (mpz_t *) malloc(LenB2 * sizeof(mpz_t));
 
@@ -780,9 +785,10 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     v1d::iterator maxFBase = std::max_element(facBase.begin(), facBase.end());
     if (mpz_cmp_ui(Atemp, *maxFBase) < 0)
         mpz_set_ui(Atemp, *maxFBase);
-    
+
     bool LegendreTest;
-    bigvec quadRes;
+    mpz_t quadRes[2];
+    mpz_init(quadRes[0]); mpz_init(quadRes[1]);
     v2d polySieveD;
     unsigned long int numPolys = 0, numSmooth = lenM;
     v1d myAtemps, myQuadRes;
@@ -802,24 +808,22 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             mpz_powm(temp, myNum, temp, Atemp);
             if (mpz_cmp_ui(temp, 1) == 0) {LegendreTest = false;}
         }
-
+    
         myAtemps.push_back(mpz_get_si(Atemp));
         facBase2.push_back(mpz_get_si(Atemp));
         facSize2++;
-
+    
         mpz_pow_ui(A, Atemp, 2);
-        quadRes.clear();
         TonelliShanksC(myNum, Atemp, quadRes);
-
-        if (mpz_cmp(quadRes[0].value.getValue(),
-                    quadRes[1].value.getValue()) > 0) {
-            mpz_set(Btemp, quadRes[0].value.getValue());
+    
+        if (mpz_cmp(quadRes[0], quadRes[1]) > 0) {
+            mpz_set(Btemp, quadRes[0]);
         } else {
-            mpz_set(Btemp, quadRes[1].value.getValue());
+            mpz_set(Btemp, quadRes[1]);
         }
-
+    
         myQuadRes.push_back(mpz_get_si(Btemp));
-
+    
         mpz_mul_2exp(temp, Btemp, 1);
         mpz_invert(temp, temp, Atemp);
         mpz_pow_ui(B2, Btemp, 2);
@@ -827,14 +831,14 @@ void quadraticSieve (mpz_t myNum, double fudge1,
         mpz_mul(B2, B2, temp);
         mpz_add(B2, B2, Btemp);
         mpz_mod(B2, B2, A);
-
+    
         mpz_pow_ui(C, B2, 2);
         mpz_sub(C, C, myNum);
         mpz_divexact(C, C, A);
-
+    
         numPolys++;
         polySieveD = v2d(facSize, v1d(2));
-
+    
         for (i = 0; i < facSize; i++) {
             mpz_invert(Atemp2, A, mpzFacBase[i]);
             for (j = 0; j <= 1; j++) {
@@ -844,7 +848,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                 polySieveD[i][j] = mpz_get_si(temp);
             }
         }
-
+    
         for (i = 0; i < LenB2; i++) {
             mpz_mul_si(temp, B2, myInterval[i]);
             mpz_mul_2exp(temp, temp, 1);
@@ -853,7 +857,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             mpz_mul(Atemp2, Atemp2, A);
             mpz_add(sqrDiff[i], Atemp2, temp);
         }
-
+    
         FBDivSieve = sieveLists(facSize, facBase, LenB2, sqrDiff, polySieveD);
     
         if (mpz_even_p(sqrDiff[0]) != 0) {
@@ -861,11 +865,11 @@ void quadraticSieve (mpz_t myNum, double fudge1,
         } else {
             evenStrt = 1;
         }
-
+    
         indexDiv = v2d(LenB2, v1d());
         for (j = evenStrt; j < LenB2; j += 2) {indexDiv[j].push_back(0);}
         myLogs = std::vector<double>(LenB2, 0);
-
+    
         for (i = 1; i < facSize; i++) {
             for (k = 0; k <= 1; k++) {
                 tempSize = FBDivSieve[i][k].size();
@@ -878,31 +882,31 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                 for (j = 0; j < tempSize; j++) {myLogs[FBDivSieve[i][1][j]] += LnFB[i];}
             }
         }
-
+    
         largeLogs.clear();
-
+    
         for (i = 0; i < LenB2; i++)
             if (myLogs[i] > theCut)
                 largeLogs.push_back(i);
-
+    
         largeLogsSize = largeLogs.size();
-
+    
         myMat = v2d(largeLogsSize, v1d(facSize + 1, 0));
         i = 0;
-
+    
         for (i = 0; i < largeLogsSize; i++) {
             if (mpz_sgn(sqrDiff[largeLogs[i]]) < 1) {
                 myMat[i][0] = 1;
                 mpz_abs(sqrDiff[largeLogs[i]], sqrDiff[largeLogs[i]]);
             }
         }
-
+    
         sFacs.clear();
         myLargeLogs.clear();
-
+    
         if (largeLogsSize > 0) {
             divides = true;
-
+    
             for (j = 0; j < largeLogsSize; j++) {
                 tempSize = indexDiv[largeLogs[j]].size();
                 for (i = 0; i < tempSize; i++) {
@@ -924,16 +928,16 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                 }
             }
         }
-
+    
         lenM = sFacs.size();
         numSmooth += lenM;
         tempMat = v2d(lenM, v1d(facSize2 + 1, 0));
-
+    
         for (i = 0; i < lenM; i++) {
             for (j = 0; j <= facSize; j++) {tempMat[i][j] = myMat[sFacs[i]][j];}
             tempMat[i][facSize2] = 2;
         }
-
+    
         listMatrix.push_back(tempMat);
         listLargeLogs.push_back(myLargeLogs);
     }
@@ -990,4 +994,5 @@ void quadraticSieve (mpz_t myNum, double fudge1,
 
     mpz_clear(rem); mpz_clear(quot); mpz_clear(temp); mpz_clear(sqrtInt);
     mpz_clear(A); mpz_clear(B); mpz_clear(C); mpz_clear(Atemp);
+    mpz_clear(quadRes[0]); mpz_clear(quadRes[1]);
 }
