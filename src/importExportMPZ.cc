@@ -89,3 +89,39 @@ int myRaw (char* raw, mpz_t value, unsigned long int totals) {
     
     return totals;
 }
+
+void quickSort(mpz_t arr[], int left, int right,
+               std::vector<unsigned int>& lens) {
+    
+    int i = left, j = right, mid;
+    mpz_t pivot;
+    mpz_init(pivot);
+    
+    mid = (left + right) / 2;
+    mpz_set(pivot, arr[mid]);
+    
+    /* partition */
+    while (i <= j) {
+        while (mpz_cmp(arr[i], pivot) < 0) {i++;}
+        
+        while (mpz_cmp(arr[j], pivot) > 0) {
+            j--;
+            if (j < 0) {break;}
+        }
+        
+        if (i <= j) {
+            mpz_swap(arr[i], arr[j]);
+            std::swap(lens[i], lens[j]);
+            i++;
+            j--;
+        }
+    }
+    
+    mpz_clear(pivot);
+    
+    /* recursion */
+    if (left < j)
+        quickSort(arr, left, j, lens);
+    if (i < right)
+        quickSort(arr, i, right, lens);
+}
