@@ -7,10 +7,8 @@
  *  \date Created: 10/06/17
  *  \date Last modified: Time-stamp: <2017-10-06 12:33:33 EDT jwood000>
  *
- *  \author Joseph Wood. The first 20 lines (although slightly modified)
- *       are attributed to Antoine Lucas and help from Immanuel Scholz.
+ *  \author Joseph Wood. Original C code from libgmp.
  *       See factor.cc from the R gmp package for more details.
- *          Original C code from libgmp.
  *
  *  \note Licence: GPL (>=) 2
  */
@@ -22,42 +20,6 @@
 unsigned long int intSize = sizeof(int); // starting with vector-size-header
 unsigned long int numb = 8*intSize;
 unsigned long int mpzChunk = 50;
-
-void quickSort(mpz_t arr[], int left, int right,
-               std::vector<unsigned int>& lens) {
-    
-    int i = left, j = right, mid;
-    mpz_t pivot;
-    mpz_init(pivot);
-    
-    mid = (left + right) / 2;
-    mpz_set(pivot, arr[mid]);
-    
-    /* partition */
-    while (i <= j) {
-        while (mpz_cmp(arr[i], pivot) < 0) {i++;}
-        
-        while (mpz_cmp(arr[j], pivot) > 0) {
-            j--;
-            if (j < 0) {break;}
-        }
-        
-        if (i <= j) {
-            mpz_swap(arr[i], arr[j]);
-            std::swap(lens[i], lens[j]);
-            i++;
-            j--;
-        }
-    }
-    
-    mpz_clear(pivot);
-    
-    /* recursion */
-    if (left < j)
-        quickSort(arr, left, j, lens);
-    if (i < right)
-        quickSort(arr, i, right, lens);
-}
 
 std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> indPass,
                  unsigned int numSecs, unsigned int secSize) {
@@ -150,7 +112,7 @@ std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> ind
     return myInd;
 }
 
-SEXP factorNum (mpz_t val) {
+SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
     
     if (mpz_cmp_ui(val, 1) == 0) {
         mpz_t mpzOne;
@@ -170,10 +132,6 @@ SEXP factorNum (mpz_t val) {
     } else {
         int sgn = mpz_sgn(val);
         unsigned int i, j, k;
-        
-        mpz_t primeFacs[mpzChunk];
-        for (i = 0; i < mpzChunk; i++)
-            mpz_init(primeFacs[i]);
         
         std::vector<unsigned int> lengths;
         unsigned int numUni = 0;
@@ -295,9 +253,13 @@ SEXP getDivisorsC (SEXP Rv, SEXP RNamed) {
     
     createMPZArray(Rv, myVec, vSize);
     
+    mpz_t primeFacs[mpzChunk];
+    for (std::size_t i = 0; i < mpzChunk; i++)
+        mpz_init(primeFacs[i]);
+    
     if (vSize > 0) {
         if (vSize == 1)
-            return factorNum(myVec[0]);
+            return factorNum(myVec[0], primeFacs);
         else {
             int* myLogical = INTEGER(RNamed);
             std::vector<int> isNamed = std::vector<int>(myLogical,
@@ -317,13 +279,13 @@ SEXP getDivisorsC (SEXP Rv, SEXP RNamed) {
                 }
 
                 for (std::size_t i = 0; i < vSize; i++)
-                    SET_VECTOR_ELT(res, i, factorNum(myVec[i]));
+                    SET_VECTOR_ELT(res, i, factorNum(myVec[i], primeFacs));
 
                 Rf_setAttrib(res, R_NamesSymbol, myNames);
                 UNPROTECT(2);
             } else {
                 for (std::size_t i = 0; i < vSize; i++)
-                    SET_VECTOR_ELT(res, i, factorNum(myVec[i]));
+                    SET_VECTOR_ELT(res, i, factorNum(myVec[i], primeFacs));
 
                 UNPROTECT(1);
             }
