@@ -65,6 +65,9 @@ void factor_using_division (mpz_t t, int numPrimes,
             }
             
             numPs++;
+            if (numPs == 50)
+                error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
+            
             p += primes_diff[i++];
             if (mpz_cmp_ui (t, p * p) < 0)
                 break;
@@ -146,6 +149,8 @@ void factor_using_pollard_rho (mpz_t n, unsigned long a,
             }
 
             numPs++;
+            if (numPs == 50)
+                error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
         }
 
         if (mpz_probab_prime_p (n, MR_REPS) != 0) {
