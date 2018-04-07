@@ -262,7 +262,8 @@ SEXP getDivisorsC (SEXP Rv, SEXP RNamed) {
     
     createMPZArray(Rv, myVec, vSize);
     
-    mpz_t primeFacs[mpzChunk];
+    mpz_t *primeFacs;
+    primeFacs = (mpz_t *) malloc(mpzChunk * sizeof(mpz_t));
     for (std::size_t i = 0; i < mpzChunk; i++)
         mpz_init(primeFacs[i]);
     
