@@ -12,6 +12,7 @@
  * note: a^((p-1)/2) mod p must be 1
  * i.e. the Legendre symbol of a with respect to p must be 1
  */
+
 void TonelliShanksC (mpz_t a, mpz_t p, mpz_t quadRes[]);
 
 #endif
