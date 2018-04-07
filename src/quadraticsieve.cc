@@ -147,7 +147,7 @@ static void solutionSearch (v2d mat, mpz_t n, v1d FB, mpz_t * test, mpz_t factor
 
     for (j = 0; j < numCol; j++) {
         i = 0;
-        while (mat[i][j] == 0 && i < nr1) {i++;}
+        while ((i < (signed long int) nr1) && (mat[i][j] == 0)) {i++;}
         if (i < nr1) {
             nullMat.push_back(v1d(nr1, 0));
             for (k = 0; k < nr1; k++) {nullMat[r][k] = mat[k][j] % 2;}
