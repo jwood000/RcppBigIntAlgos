@@ -1,13 +1,10 @@
 /*! 
  *  \file rsafactorize.cc
- *  \brief C function that transfers input from R to 
- *          quadraticSieve function for factoring large
- *            numbers and returning result to R console
- *
+ *  
  *  \version 1
  *
  *  \date Created: 10/06/17
- *  \date Last modified: Time-stamp: <2017-10-06 12:33:33 EDT jwood000>
+ *  \date Last modified: Time-stamp: <2018-04-07 12:30:00 EDT jwood000>
  *
  *  \author Joseph Wood
  *
@@ -337,6 +334,10 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
     
     if (vSize > 1)
         error(_("Can only factor one number at a time"));
+    
+    int sgn = mpz_sgn(myVec[0]);
+    if (sgn < 0)
+        error(_("Can only factor positive numbers"));
     
     // This is from the importExportMPZ header
     createMPZArray(Rn, myVec, 1);
