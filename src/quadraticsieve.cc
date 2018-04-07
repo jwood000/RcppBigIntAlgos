@@ -1,50 +1,26 @@
 /* Factoring with Multiple Polynomial Quadratic Sieve.
  
-References:
-    From https://codegolf.stackexchange.com/ (Credit to user primo for answer)
-       P., & Chowdhury, S. (2012, October 7). Fastest semiprime factorization. Retrieved October 06, 2017, from 
-           https://codegolf.stackexchange.com/questions/8629/fastest-semiprime-factorization/9088#9088
-    Paper 1
-       URL: http://www.ams.org/journals/mcom/1987-48-177/S0025-5718-1987-0866119-8/S0025-5718-1987-0866119-8.pdf
-       citation: Silverman, R. D. (1987). The Multiple Polynomial Quadratic Sieve. 
-               Mathematics of Computation, 48(177), 329-339. doi:10.2307/2007894
-    Paper 2
+In addition to the references in the man file, the links below are very helpful:
+    -
        URL: http://www.cs.virginia.edu/crab/QFS_Simple.pdf
        author: Eric Landquist
        date: December 14, 2001
        title: The Quadratic Sieve Factoring Algorithm
-    Paper 3
+    -
        URL: https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/
        author: MSDN Archive
        date: June 19, 2006
        title: Factoring large numbers with quadratic sieve
-    Paper 4
+    -
        URL: http://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf
-    Paper 5
-       URL: http://library.msri.org/books/Book44/files/03carl.pdf
-       citation: Pomerance, C. (2008). Smooth numbers and the quadratic sieve. In Algorithmic
-       Number Theory Lattices, Number Fields, Curves and Cryptography (pp. 69-81). 
-       Cambridge: Cambridge University Press.
-    Paper 6
+    -
        URL: http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf
        author: Chad Seibert
        date: March 16, 2011
        title: Integer Factorization using the Quadratic Sieve
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation; either version 3 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see http://www.gnu.org/licenses/. 
 */
 
-// This is needed as cinttypes is C++11
 #include <vector>
 #include <algorithm>
 #include <inttypes.h>
