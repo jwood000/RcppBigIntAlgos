@@ -1,15 +1,16 @@
-/************************************************************/
-/*! \file bigintegerR.cc
- *  \brief C function to interface R and libgmp with big integer values
- *
- *  \version 1
- *
- *  \date Created: 27/10/04
- *  \date Last modified: $Id: bigintegerR.cc,v 1.37 2014-09-16 07:33:43 mmaechler Exp $
- *
- *  \author Immanuel Scholz (help from A. Lucas)
- *
- *  \note Licence: GPL
+/* This file contains utility functions that
+ * are used for converting to and from type mpz_t,
+ * as well as sorting an array of type mpz_t.
+ * 
+ * createMPZArray and myRaw are slightly modified versions
+ * of "bigvec create_vector(const SEXP & param)" and 
+ * "int biginteger::as_raw(char* raw) const", respectively,
+ * from the source files bigintegerR.cc/ biginteger.cc from
+ * the R gmp package.
+ * 
+ * The quickSort function is based off of the quicksort
+ * algorithm in C++ found here:
+ *      http://www.algolist.net/Algorithms/Sorting/Quicksort
  */
 
 #include "Rgmp.h"
