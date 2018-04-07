@@ -1,11 +1,20 @@
 /*! 
  *  \file factorization.cc
- *  \brief C functions used for integer factorization
+ *  \brief C functions used for integer factorization.
+ *      - myMergeSort is a modified merge sort algorithm. The classic merge
+ *        sort creates an empty vector of the type you are sorting and fills
+ *        in the ordered elements from two smaller sorted vectors. This
+ *        would be expensive with type mpz_t. For this reason, we only keep
+ *        track of the indices and never actually swap any of the indices in
+ *        the mpz_t array. An integer vector of indices is returned and is
+ *        used in writing out the output at the very bottom.  This method
+ *        shows great efficiency gains over the naive method of using the
+ *        class bigvec (from the R gmp package)/std::sort combination.
  *
  *  \version 1
  *
  *  \date Created: 10/06/17
- *  \date Last modified: Time-stamp: <2017-10-06 12:33:33 EDT jwood000>
+ *  \date Last modified: Time-stamp: <2018-04-07 12:20:00 EDT jwood000>
  *
  *  \author Joseph Wood. Original C code from libgmp.
  *       See factor.cc from the R gmp package for more details.
@@ -118,7 +127,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
         mpz_t mpzOne;
         mpz_init_set_si(mpzOne, 1);
         unsigned long int oneSize, totalSize = intSize;
-        oneSize = intSize * (2 + (mpz_sizeinbase(mpzOne, 2) + numb - 1) / numb);
+        oneSize = intSize * 3;
         totalSize += oneSize;
         SEXP myFacs = PROTECT(Rf_allocVector(RAWSXP, totalSize));
         char* r = (char*)(RAW(myFacs));
