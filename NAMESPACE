@@ -1,4 +1,6 @@
 useDynLib(bigIntegerAlgos, .registration=TRUE)
 
+import(gmp)
+
 export(divisorsBig,
        quadraticSieve)
