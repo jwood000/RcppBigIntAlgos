@@ -103,9 +103,9 @@ unsigned long int getPower(mpz_t nmpz) {
 }
 
 int trialDivision (mpz_t t, int numPrimes,
-                    mpz_t factors[], unsigned int& numPs,
-                    std::vector<unsigned int>& myLens, 
-                    unsigned int arrayMax) {
+                    mpz_t factors[], unsigned long int& numPs,
+                    std::vector<unsigned long int>& myLens, 
+                    unsigned long int arrayMax) {
     mpz_t q;
     unsigned long int p;
     int i;
@@ -151,12 +151,12 @@ int trialDivision (mpz_t t, int numPrimes,
 }
 
 int pollardRhoWithConstraint (mpz_t n, unsigned long int a,
-                               mpz_t factors[], unsigned int& numPs,
-                               std::vector<unsigned int>& myLens,
+                               mpz_t factors[], unsigned long int& numPs,
+                               std::vector<unsigned long int>& myLens,
                                unsigned long int myLimit,
                                unsigned long int powMultiplier,
-                               unsigned int arrayMax,
-                               std::vector<unsigned int>& extraRecursionFacs) {
+                               unsigned long int arrayMax,
+                               std::vector<unsigned long int>& extraRecursionFacs) {
     mpz_t x, z, y, P;
     mpz_t t, t2;
     unsigned long  k, l, i;
@@ -273,11 +273,11 @@ myReturn:
 }
 
 void getBigPrimeFacs(mpz_t n, mpz_t factors[],
-                    mpz_t result[], unsigned int& numPs,
-                    std::vector<unsigned int>& myLens,
+                    mpz_t result[], unsigned long int& numPs,
+                    std::vector<unsigned long int>& myLens,
                     unsigned long int powMaster,
-                    unsigned int arrayMax,
-                    std::vector<unsigned int>& extraRecursionFacs) {
+                    unsigned long int arrayMax,
+                    std::vector<unsigned long int>& extraRecursionFacs) {
     
     if (mpz_sizeinbase(n, 10) < 24) {
         pollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
@@ -306,7 +306,7 @@ void getBigPrimeFacs(mpz_t n, mpz_t factors[],
                     mpz_divexact (n, n, result[i]);
 
                 numPs++;
-                
+
                 // This should not happen
                 if (numPs == arrayMax)
                     error("Too many prime factors!!");
@@ -317,7 +317,7 @@ void getBigPrimeFacs(mpz_t n, mpz_t factors[],
 
 SEXP QuadraticSieveContainer (SEXP Rn) {
     
-    unsigned int vSize;
+    unsigned long int vSize;
     
     switch (TYPEOF(Rn)) {
         case RAWSXP: {
@@ -347,8 +347,8 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
     result = (mpz_t *) malloc(2 * sizeof(mpz_t));
     mpz_init(result[0]); mpz_init(result[1]);
 
-    std::vector<unsigned int> lengths, extraRecursionFacs;
-    unsigned int arrayMax = mpzChunkBig, numUni = 0;
+    std::vector<unsigned long int> lengths, extraRecursionFacs;
+    unsigned long int arrayMax = mpzChunkBig, numUni = 0;
     unsigned long int myPow = 1;
     
     mpz_t *factors;
@@ -395,7 +395,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
         // index to the product (pj * f). We also take note of the index by pushing
         // it to the extraRecursionFacs vector. Below, we take this info and fully
         // factorize these partially factored numbers and add them to our final array.
-        unsigned int eRFSize = extraRecursionFacs.size();
+        unsigned long int eRFSize = extraRecursionFacs.size();
         
         if (eRFSize > 0) {
             arrayMax += (eRFSize * mpzChunkBig);
@@ -410,11 +410,11 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
                 mpz_init(tempFacs[i]);
             
             mpz_init(tempNum);
-            std::vector<unsigned int>::iterator it, itEnd = extraRecursionFacs.end();
+            std::vector<unsigned long int>::iterator it, itEnd = extraRecursionFacs.end();
             for (it = extraRecursionFacs.begin(); it < itEnd; it++) {
                 mpz_set(tempNum, factors[*it]);
-                unsigned int tempUni = 0;
-                std::vector<unsigned int> tempLens, dummyVec;
+                unsigned long int tempUni = 0;
+                std::vector<unsigned long int> tempLens, dummyVec;
                 int temp = pollardRhoWithConstraint(tempNum, 1, tempFacs, tempUni,
                                                     tempLens, 10000000, 1,
                                                     100000, dummyVec);

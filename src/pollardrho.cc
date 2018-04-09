@@ -32,8 +32,8 @@ static unsigned char primes_diff[] = {
 #define MR_REPS 25
 
 void factor_using_division (mpz_t t, int numPrimes,
-                            mpz_t factors[], unsigned int& numPs,
-                            std::vector<unsigned int>& myLens) {
+                            mpz_t factors[], unsigned long int& numPs,
+                            std::vector<unsigned long int>& myLens) {
     mpz_t q;
     unsigned long int p;
     int i;
@@ -78,8 +78,8 @@ void factor_using_division (mpz_t t, int numPrimes,
 }
 
 void factor_using_pollard_rho (mpz_t n, unsigned long a,
-                               mpz_t factors[], unsigned int& numPs,
-                               std::vector<unsigned int>& myLens) {
+                               mpz_t factors[], unsigned long int& numPs,
+                               std::vector<unsigned long int>& myLens) {
     mpz_t x, z, y, P;
     mpz_t t, t2;
     unsigned long  k, l, i;
@@ -173,8 +173,8 @@ void factor_using_pollard_rho (mpz_t n, unsigned long a,
     mpz_clear (y);
 }
 
-void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned int& numPs,
-                      std::vector<unsigned int>& myLens) {
+void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned long int& numPs,
+                      std::vector<unsigned long int>& myLens) {
     
     if (mpz_sgn (t) != 0) {
         factor_using_division (t, PRIMES_PTAB_ENTRIES, factors, numPs, myLens);

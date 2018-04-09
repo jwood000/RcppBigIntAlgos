@@ -17,7 +17,7 @@
 #include <vector>
 #include <algorithm>
 
-void createMPZArray (SEXP v, mpz_t myVec[], unsigned int sizevec) {
+void createMPZArray (SEXP v, mpz_t myVec[], unsigned long int sizevec) {
     switch (TYPEOF(v)) {
         case RAWSXP: {
             // deserialise the vector. first int is the size.
@@ -92,7 +92,7 @@ int myRaw (char* raw, mpz_t value, unsigned long int totals) {
 }
 
 void quickSort(mpz_t arr[], int left, int right,
-               std::vector<unsigned int>& lens) {
+               std::vector<unsigned long int>& lens) {
     
     int i = left, j = right, mid;
     mpz_t pivot;

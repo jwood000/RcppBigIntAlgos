@@ -11,11 +11,11 @@
  *
  * Note: this is adapted from demo "factorize.c" file from gmplib
  */
-void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned int& numPs,
-                      std::vector<unsigned int>& myLens);
+void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned long int& numPs,
+                      std::vector<unsigned long int>& myLens);
 
 void factor_using_division (mpz_t t, int numPrimes,
-                            mpz_t factors[], unsigned int& numPs,
-                            std::vector<unsigned int>& myLens);
+                            mpz_t factors[], unsigned long int& numPs,
+                            std::vector<unsigned long int>& myLens);
 
 #endif

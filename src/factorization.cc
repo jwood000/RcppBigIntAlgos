@@ -30,14 +30,22 @@ unsigned long int intSize = sizeof(int); // starting with vector-size-header
 unsigned long int numb = 8*intSize;
 unsigned long int mpzChunk = 50;
 
-std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> indPass,
-                 unsigned int numSecs, unsigned int secSize) {
+std::vector<unsigned long int> myMergeSort(mpz_t arr[], 
+                                      std::vector<unsigned long int> indPass,
+                                      unsigned long int numSecs, 
+                                      unsigned long int secSize) {
     
-    unsigned int i, j, k, x, y, left, count, lim, tempSize, totalSize;
+    unsigned long int twoI, k, x, y, left, count = 0;
+    unsigned long int lim, tempSize, totalSize;
     tempSize = totalSize = numSecs * secSize;
-    std::vector<unsigned int> leftOver, myInd(totalSize);
-    for (i = 0; i < secSize; i++) {myInd[i] = indPass[i];}
-    for (i = secSize; i < totalSize; i++) {myInd[i] = i;}
+    std::vector<unsigned long int> leftOver, myInd(totalSize);
+    
+    for (std::size_t i = 0; i < secSize; i++)
+        myInd[i] = indPass[i];
+    
+    for (std::size_t i = secSize; i < totalSize; i++)
+        myInd[i] = i;
+    
     leftOver.reserve(std::floor(numSecs/2));
     
     while (numSecs > 1) {
@@ -47,9 +55,9 @@ std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> ind
             tempSize -= secSize;
         }
         
-        std::vector<unsigned int> endPoints(numSecs, secSize);
+        std::vector<unsigned long int> endPoints(numSecs, secSize);
         
-        for (i = 1; i < numSecs; i++) {
+        for (std::size_t i = 1; i < numSecs; i++) {
             x = endPoints[i-1] + secSize;
             endPoints[i] = x;
         }
@@ -58,14 +66,15 @@ std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> ind
         k = std::floor(numSecs/2);
         if (k < 2) {lim = k;} else {lim = 2;}
         left = x = 0;
-        std::vector<unsigned int> tempInd, defaultInd(secSize, 0);
+        std::vector<unsigned long int> tempInd, defaultInd(secSize, 0);
         
-        for (i = 0; i < lim; i++) {
+        for (std::size_t i = 0; i < lim; i++) {
             count = 0;
-            y = endPoints[2*i];
+            twoI = 2 * i;
+            y = endPoints[twoI];
             tempInd = defaultInd;
                      
-            while (x < endPoints[2*i] && y < endPoints[2*i + 1]) {
+            while (x < endPoints[twoI] && y < endPoints[twoI + 1]) {
                 if (mpz_cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
                     tempInd[count] = myInd[x];
                     x++;
@@ -76,31 +85,32 @@ std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> ind
                 count++;
             }
             
-            for (j = 0; j < count; j++) {myInd[left + j] = tempInd[j];}
+            for (std::size_t j = 0; j < count; j++)
+                myInd[left + j] = tempInd[j];
+            
             x = left = endPoints[2*i + 1];
         }
         
         if (k > 2) {
-            for (i = 2; i < k; i++) {
+            for (std::size_t i = 2; i < k; i++) {
                 x = endPoints[2*i - 1];
                 y = x - secSize;
-                for (j = 0; j < count; j++) {
+                for (std::size_t j = 0; j < count; j++)
                     myInd[x + j] = tempInd[j] + y;
-                }
             }
         }
         
         numSecs = std::floor(numSecs/2);
     }
     
-    unsigned int LOSize = leftOver.size();
+    unsigned long int LOSize = leftOver.size();
 
     if (LOSize > 0) {
-        for (j = LOSize; j > 0; j--) {
-            i = j - 1;
+        for (std::size_t j = LOSize; j > 0; j--) {
+            std::size_t i = j - 1;
             x = count = 0;
             y = tempSize;
-            std::vector<unsigned int> tempInd(leftOver[i]);
+            std::vector<unsigned long int> tempInd(leftOver[i]);
 
             while (x < tempSize && y < leftOver[i]) {
                 if (mpz_cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
@@ -113,7 +123,9 @@ std::vector<unsigned int> myMergeSort(mpz_t arr[], std::vector<unsigned int> ind
                 count++;
             }
             
-            for (k = 0; k < count; k++) {myInd[k] = tempInd[k];}
+            for (std::size_t r = 0; r < count; r++)
+                myInd[r] = tempInd[r];
+            
             tempSize = leftOver[i];
         }
     }
@@ -140,10 +152,10 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
         return myFacs;
     } else {
         int sgn = mpz_sgn(val);
-        unsigned int i, j, k;
+        unsigned long int i, j, k;
         
-        std::vector<unsigned int> lengths;
-        unsigned int numUni = 0;
+        std::vector<unsigned long int> lengths;
+        unsigned long int numUni = 0;
         bool isNegative = false;
         
         if (sgn == 0)
@@ -157,7 +169,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
         getPrimeFactors (val, primeFacs, numUni, lengths);
         quickSort(primeFacs, 0, numUni - 1, lengths);
         
-        std::vector<unsigned int> myIndex(lengths[0] + 1);
+        std::vector<unsigned long int> myIndex(lengths[0] + 1);
         unsigned long int ind, facSize = 1, numFacs = 1;
         
         for (i = 0; i < numUni; i++)
@@ -244,7 +256,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
 SEXP getDivisorsC (SEXP Rv, SEXP RNamed) {
     
     mpz_t *myVec;
-    unsigned int vSize;
+    unsigned long int vSize;
     
     switch (TYPEOF(Rv)) {
         case RAWSXP: {
