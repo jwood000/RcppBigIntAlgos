@@ -335,14 +335,15 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
     if (vSize > 1)
         error(_("Can only factor one number at a time"));
     
-    int sgn = mpz_sgn(myVec[0]);
-    if (sgn < 0)
-        error(_("Can only factor positive numbers"));
-    
     // This is from the importExportMPZ header
     createMPZArray(Rn, myVec, 1);
     mpz_t nmpz;
     mpz_init_set(nmpz, myVec[0]);
+    
+    int sgn = mpz_sgn(nmpz);
+    if (sgn <= 0)
+        error(_("Can only factor positive numbers"));
+    
     mpz_t *result;
     result = (mpz_t *) malloc(2 * sizeof(mpz_t));
     mpz_init(result[0]); mpz_init(result[1]);
