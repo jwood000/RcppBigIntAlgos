@@ -154,7 +154,7 @@ However `gmp::factorize` is more suitable for numbers smaller than 60 bits and s
 
 Current Research:
 -----
-Right now, improvements are being made to the section of the quadratic sieve algorithm that selects smooth numbers. Right now, we are only selecting **_M-smooth_** numbers where **_M_** is the largest prime in our sieving base. A potential efficiency gain is to also keep track of mostly **_M-smooth_** numbers (i.e. numbers that are almost completely factored by our sieving base but have one factor that contains a prime number greater than **_M_**). This way, we can obtain more smooth numbers by essentially eliminating these larger factors when we find a pair of them (N.B. square terms come out in the wash, so the large factors won't influence the outcome).
+Improvements are being made to the section of the quadratic sieve algorithm that selects smooth numbers. Right now, we are only selecting **_M-smooth_** numbers where **_M_** is the largest prime in our sieving base. A potential efficiency gain is to also keep track of mostly **_M-smooth_** numbers (i.e. numbers that are almost completely factored by our sieving base but have one factor that contains a prime number greater than **_M_**). This way, we can obtain more smooth numbers by essentially eliminating these larger factors when we find a pair of them (N.B. square terms come out in the wash, so the large factors won't influence the outcome).
 
 We are also working on efficiently integrating `divisorsBig` with `quadraticSieve` as currently, `divisorsBig` utilizes `gmp::factorize`.
 
