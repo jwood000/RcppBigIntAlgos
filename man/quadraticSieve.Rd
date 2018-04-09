@@ -13,7 +13,7 @@ quadraticSieve(n)
   \item{n}{An integer, numeric, string value, or an element of class bigz.}
 }
 \details{
-First, \href{https://en.wikipedia.org/wiki/Trial_division}{trial division} is carried out to remove small prime numbers, then a modified version of \href{https://en.wikipedia.org/wiki/Pollard\%27s_rho_algorithm}{Pollard's rho algorithm} that is constrained is called to quickly remove further prime numbers. Next, we check to make sure that we are not passing a perfect power to the main quadratic sieve algorithm. After removing any perfect powers, we finally call the quadratic sieve in a recursive fashion until we have completely factored our number.
+First, \href{https://en.wikipedia.org/wiki/Trial_division}{trial division} is carried out to remove small prime numbers, then a modified version of \href{https://en.wikipedia.org/wiki/Pollard\%27s_rho_algorithm}{Pollard's rho algorithm} that is constrained is called to quickly remove further prime numbers. Next, we check to make sure that we are not passing a perfect power to the main quadratic sieve algorithm. After removing any perfect powers, we finally call the quadratic sieve with multiple polynomials in a recursive fashion until we have completely factored our number.
 }
 \value{
 Vector of class bigz
