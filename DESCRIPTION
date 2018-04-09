@@ -13,6 +13,7 @@ License: GPL (>= 2)
 BuildResaveData: no
 Encoding: UTF-8
 SystemRequirements: gmp (>= 4.2.3)
+Suggests: testthat, numbers (>= 0.6-6), RcppAlgos (>= 1.0.1)
 Depends: gmp
 NeedsCompilation: yes
 URL: https://github.com/jwood000/bigIntegerAlgos
