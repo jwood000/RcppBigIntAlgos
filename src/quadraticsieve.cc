@@ -13,21 +13,16 @@ In addition to the references in the man file, the links below are very helpful:
        title: Factoring large numbers with quadratic sieve
     - 3:
        URL: http://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf
-    - 4:
-       URL: http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf
-       author: Chad Seibert
-       date: March 16, 2011
-       title: Integer Factorization using the Quadratic Sieve
 */
 
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#include <stdint.h>
+#include <inttypes.h>
 #include "tonellishanks.h"
 #include "quadraticsieve.h"
 
-typedef std::vector<int> v1d;
+typedef std::vector<int64_t> v1d;
 typedef std::vector<v1d> v2d;
 typedef std::vector<v2d> v3d;
 
@@ -47,7 +42,7 @@ static inline v1d outersect (v1d x, v1d y) {
 
 static void reduceMatrix (unsigned long int n1,
                           unsigned long int n2, v2d &nullMat, v1d &myCols) {
-    int temp;
+    int64_t temp;
     unsigned long int myMin = 0, myMax = 0;
     v1d::iterator it;
     v1d myOnes;
@@ -56,7 +51,7 @@ static void reduceMatrix (unsigned long int n1,
         myOnes.reserve(n2);
         for (std::size_t j = myMax; j < n2; j++)
             if (nullMat[j][i] == 1)
-                myOnes.push_back((int) j);
+                myOnes.push_back((int64_t) j);
 
         if (myOnes.size() > 0) {
             myMin = myOnes[0];
@@ -132,7 +127,7 @@ static inline v1d myIntToBit (unsigned long int x,
     v1d binaryVec(dig);
     
     while (x > 0) {
-        binaryVec[i] = (int) (x % 2);
+        binaryVec[i] = (int64_t) (x % 2);
         x /= 2;
         i++;
     }
@@ -140,7 +135,7 @@ static inline v1d myIntToBit (unsigned long int x,
     return binaryVec;
 }
 
-static void solutionSearch (v2d mat, mpz_t n, std::vector<int64_t> FB,
+static void solutionSearch (v2d mat, mpz_t n, v1d FB,
                             mpz_t * test, mpz_t factors[]) {
     
     unsigned long int nr1 = mat.size(), numCol = mat[0].size(), r = 0;
@@ -187,7 +182,7 @@ static void solutionSearch (v2d mat, mpz_t n, std::vector<int64_t> FB,
             temp.reserve(numCol);
             for (std::size_t j = 0; j < numCol; j++)
                 if (nullMat[i-1][j] == 1)
-                    temp.push_back((int) j);
+                    temp.push_back((int64_t) j);
 
             if (temp.size() == 1) {
                 for (std::size_t j = 0; j < newNrow; j++)
@@ -201,7 +196,7 @@ static void solutionSearch (v2d mat, mpz_t n, std::vector<int64_t> FB,
                 allBiggerNewNrow = true;
                 for (std::size_t j = i; j < numCol; j++) {
                     if (nullMat[i-1][j] == 1) {
-                        temp.push_back((int) j);
+                        temp.push_back((int64_t) j);
                         if (allBiggerNewNrow)
                             if (j < newNrow)
                                 allBiggerNewNrow = false;
@@ -258,7 +253,7 @@ static void solutionSearch (v2d mat, mpz_t n, std::vector<int64_t> FB,
                     }
                 }
                 if (posVec[j]==1)
-                    ansVec.push_back((int) j);
+                    ansVec.push_back((int64_t) j);
             }
 
             if (ansVec.size() > 0) {
@@ -351,10 +346,10 @@ static v1d getPrimesQuadRes (mpz_t myN, double n) {
 
     myps.push_back(2);
 
-    for (int j = 3; j <= n; j += 2) {
+    for (int64_t j = 3; j <= n; j += 2) {
         if (primes[j]) {
-            mpz_set_ui(jmpz, j);
-            mpz_set_ui(temp, j);
+            mpz_set_si(jmpz, j);
+            mpz_set_si(temp, j);
             mpz_sub_ui(temp, jmpz, 1);
             mpz_div_2exp(temp, temp, 1);
             mpz_powm(test,myN,temp,jmpz);
@@ -367,20 +362,18 @@ static v1d getPrimesQuadRes (mpz_t myN, double n) {
     return myps;
 }
 
-static std::vector<std::vector<std::vector<int64_t> > > 
-    sieveLists (int facLim, v1d FBase, int vecLen, mpz_t sqrD[], v2d sieveD) {
+static v3d sieveLists (int facLim, v1d FBase, int64_t vecLen, mpz_t sqrD[], v2d sieveD) {
     
-    std::vector<std::vector<std::vector<int64_t> > >
-        outList(facLim, std::vector<std::vector<int64_t> >(2, std::vector<int64_t>()));
-    unsigned long int uiFB, uFacLim;
-    uFacLim = (unsigned long int) facLim;
+    v3d outList(facLim, v2d(2, v1d()));
+    uint64_t uiFB;
+    unsigned long int uFacLim = (unsigned long int) facLim;
     int64_t siFB, vStrt1, vStrt2;
     mpz_t modTest;
     mpz_init(modTest);
     vStrt1 = vStrt2 = 0;
     
     for (std::size_t i = 1; i < uFacLim; i++) {
-        uiFB = (unsigned long int) FBase[i];
+        uiFB = (uint64_t) FBase[i];
         siFB = FBase[i];
         for (int64_t j = 0; j < vecLen; j++) {
             mpz_mod_ui(modTest, sqrD[j], uiFB);
@@ -390,10 +383,10 @@ static std::vector<std::vector<std::vector<int64_t> > >
             }
         }
         
-        for (int j = vStrt1; j < vecLen; j += siFB)
+        for (int64_t j = vStrt1; j < vecLen; j += siFB)
             outList[i][0].push_back(j);
 
-        for (int j = vStrt1 + 1; j < vecLen; j++) {
+        for (int64_t j = vStrt1 + 1; j < vecLen; j++) {
             mpz_mod_ui(modTest, sqrD[j], uiFB);
             if (mpz_cmp_ui(modTest, 0) == 0) {
                 vStrt2 = j;
@@ -401,7 +394,7 @@ static std::vector<std::vector<std::vector<int64_t> > >
             }
         }
         
-        for (int j = vStrt2; j < vecLen; j += siFB)
+        for (int64_t j = vStrt2; j < vecLen; j += siFB)
             outList[i][1].push_back(j);
     }
     
@@ -410,14 +403,13 @@ static std::vector<std::vector<std::vector<int64_t> > >
 }
 
 void quadraticSieve (mpz_t myNum, double fudge1,
-                     double fudge2,
-                     unsigned long int LenB, mpz_t factors[]) {
+                     double fudge2, int64_t LenB, mpz_t factors[]) {
     
     unsigned long int digCount = mpz_sizeinbase(myNum, 10);
     unsigned long int bits = mpz_sizeinbase(myNum, 2);
 
     unsigned long int myTarget, facSize, facSize2;
-    double sqrLogLog, LimB, lognum = bits / log2((double)std::exp(1));
+    double sqrLogLog, LimB, lognum = bits / log2((double) std::exp(1));
     sqrLogLog = std::sqrt(lognum * std::log(lognum));
     mpz_t currP, nextP, resTest, CP1;
     mpz_init(currP);
@@ -425,12 +417,14 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     mpz_init(CP1);
     mpz_init(resTest);
     v1d facBase;
+    double dblDigCount = (double) digCount;
+    double dblMyTarget;
 
     // These values were obtained from "The Multiple Polynomial
     // Quadratic Sieve" by Robert D. Silverman
     // DigSize <- c(24,30,36,42,48,54,60,66)
     // FBSize <- c(100,200,400,900,1200,2000,3000,4500)
-    // MSize <- c(5,25,25,50,100,250,350,500)
+    // MSize <- c(5,20,35,100,125,250,350,500)
     //
     // rawCoef <- round(unname(lm(FBSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
@@ -441,9 +435,11 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     if (fudge1 == 0) {
         fudge1 = -0.4;
         LimB = std::exp((double) ((0.5 + fudge1) * sqrLogLog));
-
-        myTarget = (unsigned long int) std::ceil((double)(-391.8275012*digCount + 15.1541456*std::pow(digCount,2) -
-            0.2475566*std::pow(digCount,3) + 0.0016806*std::pow(digCount,4) + 3637.0671));
+        
+        dblMyTarget = -391.8275012 * dblDigCount + 15.1541456 * std::pow(dblDigCount, 2.0);
+        dblMyTarget += -0.2475566*std::pow(dblDigCount, 3.0) + 0.0016806 * std::pow(dblDigCount, 4.0) + 3637.0671;
+        dblMyTarget = std::ceil(dblMyTarget);
+        myTarget = (unsigned long int) dblMyTarget;
 
         while (LimB < myTarget) {
             LimB = std::exp((double) ((0.5 + fudge1) * sqrLogLog));
@@ -477,11 +473,15 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
     // rawCoef
     //    intercept           x^1           x^2           x^3           x^4
-    // -1650.8252165   176.9043861    -6.7567603     0.1085362    -0.0005955
+    // -213.1466450    23.3947361    -0.9494686     0.0165574    -0.0000767
 
     if (LenB == 0) {
-        LenB = (unsigned long int) 1000*std::ceil((double)(176.9043861*digCount - 6.7567603*std::pow(digCount,2) +
-            0.1085362*std::pow(digCount,3) - 0.0005955*std::pow(digCount,4) - 1650.8252165));
+        double dblLenB;
+        dblLenB = 23.394736 * dblDigCount - 0.9494686 * std::pow(dblDigCount, 2.0);
+        dblLenB += 0.0165574 * std::pow(dblDigCount, 3.0) - 0.0000767 * std::pow(dblDigCount, 4.0) - 213.1466450;
+        dblLenB = std::ceil(dblLenB);
+        LenB = (int64_t) dblLenB;
+        LenB *= 1000;
     }
     
     facSize2 = facSize = facBase.size();
@@ -490,14 +490,14 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     // With every iteration, a prime will be added to the factor
     // base for additional factorization. The original facBase
     // should not be tampered with, hence the need for facBase2.
-    std::vector<int64_t> facBase2(facBase.begin(), facBase.end());
+    v1d facBase2 = facBase;
 
     mpz_t sqrtInt;
     mpz_init(sqrtInt);
     mpz_sqrt(sqrtInt, myNum);
-    std::vector<int64_t> myInterval;
+    v1d myInterval;
 
-    int64_t Lower = -1*LenB, Upper = LenB, LenB2 = 2*LenB+1;
+    int64_t Lower = -1 * LenB, Upper = LenB, LenB2 = 2 * LenB + 1;
     uint64_t uLenB2 = (uint64_t) LenB2;
     myInterval.reserve(LenB2);
     for (int64_t i = Lower; i <= Upper; i++)
@@ -578,8 +578,8 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             mpz_sub(TS[4], TS[5], TS[10]);
             mpz_mod(TS[3], TS[4], TS[5]);
         }
-        SieveDist[i][0] = mpz_get_si(TS[2]);
-        SieveDist[i][1] = mpz_get_si(TS[3]);
+        SieveDist[i][0] = (int64_t) mpz_get_si(TS[2]);
+        SieveDist[i][1] = (int64_t) mpz_get_si(TS[3]);
     }
 
     // Finished generating residues.. now free memory
@@ -609,8 +609,8 @@ void quadraticSieve (mpz_t myNum, double fudge1,
         mpz_sub(sqrDiff[i], temp, myNum);
     }
 
-    std::vector<std::vector<std::vector<int64_t> > > FBDivSieve;
-    FBDivSieve = sieveLists(facSize, facBase, LenB2, sqrDiff, SieveDist);
+    v3d FBDivSieve;
+    FBDivSieve = sieveLists(facSize, facBase, (int64_t) LenB2, sqrDiff, SieveDist);
 
     mpz_mul_ui(temp, myNum, 2);
     mpz_sqrt(temp, temp);
@@ -619,12 +619,16 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     if (fudge2 == 0) {
         if (digCount < 30)
             fudge2 = 0.7;
-        else if (digCount < 50)
+        else if (digCount < 35)
             fudge2 = 0.9;
-        else
+        else if (digCount < 40)
+            fudge2 = 1.05;
+        else if (digCount < 50)
+            fudge2 = 1.2;
+        else if (digCount < 55)
             fudge2 = 1.5;
     }
-    
+
     double theCut = fudge2 * mpz_sizeinbase(temp, 10);
     mpz_t *mpzFacBase;
     mpzFacBase = (mpz_t *) malloc(facSize * sizeof(mpz_t));
@@ -635,20 +639,20 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     std::size_t ind = 0;
     for (it = facBase.begin(); it < facBase.end(); it++, ind++) {
         mpz_init_set_ui(mpzFacBase[ind], *it);
-        LnFB.push_back(std::log((double)*it));
+        LnFB.push_back(std::log((double) *it));
     }
 
     unsigned long int tempSize, evenStrt;
-    int minPrime;
+    int64_t minPrime;
     mpz_mul_ui(temp, sqrtInt, Upper);
-    minPrime = (int) mpz_sizeinbase(temp, 10) * 2;
+    minPrime = (int64_t) mpz_sizeinbase(temp, 10) * 2;
     v2d indexDiv(LenB2, v1d());
 
     if (mpz_even_p(sqrDiff[0]) != 0)
         evenStrt = 0;
     else
         evenStrt = 1;
-    
+
     for (std::size_t j = evenStrt; j < uLenB2; j += 2)
         indexDiv[j].push_back(0);
 
@@ -656,7 +660,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
         for (std::size_t k = 0; k <= 1; k++) {
             tempSize = FBDivSieve[i][k].size();
             for (std::size_t j = 0; j < tempSize; j++)
-                indexDiv[FBDivSieve[i][k][j]].push_back((int) i);
+                indexDiv[FBDivSieve[i][k][j]].push_back((int64_t) i);
         }
         if (facBase[i] > minPrime) {
             tempSize = FBDivSieve[i][0].size();
@@ -669,10 +673,10 @@ void quadraticSieve (mpz_t myNum, double fudge1,
         }
     }
 
-    std::vector<int64_t> largeLogs;
+    v1d largeLogs;
 
     for (int64_t i = 0; i < LenB2; i++)
-        if (myLogs[i] > theCut) 
+        if (myLogs[i] > theCut)
             largeLogs.push_back(i);
 
     unsigned long int largeLogsSize = largeLogs.size();
@@ -689,7 +693,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     mpz_init(rem);
     mpz_init(quot);
     v1d sFacs;
-    std::vector<int64_t> myLargeLogs;
+    v1d myLargeLogs;
     bool divides = true;
 
     if (largeLogsSize > 0) {
@@ -709,15 +713,15 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             }
             if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
                 // Found a smooth number
-                sFacs.push_back((int) j);
+                sFacs.push_back((int64_t) j);
                 myLargeLogs.push_back(largeLogs[j]);
             }
         }
     }
-    
+
     unsigned long int lenM = sFacs.size();
     v3d listMatrix;
-    std::vector<std::vector<int64_t> > listLargeLogs;
+    v2d listLargeLogs;
     v2d tempMat(lenM, v1d(facSize + 1, 0));
 
     for (std::size_t i = 0; i < lenM; i++)
@@ -736,7 +740,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     mpz_div_ui(Atemp, Atemp, Upper);
     mpz_sqrt(Atemp, Atemp);
 
-    int maxFBase = *std::max_element(facBase.begin(), facBase.end());
+    int64_t maxFBase = *std::max_element(facBase.begin(), facBase.end());
     if (mpz_cmp_ui(Atemp, maxFBase) < 0)
         mpz_set_ui(Atemp, maxFBase);
 
@@ -745,13 +749,14 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     mpz_init(quadRes[0]); mpz_init(quadRes[1]);
     v2d polySieveD;
     unsigned long int numPolys = 0, numSmooth = lenM;
-    std::vector<int64_t> myAtemps, myQuadRes;
-    std::vector<int64_t> myIntervalSqrd(LenB2);
+    v1d myAtemps, myQuadRes;
+    v1d myIntervalSqrd(LenB2);
 
     if (facSize2 > lenM)
         for (std::size_t i = 0; i < uLenB2; i++)
             myIntervalSqrd[i] = myInterval[i] * myInterval[i];
     
+
     // Find enough smooth numbers to guarantee a non-trivial solution
     int extraFacs = 0;
     while (mpz_cmp_ui(factors[0], 0) == 0) {
@@ -765,19 +770,19 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                 if (mpz_cmp_ui(temp, 1) == 0)
                     LegendreTest = false;
             }
-    
+
             myAtemps.push_back((int64_t) mpz_get_d(Atemp));
             facBase2.push_back((int64_t) mpz_get_d(Atemp));
             facSize2++;
-    
+
             mpz_pow_ui(A, Atemp, 2);
             TonelliShanksC(myNum, Atemp, quadRes);
-    
+
             if (mpz_cmp(quadRes[0], quadRes[1]) > 0)
                 mpz_set(Btemp, quadRes[0]);
             else
                 mpz_set(Btemp, quadRes[1]);
-    
+
             myQuadRes.push_back((int64_t) mpz_get_d(Btemp));
             mpz_mul_2exp(temp, Btemp, 1);
             mpz_invert(temp, temp, Atemp);
@@ -786,85 +791,85 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             mpz_mul(B2, B2, temp);
             mpz_add(B2, B2, Btemp);
             mpz_mod(B2, B2, A);
-    
+
             mpz_pow_ui(C, B2, 2);
             mpz_sub(C, C, myNum);
             mpz_divexact(C, C, A);
-    
+
             numPolys++;
             polySieveD = v2d(facSize, v1d(2));
-    
+
             for (std::size_t i = 0; i < facSize; i++) {
                 mpz_invert(Atemp2, A, mpzFacBase[i]);
                 for (std::size_t j = 0; j <= 1; j++) {
                     mpz_ui_sub(temp, SieveDist[i][j], B2);
                     mpz_mul(temp, temp, Atemp2);
                     mpz_mod_ui(temp, temp, facBase[i]);
-                    polySieveD[i][j] = mpz_get_si(temp);
+                    polySieveD[i][j] = (int64_t) mpz_get_si(temp);
                 }
             }
-    
+
             for (std::size_t i = 0; i < uLenB2; i++) {
                 mpz_mul_si(temp, B2, myInterval[i]);
                 mpz_mul_2exp(temp, temp, 1);
                 mpz_add(temp, temp, C);
-                mpz_set_si(Atemp2, myIntervalSqrd[i]);
+                mpz_set_d(Atemp2, (double) myIntervalSqrd[i]);
                 mpz_mul(Atemp2, Atemp2, A);
                 mpz_add(sqrDiff[i], Atemp2, temp);
             }
-    
-            FBDivSieve = sieveLists(facSize, facBase, LenB2, sqrDiff, polySieveD);
-    
+
+            FBDivSieve = sieveLists(facSize, facBase, (int64_t) LenB2, sqrDiff, polySieveD);
+
             if (mpz_even_p(sqrDiff[0]) != 0)
                 evenStrt = 0;
             else
                 evenStrt = 1;
-    
+
             indexDiv = v2d(LenB2, v1d());
             for (std::size_t j = evenStrt; j < uLenB2; j += 2)
                 indexDiv[j].push_back(0);
-    
-            myLogs = std::vector<double>(LenB2, 0);
-    
+
+            std::fill(myLogs.begin(), myLogs.end(), 0.0);
+
             for (std::size_t i = 1; i < facSize; i++) {
                 for (std::size_t k = 0; k <= 1; k++) {
                     tempSize = FBDivSieve[i][k].size();
                     for (std::size_t j = 0; j < tempSize; j++)
-                        indexDiv[FBDivSieve[i][k][j]].push_back((int) i);
+                        indexDiv[FBDivSieve[i][k][j]].push_back((int64_t) i);
                 }
                 if (facBase[i] > minPrime) {
                     tempSize = FBDivSieve[i][0].size();
                     for (std::size_t j = 0; j < tempSize; j++)
                         myLogs[FBDivSieve[i][0][j]] += LnFB[i];
-    
+
                     tempSize = FBDivSieve[i][1].size();
                     for (std::size_t j = 0; j < tempSize; j++)
                         myLogs[FBDivSieve[i][1][j]] += LnFB[i];
                 }
             }
-    
+
             largeLogs.clear();
-    
-            for (int64_t i = 0; i < LenB2; i++)
+
+            for (int64_t i = 0; i < LenB2; i++) 
                 if (myLogs[i] > theCut)
                     largeLogs.push_back(i);
-    
+
             largeLogsSize = largeLogs.size();
             myMat = v2d(largeLogsSize, v1d(facSize + 1, 0));
-    
+
             for (std::size_t i = 0; i < largeLogsSize; i++) {
                 if (mpz_sgn(sqrDiff[largeLogs[i]]) < 1) {
                     myMat[i][0] = 1;
                     mpz_abs(sqrDiff[largeLogs[i]], sqrDiff[largeLogs[i]]);
                 }
             }
-    
+
             sFacs.clear();
             myLargeLogs.clear();
-    
+
             if (largeLogsSize > 0) {
                 divides = true;
-    
+
                 for (std::size_t j = 0; j < largeLogsSize; j++) {
                     tempSize = indexDiv[largeLogs[j]].size();
                     for (std::size_t i = 0; i < tempSize; i++) {
@@ -881,22 +886,22 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                     }
                     if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
                         // Found a smooth number
-                        sFacs.push_back((int) j);
+                        sFacs.push_back((int64_t) j);
                         myLargeLogs.push_back(largeLogs[j]);
                     }
                 }
             }
-    
+
             lenM = sFacs.size();
             numSmooth += lenM;
             tempMat = v2d(lenM, v1d(facSize2 + 1, 0));
-    
+
             for (std::size_t i = 0; i < lenM; i++) {
                 for (std::size_t j = 0; j <= facSize; j++)
                     tempMat[i][j] = myMat[sFacs[i]][j];
                 tempMat[i][facSize2] = 2;
             }
-            
+
             listMatrix.push_back(tempMat);
             listLargeLogs.push_back(myLargeLogs);
         }
@@ -905,24 +910,24 @@ void quadraticSieve (mpz_t myNum, double fudge1,
         newTestInt = (mpz_t *) malloc(numSmooth * sizeof(mpz_t));
         v2d newMat = v2d(numSmooth, v1d(facSize2 + 1, 0));
         unsigned long int row = 0, polyOne;
-    
+
         for (std::size_t i = 0; i < listLargeLogs[0].size(); i++) {
             mpz_init_set(newTestInt[row], largeInterval[listLargeLogs[0][i]]);
             for (std::size_t j = 0; j <= facSize; j++)
                 newMat[row][j] = listMatrix[0][i][j];
             row++;
         }
-    
+
         unsigned long int fSize = facSize + 1;
-    
+
         for (std::size_t k = 0; k < numPolys; k++) {
             polyOne = k + 1;
             fSize++;
-    
+
             mpz_set_si(Atemp, myAtemps[k]);
             mpz_pow_ui(A, Atemp, 2);
             mpz_set_si(Btemp, myQuadRes[k]);
-    
+
             mpz_mul_2exp(temp, Btemp, 1);
             mpz_invert(temp, temp, Atemp);
             mpz_pow_ui(B2, Btemp, 2);
@@ -930,7 +935,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             mpz_mul(B2, B2, temp);
             mpz_add(B2, B2, Btemp);
             mpz_mod(B2, B2, A);
-    
+
             for (std::size_t i = 0; i < listLargeLogs[polyOne].size(); i++) {
                 mpz_mul_si(temp, A, myInterval[listLargeLogs[polyOne][i]]);
                 mpz_init(newTestInt[row]);
@@ -940,12 +945,12 @@ void quadraticSieve (mpz_t myNum, double fudge1,
                 row++;
             }
         }
-    
+
         solutionSearch (newMat, myNum, facBase2, newTestInt, factors);
         
         for (std::size_t i = 0; i < numSmooth; i++)
             mpz_clear(newTestInt[i]);
-        
+
         extraFacs += 5;
     }
 
