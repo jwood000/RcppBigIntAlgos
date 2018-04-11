@@ -2,6 +2,7 @@
 #define QUADRATICSIEVE_GMP_R 1
 
 #include "Rgmp.h"
+#include <inttypes.h>
 
 /**
  * Factor large number into two smaller numbers (possibly prime)
@@ -16,7 +17,6 @@
  */
 
 void quadraticSieve (mpz_t myNum, double fudge1,
-                     double fudge2,
-                     unsigned long int LenB, mpz_t factors[]);
+                     double fudge2, int64_t LenB, mpz_t factors[]);
 
 #endif

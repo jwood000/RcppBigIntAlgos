@@ -16,6 +16,7 @@
 #include "importExportMPZ.h"
 #include <vector>
 #include "Rgmp.h"
+#include <inttypes.h>
 
 unsigned long int mpzChunkBig = 50;
 
@@ -159,7 +160,7 @@ int pollardRhoWithConstraint (mpz_t n, unsigned long int a,
                                std::vector<unsigned long int>& extraRecursionFacs) {
     mpz_t x, z, y, P;
     mpz_t t, t2;
-    unsigned long  k, l, i;
+    unsigned long int  k, l, i;
     int returnVal = 0;
     
     mpz_init (t);
@@ -283,7 +284,7 @@ void getBigPrimeFacs(mpz_t n, mpz_t factors[],
         pollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
                                 powMaster, arrayMax, extraRecursionFacs);
     } else {
-        quadraticSieve (n, 0.0, 0.0, 0, result);
+        quadraticSieve (n, 0.0, 0.0, (int64_t) 0, result);
         
         for (std::size_t i = 0; i < 2; i++) {
             unsigned long int myPow = 1;
@@ -351,7 +352,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
     std::vector<unsigned long int> lengths, extraRecursionFacs;
     unsigned long int arrayMax = mpzChunkBig, numUni = 0;
     unsigned long int myPow = 1;
-    
+
     mpz_t *factors;
     factors = (mpz_t *) malloc(mpzChunkBig * sizeof(mpz_t));
     for (std::size_t i = 0; i < mpzChunkBig; i++)
@@ -360,17 +361,17 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
     // First we test for small factors.
     int increaseSize = trialDivision(nmpz, PRIMES_PTAB_ENTRIES,
                             factors, numUni, lengths, arrayMax);
-    
+
     while (increaseSize) {
         arrayMax += mpzChunkBig;
         factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
         for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; i++)
             mpz_init(factors[i]);
-        
+
         increaseSize = trialDivision(nmpz, PRIMES_PTAB_ENTRIES,
                                      factors, numUni, lengths, arrayMax);
     }
-    
+
     if (mpz_cmp_ui(nmpz, 1) != 0) {
         // We now test for larger primes using pollard's rho
         // algorithm, but constrain it to a limited number of checks
@@ -382,12 +383,12 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
             factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
             for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; i++)
                 mpz_init(factors[i]);
-            
+
             increaseSize = pollardRhoWithConstraint(nmpz, 1, factors, numUni,
                                                     lengths, POLLARD_RHO_REPS,
                                                     1, arrayMax, extraRecursionFacs);
         }
-        
+
         // extraRecursionFacs are factors that are a result of the pollarRho algo
         // terminating early because of the limitations on the size of the factors
         // array. As a result, we are left with an extra factor, say f, that can't
@@ -397,7 +398,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
         // it to the extraRecursionFacs vector. Below, we take this info and fully
         // factorize these partially factored numbers and add them to our final array.
         unsigned long int eRFSize = extraRecursionFacs.size();
-        
+
         if (eRFSize > 0) {
             arrayMax += (eRFSize * mpzChunkBig);
             factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
@@ -409,7 +410,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
             tempFacs = (mpz_t *) malloc(mpzChunkBig * sizeof(mpz_t));
             for (std::size_t i = 0; i < mpzChunkBig; i++)
                 mpz_init(tempFacs[i]);
-            
+
             mpz_init(tempNum);
             std::vector<unsigned long int>::iterator it, itEnd = extraRecursionFacs.end();
             for (it = extraRecursionFacs.begin(); it < itEnd; it++) {
@@ -431,7 +432,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
                 }
             }
         }
-        
+
         // If there is less than 60% of mpzChunkBig, then increase array
         // size to ensure that the functions below have enough space
         if ((100 * (arrayMax - numUni) / mpzChunkBig) < 60) {
@@ -440,7 +441,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
             for (std::size_t i = arrayMax - mpzChunkBig; i < arrayMax; i++)
                 mpz_init(factors[i]);
         }
-        
+
         if (mpz_cmp_ui(nmpz, 1) != 0) {
             // Protect quadratic sieve from perfect powers
             if (mpz_perfect_power_p(nmpz))
@@ -456,7 +457,7 @@ SEXP QuadraticSieveContainer (SEXP Rn) {
             }
         }
     }
-    
+
     // Sort the prime factors as well as order the
     // lengths vector by the order of the factors array
     quickSort(factors, 0, numUni - 1, lengths);

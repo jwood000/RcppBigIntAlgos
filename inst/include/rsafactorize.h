@@ -14,11 +14,12 @@
 #define GMP_R_RSAFACTORIZE_HEADER_ 1
 
 #include "Rgmp.h"
+#include <inttypes.h>
 
 extern "C" {
     SEXP QuadraticSieveContainer (SEXP n);
 }
 
-void quadraticSieve (mpz_t a, double e1, double e2, unsigned long lb, mpz_t factors[]);
+void quadraticSieve (mpz_t a, double e1, double e2, int64_t lb, mpz_t factors[]);
 
 #endif
