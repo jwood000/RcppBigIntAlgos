@@ -1,3 +1,6 @@
+![](http://cranlogs.r-pkg.org/badges/bigIntegersAlgos?color=orange)
+![](http://cranlogs.r-pkg.org/badges/grand-total/bigIntegersAlgos?color=brightgreen)
+
 # bigIntegerAlgos
 
 Overview
