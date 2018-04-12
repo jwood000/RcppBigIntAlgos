@@ -38,6 +38,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
     unsigned long int twoI, k, x, y, left, count = 0;
     unsigned long int lim, tempSize, totalSize;
     tempSize = totalSize = numSecs * secSize;
+    double dblTwo = 2.0;
     std::vector<unsigned long int> leftOver, myInd(totalSize);
     
     for (std::size_t i = 0; i < secSize; i++)
@@ -46,7 +47,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
     for (std::size_t i = secSize; i < totalSize; i++)
         myInd[i] = i;
     
-    leftOver.reserve(std::floor(numSecs/2));
+    leftOver.reserve(std::floor((double) numSecs / dblTwo));
     
     while (numSecs > 1) {
 
@@ -63,7 +64,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
         }
         
         secSize *= 2;
-        k = std::floor(numSecs/2);
+        k = std::floor((double) numSecs / dblTwo);
         if (k < 2) {lim = k;} else {lim = 2;}
         left = x = 0;
         std::vector<unsigned long int> tempInd, defaultInd(secSize, 0);
@@ -100,7 +101,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
             }
         }
         
-        numSecs = std::floor(numSecs/2);
+        numSecs = std::floor((double) numSecs / dblTwo);
     }
     
     unsigned long int LOSize = leftOver.size();
