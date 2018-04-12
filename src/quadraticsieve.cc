@@ -623,9 +623,11 @@ void quadraticSieve (mpz_t myNum, double fudge1,
             fudge2 = 0.9;
         else if (digCount < 40)
             fudge2 = 1.05;
+        else if (digCount < 45)
+            fudge2 = 1.1;
         else if (digCount < 50)
             fudge2 = 1.2;
-        else if (digCount < 55)
+        else
             fudge2 = 1.5;
     }
 
