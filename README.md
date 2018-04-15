@@ -1,5 +1,5 @@
-![](http://cranlogs.r-pkg.org/badges/bigIntegersAlgos?color=orange)
-![](http://cranlogs.r-pkg.org/badges/grand-total/bigIntegersAlgos?color=brightgreen)
+![](http://cranlogs.r-pkg.org/badges/bigIntegerAlgos?color=orange)
+![](http://cranlogs.r-pkg.org/badges/grand-total/bigIntegerAlgos?color=brightgreen)
 
 # bigIntegerAlgos
 
