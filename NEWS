@@ -1,3 +1,9 @@
+bigIntegerAlgos 0.1.1 (Release date: 2018-04-28)
+
+* Fixed error associated with the Solaris flavor.
+* Forced complilation with C++11 to address the following warnings : "ISO C++ 1998 does not support 'long long' [-Wlong-long]"
+* Slightly altered factors that determine the cutoff point for sieving the log sum of the prime decomposition of the sieving interval constituents
+
 bigIntegerAlgos 0.1.0 (Release date: 2018-04-12)
 
 * Initial Release
