@@ -19,7 +19,7 @@ Highly optimized algorithm to generate the complete factorization for many numbe
 
 The main part of this algorithm is essentially the same algorithm that is implemented in \link[RcppAlgos]{divisorsRcpp} from the RcppAlgos package. A modified \href{https://en.wikipedia.org/wiki/Merge_sort}{merge sort} algorithm is implemented to better deal with the \code{mpz_t} data type. This algorithm avoids directly swapping elements of the main factor array of type \code{mpz_t} but instead generates a vector of indexing integers for ordering. 
 
-See this stack overflow post for more information : \href{https://stackoverflow.com/a/49742904/4408538}{R Function for returning ALL factors}.
+See this stack overflow post for examples and benchmarks : \href{https://stackoverflow.com/a/49742904/4408538}{R Function for returning ALL factors}.
 }
 \value{
 \itemize{
