@@ -1,7 +1,7 @@
 \name{quadraticSieve}
 \alias{quadraticSieve}
 \title{
-Prime Factorization with the Quadratic Sieve
+Prime Factorization with the Quadratic Siev
 }
 \description{
 Get the prime factorization of a number, \eqn{n}, using the \href{https://en.wikipedia.org/wiki/Quadratic_sieve}{Quadratic Sieve}.
