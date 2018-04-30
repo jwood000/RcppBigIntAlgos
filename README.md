@@ -129,19 +129,19 @@ system.time(print(quadraticSieve(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
    user  system elapsed 
-  5.055   0.013   5.069 
+  4.028   0.008   4.036 
   
 system.time(print(quadraticSieve(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
    user  system elapsed 
-  7.570   0.010   7.583
+  6.310   0.013   6.324
 
 system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
- 14.308   0.029  14.338
+ 12.990   0.260  13.249 
 ```
 
 It can also be used as a general prime factoring function:
