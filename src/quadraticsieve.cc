@@ -26,7 +26,7 @@ typedef std::vector<int64_t> v1d;
 typedef std::vector<v1d> v2d;
 typedef std::vector<v2d> v3d;
 
-const unsigned long int hundredMillion = (unsigned long int) std::pow(10, 8);
+const unsigned long int hundredMillion = (unsigned long int) 100000000;
 
 static inline v1d outersect (v1d x, v1d y) {
     std::sort(x.begin(), x.end());
@@ -409,7 +409,7 @@ void quadraticSieve (mpz_t myNum, double fudge1,
     unsigned long int bits = mpz_sizeinbase(myNum, 2);
 
     unsigned long int myTarget, facSize, facSize2;
-    double sqrLogLog, LimB, lognum = bits / log2((double) std::exp(1));
+    double sqrLogLog, LimB, lognum = bits / log2(std::exp(1.0));
     sqrLogLog = std::sqrt(lognum * std::log(lognum));
     mpz_t currP, nextP, resTest, CP1;
     mpz_init(currP);
