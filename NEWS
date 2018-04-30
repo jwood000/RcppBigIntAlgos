@@ -1,9 +1,13 @@
-bigIntegerAlgos 0.1.1 (Release date: 2018-04-28)
+bigIntegerAlgos 0.1.2 (Release date: 2018-04-30)
 
-* Fixed error associated with the Solaris flavor.
+* Fixed additional error found on Solaris flavor in quadraticsieve.cc
+
+bigIntegerAlgos 0.1.1 (Release date: 2018-04-25)
+
+* Fixed error associated with the Solaris flavor in factorization.cc file.
 * Forced complilation with C++11 on Windows build only (see Makevars.win) to address the following warnings : "ISO C++ 1998 does not support 'long long' [-Wlong-long]"
 * Slightly altered factors that determine the cutoff point for sieving the log sum of the prime decomposition of the sieving interval constituents
 
-bigIntegerAlgos 0.1.0 (Release date: 2018-04-12)
+bigIntegerAlgos 0.1.0 (Release date: 2018-04-11)
 
 * Initial Release

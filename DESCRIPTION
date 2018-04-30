@@ -1,7 +1,7 @@
 Package: bigIntegerAlgos
 Type: Package
 Title: R Tool for Factoring Big Integers
-Version: 0.1.1
+Version: 0.1.2
 Author: Joseph Wood
 Maintainer: Joseph Wood <jwood000@gmail.com>
 Description: Features the multiple polynomial quadratic sieve algorithm
