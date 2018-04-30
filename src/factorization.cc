@@ -38,7 +38,6 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
     unsigned long int twoI, k, x, y, left, count = 0;
     unsigned long int lim, tempSize, totalSize;
     tempSize = totalSize = numSecs * secSize;
-    double dblTwo = 2.0;
     std::vector<unsigned long int> leftOver, myInd(totalSize);
     
     for (std::size_t i = 0; i < secSize; i++)
@@ -47,7 +46,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
     for (std::size_t i = secSize; i < totalSize; i++)
         myInd[i] = i;
     
-    leftOver.reserve(std::floor((double) numSecs / dblTwo));
+    leftOver.reserve(std::floor((double) numSecs / 2.0));
     
     while (numSecs > 1) {
 
@@ -64,7 +63,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
         }
         
         secSize *= 2;
-        k = std::floor((double) numSecs / dblTwo);
+        k = std::floor((double) numSecs / 2.0);
         if (k < 2) {lim = k;} else {lim = 2;}
         left = x = 0;
         std::vector<unsigned long int> tempInd, defaultInd(secSize, 0);
@@ -101,7 +100,7 @@ std::vector<unsigned long int> myMergeSort(mpz_t arr[],
             }
         }
         
-        numSecs = std::floor((double) numSecs / dblTwo);
+        numSecs = std::floor((double) numSecs / 2.0);
     }
     
     unsigned long int LOSize = leftOver.size();
@@ -185,7 +184,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
         mpz_init(temp);
         mpz_init(myPow);
         
-        for (i = 0; i <= lengths[0]; ++i) {
+        for (i = 0; i <= lengths[0]; i++) {
             mpz_pow_ui(temp, primeFacs[0], i);
             mpz_set(myMPZ[i], temp);
             myIndex[i] = i;
@@ -197,7 +196,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
                 for (i = 1; i <= lengths[j]; i++) {
                     ind = i*facSize;
                     mpz_pow_ui(myPow, primeFacs[j], i);
-                    for (k = 0; k < facSize; k++) {
+                    for (k = 0; k < facSize; ++k) {
                         mpz_mul(temp, myPow, myMPZ[myIndex[k]]);
                         mpz_set(myMPZ[ind + k], temp);
                     }
@@ -209,7 +208,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
         unsigned long int tempSize, size = intSize;
         std::vector<unsigned long int> mySizes(numFacs);
         
-        for (i = 0; i < numFacs; ++i) { // adding each bigint's needed size
+        for (i = 0; i < numFacs; i++) { // adding each bigint's needed size
             tempSize = intSize * (2 + (mpz_sizeinbase(myMPZ[i],2)+numb-1) / numb);
             size += tempSize;
             mySizes[i] = tempSize;
@@ -222,7 +221,7 @@ SEXP factorNum (mpz_t val, mpz_t primeFacs[]) {
             
             // current position in rPos[] (starting after vector-size-header)
             unsigned long int posPos = intSize;
-            for (i = 0; i < numFacs; ++i)
+            for (i = 0; i < numFacs; i++)
                 posPos += myRaw(&rPos[posPos], myMPZ[myIndex[i]], mySizes[myIndex[i]]);
             
             Rf_setAttrib(ansPos, R_ClassSymbol, Rf_mkString("bigz"));
