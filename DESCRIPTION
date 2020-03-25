@@ -1,7 +1,7 @@
 Package: bigIntegerAlgos
 Type: Package
 Title: R Tool for Factoring Big Integers
-Version: 0.1.2
+Version: 0.2.0
 Author: Joseph Wood
 Maintainer: Joseph Wood <jwood000@gmail.com>
 Description: Features the multiple polynomial quadratic sieve algorithm
@@ -12,11 +12,12 @@ Description: Features the multiple polynomial quadratic sieve algorithm
 License: GPL (>= 2)
 BuildResaveData: no
 Encoding: UTF-8
-SystemRequirements: gmp (>= 4.2.3)
+SystemRequirements: C++11, gmp (>= 4.2.3)
+Imports: gmp
+LinkingTo: RcppThread
 Suggests: testthat, numbers (>= 0.6-6), RcppAlgos (>= 1.0.1)
-Depends: gmp
 NeedsCompilation: yes
 URL: https://github.com/jwood000/bigIntegerAlgos, 
         http://mathworld.wolfram.com/QuadraticSieve.html
 BugReports: https://github.com/jwood000/bigIntegerAlgos/issues
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
