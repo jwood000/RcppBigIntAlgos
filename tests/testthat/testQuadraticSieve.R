@@ -18,7 +18,6 @@ test_that("quadraticSieve generates correct numbers", {
                         })
     
     quadSieveFacs <- lapply(testNums, quadraticSieve)
-    
     expect_equal(gmpFactorize, quadSieveFacs);
 })
 
