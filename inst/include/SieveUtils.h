@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <Algos.h>
 #include <iostream>
+#include <chrono>
+
+// Used for checking whether user has interrupted computation
+constexpr auto timeout = std::chrono::milliseconds(2000);
 
 typedef std::vector<int64_t> v1d;
 typedef std::vector<v1d> v2d;

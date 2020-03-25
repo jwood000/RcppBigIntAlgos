@@ -118,7 +118,7 @@ void quickSort(mpz_t *const arr, int left, int right,
         while (j >= 0 && mpz_cmp(arr[j], pivot) > 0)
             --j;
         
-        if (i <= j) {
+        if (i <= j && j >= 0) {
             mpz_swap(arr[i], arr[j]);
             std::swap(lens[i], lens[j]);
             ++i;

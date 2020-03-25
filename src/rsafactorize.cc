@@ -289,18 +289,18 @@ myReturn:
 void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
                      mpz_t *const result, std::size_t& numPs,
                      std::vector<std::size_t>& myLens,
-                     std::size_t powMaster,
-                     std::size_t arrayMax,
+                     std::size_t powMaster, std::size_t arrayMax,
                      std::vector<std::size_t>& extraRecursionFacs) {
     
     if (mpz_sizeinbase(n, 10) < 24) {
         pollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
-                                powMaster, arrayMax, extraRecursionFacs);
+                                 powMaster, arrayMax, extraRecursionFacs);
     } else {
         QuadraticSieve(n, 0.0, 0.0, zero, result);
         
         for (std::size_t i = 0; i < 2; ++i) {
             std::size_t myPow = 1;
+            
             if (mpz_perfect_power_p(result[i]))
                 myPow = getPower(result[i]);
 
@@ -310,10 +310,12 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
                 mpz_t recurseTemp[2];
                 mpz_init(recurseTemp[0]); mpz_init(recurseTemp[1]);
                 
-                getBigPrimeFacs(result[i], factors, recurseTemp,
-                                numPs, myLens, myPow, arrayMax, extraRecursionFacs);
+                getBigPrimeFacs(result[i], factors,
+                                recurseTemp, numPs, myLens,
+                                myPow, arrayMax, extraRecursionFacs);
                 
-                mpz_clear(recurseTemp[0]); mpz_clear(recurseTemp[1]);
+                mpz_clear(recurseTemp[0]);
+                mpz_clear(recurseTemp[1]);
             } else {
                 mpz_divexact(n, n, result[i]);
                 mpz_set(factors[numPs], result[i]);
@@ -364,8 +366,10 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     mpz_init(result[0]);
     mpz_init(result[1]);
 
-    std::vector<std::size_t> lengths, extraRecursionFacs;
-    std::size_t arrayMax = mpzChunkBig, numUni = 0;
+    std::vector<std::size_t> lengths;
+    std::vector<std::size_t> extraRecursionFacs;
+    std::size_t arrayMax = mpzChunkBig;
+    std::size_t numUni = 0;
     std::size_t myPow = 1;
     
     mpz_t *factors;
@@ -479,7 +483,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
             }
         }
     }
-
+    
     // Sort the prime factors as well as order the
     // lengths vector by the order of the factors array
     quickSort(factors, 0, numUni - 1, lengths);
@@ -511,5 +515,5 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
 
     Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("bigz"));
     UNPROTECT(1);
-    return(ans);
+    return ans;
 }

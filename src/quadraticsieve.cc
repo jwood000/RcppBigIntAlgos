@@ -283,10 +283,16 @@ void QuadraticSieve(mpz_t myNum, double fudge1, double fudge2,
                 const auto pFacIt = partialFactors.find(myKey);
 
                 if (pFacIt != partialFactors.end()) {
-                    keepingTrack[myKey] = 0u;
-                    mpz_set(largeCoFactors[partialCount], sqrDiff[largeLogs[j]]);
+                    const auto trackIt = keepingTrack.find(myKey);
                     
-                    Rprintf("DIFFIDFd\n");
+                    if (trackIt != keepingTrack.end()) {
+                        coFactorIndexVec.push_back(trackIt->second);
+                    } else {
+                        keepingTrack[myKey] = coFactorInd;
+                        mpz_set(largeCoFactors[coFactorInd], sqrDiff[largeLogs[j]]);
+                        coFactorIndexVec.push_back(coFactorInd);
+                        ++coFactorInd;
+                    }
                     
                     for (const auto p: pFacIt->second)  
                         primeIndexVec.push_back(p);
@@ -301,31 +307,6 @@ void QuadraticSieve(mpz_t myNum, double fudge1, double fudge2,
                     partialFactors.erase(pFacIt);
                     intervalPartial.erase(intervalIt);
                     ++partialCount;
-                    
-                    // const auto trackIt = keepingTrack.find(myKey);
-                    // 
-                    // if (trackIt != keepingTrack.end()) {
-                    //     coFactorIndexVec.push_back(trackIt->second);
-                    // } else {
-                    //     keepingTrack[myKey] = coFactorInd;
-                    //     mpz_set(largeCoFactors[coFactorInd], sqrDiff[largeLogs[j]]);
-                    //     coFactorIndexVec.push_back(coFactorInd);
-                    //     ++coFactorInd;
-                    // }
-                    // 
-                    // for (const auto p: pFacIt->second)  
-                    //     primeIndexVec.push_back(p);
-                    // 
-                    // powersOfPartials.push_back(primeIndexVec);
-                    // const auto intervalIt = intervalPartial.find(myKey);
-                    // 
-                    // mpz_add(temp, temp, B2);
-                    // mpz_mul(partialInterval[partialCount], 
-                    //         temp, intervalIt->second);
-                    // 
-                    // partialFactors.erase(pFacIt);
-                    // intervalPartial.erase(intervalIt);
-                    // ++partialCount;
                 } else {
                     partialFactors[myKey] = primeIndexVec;
                     mpz_set(intervalPartial[myKey], largeInterval[largeLogs[j]]);
@@ -372,6 +353,8 @@ void QuadraticSieve(mpz_t myNum, double fudge1, double fudge2,
     if (facSize2 > lenM)
         for (std::size_t i = 0; i < uLenB2; i++)
             myIntervalSqrd[i] = static_cast<double>(myInterval[i] * myInterval[i]);
+    
+    auto check_point_1 = std::chrono::steady_clock::now();
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         // Find enough smooth numbers to guarantee a non-trivial solution
@@ -552,6 +535,20 @@ void QuadraticSieve(mpz_t myNum, double fudge1, double fudge2,
             
             powsOfSmooths.push_back(tempMat);
             ++numPolys;
+            
+            const auto check_point_2 = std::chrono::steady_clock::now();
+            
+            if (check_point_2 - check_point_1 > timeout) {
+                // Calling checkUserInterrupt alone crashes R because
+                // of the definitions we have in Algos.h
+                try {
+                    RcppThread::checkUserInterrupt();
+                } catch (RcppThread::UserInterruptException) {
+                    Rf_error("\nC++ call interrupted by the user.");
+                }
+                
+                check_point_1 = std::chrono::steady_clock::now();
+            }
         }
         
         const std::size_t matRow = numSmooth + partialCount;
