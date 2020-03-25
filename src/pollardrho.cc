@@ -18,11 +18,11 @@ this program.  If not, see http://www.gnu.org/licenses/.  */
 // This is needed as cinttypes is C++11
 #include <inttypes.h>
 #include <math.h>
-#include "pollardrho.h"
+#include "PollardRho.h"
 
 static unsigned char primes_diff[] = {
     #define P(a,b,c) a,
-    #include "primes.h"
+    #include "Primes.h"
     #undef P
 };
 
@@ -66,7 +66,7 @@ void factor_using_division (mpz_t t, int numPrimes,
             
             numPs++;
             if (numPs == 50)
-                error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
+                Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
             
             p += primes_diff[i++];
             if (mpz_cmp_ui (t, p * p) < 0)
@@ -150,7 +150,7 @@ void factor_using_pollard_rho (mpz_t n, unsigned long a,
 
             numPs++;
             if (numPs == 50)
-                error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
+                Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
         }
 
         if (mpz_probab_prime_p (n, MR_REPS) != 0) {

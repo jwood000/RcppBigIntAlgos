@@ -10,16 +10,15 @@
  *  \note Licence: GPL
  */
 
-#ifndef GMP_R_RSAFACTORIZE_HEADER_
-#define GMP_R_RSAFACTORIZE_HEADER_ 1
+#ifndef GMP_R_RSAFACTORIZE_H
+#define GMP_R_RSAFACTORIZE_H
 
-#include "Rgmp.h"
-#include <inttypes.h>
+#include <Algos.h>
 
 extern "C" {
-    SEXP QuadraticSieveContainer (SEXP n);
+    SEXP QuadraticSieveContainer(SEXP n);
 }
 
-void quadraticSieve (mpz_t a, double e1, double e2, int64_t lb, mpz_t factors[]);
+void QuadraticSieve(mpz_t a, double e1, double e2, int64_t lb, mpz_t *const factors);
 
 #endif

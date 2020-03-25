@@ -19,9 +19,9 @@
 #include <cstring>
 // This is needed as cinttypes is C++11
 #include <inttypes.h>
-#include "tonellishanks.h"
+#include "TonelliShanks.h"
 
-void TonelliShanksC (mpz_t a, mpz_t p, mpz_t quadRes[]) {
+void TonelliShanksC (mpz_t a, mpz_t p, mpz_t *const quadRes) {
     mpz_t P1, s, myAns1, myAns2, temp;
     mpz_t Legendre2, n, b, g, x, Test, big2;
 
