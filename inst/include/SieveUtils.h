@@ -28,6 +28,13 @@ std::vector<uint8_t> myIntToBit(std::size_t x, std::size_t dig);
 
 v1d getPrimesQuadRes(mpz_t myN, double n);
 
-v3d sieveLists(int64_t facLim, const v1d &FBase, int64_t vecLen, mpz_t *const sqrDiff);
+void sieveLists(std::size_t facSize, const v1d &FBase,
+                std::size_t LenB2, mpz_t *const sqrDiff,
+                const std::vector<double> &LnFB,
+                std::vector<double> &myLogs,
+                std::vector<bool> &indexDiv,
+                int64_t minPrime,
+                const v2d &polySieveD,
+                mpz_t lowerBound);
 
 #endif

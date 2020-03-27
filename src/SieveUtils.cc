@@ -180,41 +180,90 @@ v1d getPrimesQuadRes(mpz_t myN, double n) {
     return myps;
 }
 
-v3d sieveLists(int64_t facLim, const v1d &FBase, int64_t vecLen, mpz_t *const sqrDiff) {
+void sieveLists(std::size_t facSize, const v1d &FBase,
+                std::size_t LenB2, mpz_t *const sqrDiff,
+                const std::vector<double> &LnFB,
+                std::vector<double> &myLogs,
+                std::vector<bool> &indexDiv,
+                int64_t minPrime,
+                const v2d &polySieveD,
+                mpz_t lowerBound) {
     
-    v3d outList(facLim, v2d(2, v1d()));
+    std::fill(myLogs.begin(), myLogs.end(), 0.0);
+    const std::size_t indexLimit = LenB2 * facSize;
+    const std::size_t strt = (mpz_even_p(sqrDiff[0]) != 0) ? 0 : 1;
+    
+    for (std::size_t j = strt * facSize, rowJump = 2 * facSize; j < indexLimit; j += rowJump)
+        indexDiv[j] = true;
+    
     mpz_t modTest;
     mpz_init(modTest);
     
-    for (int64_t i = 1, vStrt1 = 0, vStrt2 = 0; i < facLim; ++i) {
-        const uint64_t uiFB = FBase[i];
-        const int64_t siFB = FBase[i];
+    for (std::size_t i = 1; i < facSize; ++i) {
+        const std::size_t uiFB = FBase[i];
+        const std::size_t rowJump = uiFB * facSize;
         
-        for (int64_t j = 0; j < vecLen; ++j) {
-            mpz_mod_ui(modTest, sqrDiff[j], uiFB);
+        mpz_mod_ui(modTest, lowerBound, uiFB);
+        int64_t q = mpz_get_si(modTest);
+        
+        mpz_mod_ui(modTest, sqrDiff[0], uiFB);
+        int64_t myStart0 = mpz_get_si(modTest);
+        
+        int64_t myStart1 = 0;
+        int64_t myMin = 0;
+        int64_t myMax = 0;
+        
+        if (polySieveD[i][0] > polySieveD[i][1]) {
+            myMax = polySieveD[i][0];
+            myMin = polySieveD[i][1];
+        } else {
+            myMin = polySieveD[i][0];
+            myMax = polySieveD[i][1];
+        }
+        
+        if (myStart0 == 0) {
+            myStart0 = 0;
             
-            if (mpz_cmp_ui(modTest, 0) == 0) {
-                vStrt1 = j;
-                break;
+            for (std::size_t j = 1; j < LenB2; ++j) {
+                mpz_mod_ui(modTest, sqrDiff[j], uiFB);
+                
+                if (mpz_cmp_ui(modTest, 0) == 0) {
+                    myStart1 = j;
+                    break;
+                }
+            }
+        } else {
+            if (myMin > q) {
+                myStart0 = myMin - q;
+            } else if (mpz_sgn(lowerBound) < 0) {
+                myStart0 = -1 * (q - FBase[i] - myMin);
+            } else {
+                myStart0 = FBase[i] - ((myMax + q) % FBase[i]);
+            }
+            
+            if (myMax > q) {
+                myStart1 = myMax - q;
+            } else if (mpz_sgn(lowerBound) < 0) {
+                myStart1 = -1 * (q - FBase[i] - myMax);
+            } else {
+                myStart1 = FBase[i] - ((myMin + q) % FBase[i]);
             }
         }
         
-        for (int64_t j = vStrt1; j < vecLen; j += siFB)
-            outList[i][0].push_back(j);
+        for (std::size_t j = myStart0 * facSize + i; j < indexLimit; j += rowJump)
+            indexDiv[j] = true;
         
-        for (int64_t j = vStrt1 + 1; j < vecLen; ++j) {
-            mpz_mod_ui(modTest, sqrDiff[j], uiFB);
-            
-            if (mpz_cmp_ui(modTest, 0) == 0) {
-                vStrt2 = j;
-                break;
-            }
-        }
+        if (FBase[i] > minPrime)
+            for (std::size_t j = myStart0; j < LenB2; j += uiFB)
+                myLogs[j] += LnFB[i];
         
-        for (int64_t j = vStrt2; j < vecLen; j += siFB)
-            outList[i][1].push_back(j);
+        for (std::size_t j = myStart1 * facSize + i; j < indexLimit; j += rowJump)
+            indexDiv[j] = true;
+        
+        if (FBase[i] > minPrime)
+            for (std::size_t j = myStart1; j < LenB2; j += uiFB)
+                myLogs[j] += LnFB[i];
     }
     
     mpz_clear(modTest);
-    return outList;
 }
