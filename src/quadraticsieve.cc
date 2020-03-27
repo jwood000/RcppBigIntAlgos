@@ -495,7 +495,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                 // of the definitions we have in Algos.h
                 try {
                     RcppThread::checkUserInterrupt();
-                } catch (RcppThread::UserInterruptException) {
+                } catch (RcppThread::UserInterruptException()) {
                     Rf_error("\nC++ call interrupted by the user.");
                 }
 
