@@ -2,6 +2,7 @@
 #define POLLARDRHO_GMP_R
 
 #include "Algos.h"
+#include "Primes.h"
 
 /**
  * Get Prime Factorization
@@ -13,8 +14,8 @@
 void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
                      std::vector<std::size_t> &myLens);
 
-void factor_using_division(mpz_t t, int numPrimes,
-                           mpz_t factors[], std::size_t &numPs,
-                           std::vector<std::size_t> &myLens);
+int trialDivision(mpz_t t, mpz_t factors[], std::size_t& numPs,
+                  std::vector<std::size_t>& myLens, 
+                  std::size_t arrayMax);
 
 #endif

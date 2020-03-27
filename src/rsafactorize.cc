@@ -15,15 +15,8 @@
 #include "RSAFactorize.h"
 #include "ImportExportMPZ.h"
 #include "Cpp14MakeUnique.h"
+#include "PollardRho.h"
 #include <numeric>
-
-static unsigned char primes_diff[] = {
-    #define P(a,b,c) a,
-    #include "Primes.h"
-    #undef P
-};
-
-constexpr std::size_t PRIMES_PTAB_ENTRIES = (sizeof(primes_diff) / sizeof(primes_diff[0]));
 
 // Max number of iterations in the main loop
 constexpr std::size_t POLLARD_RHO_REPS = 100000u;
@@ -35,7 +28,7 @@ std::size_t getPower(mpz_t nmpz) {
     std::size_t p = 2;
     std::size_t myPow = 1;
     
-    for (std::size_t i = 0; i < PRIMES_PTAB_ENTRIES; ) {
+    for (std::size_t i = 0; i < primesDiffPR.size(); ) {
         mpz_root(testRoot, nmpz, p);
         mpz_pow_ui(testRoot, testRoot, p);
         
@@ -58,7 +51,7 @@ std::size_t getPower(mpz_t nmpz) {
             mpz_root(nmpz, nmpz, powPrime);
         }
         
-        p += primes_diff[i++];
+        p += primesDiffPR[i++];
         if (!mpz_perfect_power_p(nmpz))
             break;
     }
@@ -103,63 +96,9 @@ std::size_t getPower(mpz_t nmpz) {
     return myPow;
 }
 
-int trialDivision(mpz_t t, std::size_t numPrimes,
-                  mpz_t factors[], std::size_t& numPs,
-                  std::vector<std::size_t>& myLens, 
-                  std::size_t arrayMax) {
-    mpz_t q;
-    std::size_t p;
-    
-    mpz_init(q);
-    p = mpz_scan1(t, 0);
-    mpz_div_2exp(t, t, p);
-    
-    if (p) {
-        mpz_set_ui(factors[numPs], 2);
-        myLens.push_back(p);
-        ++numPs;
-    }
-    
-    p = 3;
-    
-    for (std::size_t i = 1; i < numPrimes;) {
-        if (!mpz_divisible_ui_p(t, p)) {
-            p += primes_diff[i++];
-            
-            if (mpz_cmp_ui(t, p * p) < 0)
-                break;
-        } else {
-            mpz_tdiv_q_ui(t, t, p);
-            mpz_set_ui(factors[numPs], p);
-            myLens.push_back(1);
-            
-            while (mpz_divisible_ui_p(t, p)) {
-                mpz_tdiv_q_ui(t, t, p);
-                ++myLens[numPs];
-            }
-            
-            ++numPs;
-            
-            if (numPs == arrayMax)
-                return 1;
-            
-            p += primes_diff[i++];
-            
-            if (mpz_cmp_ui(t, p * p) < 0)
-                break;
-        }
-    }
-    
-    mpz_clear(q);
-    return 0;
-}
-
-int pollardRhoWithConstraint(mpz_t n, std::size_t a,
-                             mpz_t factors[], std::size_t& numPs,
-                             std::vector<std::size_t>& myLens,
-                             std::size_t myLimit,
-                             std::size_t powMultiplier,
-                             std::size_t arrayMax,
+int pollardRhoWithConstraint(mpz_t n, std::size_t a, mpz_t factors[], std::size_t& numPs,
+                             std::vector<std::size_t>& myLens, std::size_t myLimit,
+                             std::size_t powMultiplier, std::size_t arrayMax,
                              std::vector<std::size_t>& extraRecursionFacs) {
     mpz_t x, z, y, P;
     mpz_t t, t2;
@@ -379,8 +318,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
         mpz_init(factors[i]);
 
     // First we test for small factors.
-    int increaseSize = trialDivision(nmpz, PRIMES_PTAB_ENTRIES,
-                                     factors, numUni, lengths, arrayMax);
+    int increaseSize = trialDivision(nmpz, factors, numUni, lengths, arrayMax);
 
     while (increaseSize) {
         arrayMax += mpzChunkBig;
@@ -389,8 +327,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
         for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; ++i)
             mpz_init(factors[i]);
 
-        increaseSize = trialDivision(nmpz, PRIMES_PTAB_ENTRIES,
-                                     factors, numUni, lengths, arrayMax);
+        increaseSize = trialDivision(nmpz, factors, numUni, lengths, arrayMax);
     }
 
     if (mpz_cmp_ui(nmpz, 1) != 0) {

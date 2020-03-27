@@ -1,5 +1,8 @@
 /* Factoring with Pollard's rho method.
 
+N.B. Below is the original message of the file. There have been minor
+style edits and slight modifications for the bigIntegerAlgos library
+
 Copyright 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2009, 2012
 Free Software Foundation, Inc.
 
@@ -17,19 +20,57 @@ this program.  If not, see http://www.gnu.org/licenses/.  */
 
 #include "PollardRho.h"
 
-static unsigned char primes_diff[] = {
-    #define P(a,b,c) a,
-    #include "Primes.h"
-    #undef P
-};
+int trialDivision(mpz_t t, mpz_t factors[], std::size_t& numPs,
+                  std::vector<std::size_t>& myLens, 
+                  std::size_t arrayMax) {
+    mpz_t q;
+    std::size_t p;
+    
+    mpz_init(q);
+    p = mpz_scan1(t, 0);
+    mpz_div_2exp(t, t, p);
+    
+    if (p) {
+        mpz_set_ui(factors[numPs], 2);
+        myLens.push_back(p);
+        ++numPs;
+    }
+    
+    p = 3;
+    
+    for (std::size_t i = 1; i < primesDiffPR.size();) {
+        if (!mpz_divisible_ui_p(t, p)) {
+            p += primesDiffPR[i++];
+            
+            if (mpz_cmp_ui(t, p * p) < 0)
+                break;
+        } else {
+            mpz_tdiv_q_ui(t, t, p);
+            mpz_set_ui(factors[numPs], p);
+            myLens.push_back(1);
+            
+            while (mpz_divisible_ui_p(t, p)) {
+                mpz_tdiv_q_ui(t, t, p);
+                ++myLens[numPs];
+            }
+            
+            ++numPs;
+            
+            if (numPs == arrayMax)
+                return 1;
+            
+            p += primesDiffPR[i++];
+            
+            if (mpz_cmp_ui(t, p * p) < 0)
+                break;
+        }
+    }
+    
+    mpz_clear(q);
+    return 0;
+}
 
-#define PRIMES_PTAB_ENTRIES (sizeof(primes_diff) / sizeof(primes_diff[0]))
-
-/* Number of Miller-Rabin tests to run when not proving primality. */
-#define MR_REPS 25
-
-void factor_using_division(mpz_t t, std::size_t numPrimes,
-                           mpz_t factors[], std::size_t &numPs,
+void factor_using_division(mpz_t t, mpz_t factors[], std::size_t &numPs,
                            std::vector<std::size_t> &myLens) {
     mpz_t q;
     std::size_t p;
@@ -41,13 +82,14 @@ void factor_using_division(mpz_t t, std::size_t numPrimes,
     if (p) {
         mpz_set_ui(factors[numPs], 2);
         myLens.push_back(p);
-        numPs++;
+        ++numPs;
     }
 
     p = 3;
-    for (std::size_t i = 1; i < numPrimes;) {
+    for (std::size_t i = 1; i < primesDiffPR.size();) {
         if (!mpz_divisible_ui_p(t, p)) {
-            p += primes_diff[i++];
+            p += primesDiffPR[i++];
+            
             if (mpz_cmp_ui (t, p * p) < 0)
                 break;
         } else {
@@ -57,14 +99,16 @@ void factor_using_division(mpz_t t, std::size_t numPrimes,
             
             while (mpz_divisible_ui_p(t, p)) {
                 mpz_tdiv_q_ui(t, t, p);
-                myLens[numPs]++;
+                ++myLens[numPs];
             }
             
-            numPs++;
+            ++numPs;
+            
             if (numPs == 50)
                 Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
             
-            p += primes_diff[i++];
+            p += primesDiffPR[i++];
+            
             if (mpz_cmp_ui (t, p * p) < 0)
                 break;
         }
@@ -112,7 +156,7 @@ void factor_using_pollard_rho(mpz_t n, std::size_t a,
             mpz_set (z, x);
             k = l;
             l = 2 * l;
-            for (i = 0; i < k; i++) {
+            for (i = 0; i < k; ++i) {
                 mpz_mul (t, x, x);
                 mpz_mod (x, t, n);
                 mpz_add_ui (x, x, a);
@@ -141,18 +185,19 @@ void factor_using_pollard_rho(mpz_t n, std::size_t a,
 
             while (mpz_divisible_p (n, t)) {
                 mpz_divexact (n, n, t);
-                myLens[numPs]++;
+                ++myLens[numPs];
             }
 
-            numPs++;
+            ++numPs;
+            
             if (numPs == 50)
                 Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
         }
 
-        if (mpz_probab_prime_p (n, MR_REPS) != 0) {
+        if (mpz_probab_prime_p(n, MR_REPS) != 0) {
             mpz_set(factors[numPs], n);
             myLens.push_back(1);
-            numPs++;
+            ++numPs;
             break;
 	    }
 
@@ -173,14 +218,18 @@ void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
                      std::vector<std::size_t> &myLens) {
     
     if (mpz_sgn (t) != 0) {
-        factor_using_division (t, PRIMES_PTAB_ENTRIES, factors, numPs, myLens);
+        int increaseSize = trialDivision(t, factors, numPs, myLens, mpzChunkBig);
+        
+        if (increaseSize)
+            Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
+        
         if (mpz_cmp_ui (t, 1) != 0) {
     	    if (mpz_probab_prime_p (t, MR_REPS) != 0) {
                 mpz_set(factors[numPs], t);
     	        myLens.push_back(1);
-    	        numPs++;
+    	        ++numPs;
     	    } else{
-    	        factor_using_pollard_rho (t, 1, factors, numPs, myLens);
+    	        factor_using_pollard_rho(t, 1, factors, numPs, myLens);
             }
         }
     }

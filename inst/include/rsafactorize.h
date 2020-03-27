@@ -19,6 +19,4 @@ extern "C" {
     SEXP QuadraticSieveContainer(SEXP n);
 }
 
-void QuadraticSieve(mpz_t a, mpz_t *const factors);
-
 #endif

@@ -4,24 +4,23 @@
 // details. The array "TS" was used here to make the code
 // more concise and since everything will be stored in
 // SieveDist, TS can easily be cleared from memory when done.
-void setSieveDist(mpz_t myNum, const v1d &facBase,
-                  std::size_t facSize, v2d &SieveDist) {
+void setSieveDist(mpz_t myNum, const std::vector<int64_t> &facBase,
+                  std::size_t facSize, std::vector<std::size_t> &SieveDist) {
     
     mpz_t TS[13];
     
     for (std::size_t i = 0; i < 13; ++i)
         mpz_init(TS[i]);
     
-    int pow2, iter1, iter2;
     mpz_set_ui(TS[12], 2);
     
-    for (std::size_t i = 1; i < facSize; ++i) {
+    for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
         mpz_set_ui(TS[5], facBase[i]);
         mpz_set_ui(TS[0], facBase[i]);
         mpz_sub_ui(TS[0], TS[0], 1);
         mpz_set(TS[1], TS[0]);
         mpz_set_ui(TS[7], 2);
-        pow2 = static_cast<int>(mpz_scan1(TS[1], 0));
+        int pow2 = static_cast<int>(mpz_scan1(TS[1], 0));
         mpz_div_2exp(TS[1], TS[1], pow2);
         
         if (pow2 == 1) {
@@ -44,8 +43,8 @@ void setSieveDist(mpz_t myNum, const v1d &facBase,
             mpz_powm(TS[8], myNum, TS[1], TS[5]);
             mpz_powm(TS[9], TS[7], TS[1], TS[5]);
             
-            iter1 = pow2;
-            iter2 = 1;
+            int iter1 = pow2;
+            int iter2 = 1;
             mpz_mod(TS[11], TS[8], TS[5]);
             
             while ((mpz_cmp_ui(TS[11], 1) != 0) && (iter2 != 0)) {
@@ -58,7 +57,7 @@ void setSieveDist(mpz_t myNum, const v1d &facBase,
                     mpz_powm(TS[11], TS[8], TS[4], TS[5]);
                 }
                 
-                if (iter2 != 0) {
+                if (iter2) {
                     mpz_pow_ui(TS[4], TS[12], iter1 - iter2 - 1);
                     mpz_powm(TS[4], TS[9], TS[4], TS[5]);
                     mpz_mul(TS[4], TS[4], TS[10]);
@@ -80,8 +79,8 @@ void setSieveDist(mpz_t myNum, const v1d &facBase,
             mpz_mod(TS[3], TS[4], TS[5]);
         }
         
-        SieveDist[i][0] = static_cast<int64_t>(mpz_get_si(TS[2]));
-        SieveDist[i][1] = static_cast<int64_t>(mpz_get_si(TS[3]));
+        SieveDist[row] = mpz_get_ui(TS[2]);
+        SieveDist[row + 1] = mpz_get_ui(TS[3]);
     }
     
     // Finished generating residues.. now free memory
@@ -130,10 +129,10 @@ std::vector<uint8_t> myIntToBit(std::size_t x, std::size_t dig) {
     return binaryVec;
 }
 
-v1d getPrimesQuadRes(mpz_t myN, double n) {
+std::vector<int64_t> getPrimesQuadRes(mpz_t myN, double n) {
     
     std::vector<char> primes(n + 1, 1);
-    v1d myps;
+    std::vector<int64_t> myps;
     
     myps.reserve(n * 2.0 / std::log(n));
     const int fsqr = std::floor(std::sqrt(n));
@@ -180,13 +179,13 @@ v1d getPrimesQuadRes(mpz_t myN, double n) {
     return myps;
 }
 
-void sieveLists(std::size_t facSize, const v1d &FBase,
+void sieveLists(std::size_t facSize, const std::vector<int64_t> &FBase,
                 std::size_t LenB2, mpz_t *const sqrDiff,
                 const std::vector<double> &LnFB,
                 std::vector<double> &myLogs,
                 std::vector<bool> &indexDiv,
                 int64_t minPrime,
-                const v2d &polySieveD,
+                const std::vector<std::size_t> &polySieveD,
                 mpz_t lowerBound) {
     
     std::fill(myLogs.begin(), myLogs.end(), 0.0);
@@ -199,7 +198,7 @@ void sieveLists(std::size_t facSize, const v1d &FBase,
     mpz_t modTest;
     mpz_init(modTest);
     
-    for (std::size_t i = 1; i < facSize; ++i) {
+    for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
         const std::size_t uiFB = FBase[i];
         const std::size_t rowJump = uiFB * facSize;
         
@@ -213,12 +212,12 @@ void sieveLists(std::size_t facSize, const v1d &FBase,
         int64_t myMin = 0;
         int64_t myMax = 0;
         
-        if (polySieveD[i][0] > polySieveD[i][1]) {
-            myMax = polySieveD[i][0];
-            myMin = polySieveD[i][1];
+        if (polySieveD[row] > polySieveD[row + 1]) {
+            myMax = polySieveD[row];
+            myMin = polySieveD[row + 1];
         } else {
-            myMin = polySieveD[i][0];
-            myMax = polySieveD[i][1];
+            myMin = polySieveD[row];
+            myMax = polySieveD[row + 1];
         }
         
         if (myStart0 == 0) {

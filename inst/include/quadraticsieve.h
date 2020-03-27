@@ -1,8 +1,7 @@
 #ifndef QUADRATICSIEVE_GMP_R
 #define QUADRATICSIEVE_GMP_R
 
-#include <Algos.h>
-#include <gmp.h>
+#include "Algos.h"
 
 /* Factoring with Multiple Polynomial Quadratic Sieve.
  

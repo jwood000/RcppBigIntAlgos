@@ -18,7 +18,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     mpz_init(currP); mpz_init(nextP);
     mpz_init(CP1); mpz_init(resTest);
     
-    v1d facBase;
+    std::vector<int64_t> facBase;
     
     double dblDigCount = digCount;
     double dblMyTarget;
@@ -87,7 +87,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     // With every iteration, a prime will be added to the factor
     // base for additional factorization. The original facBase
     // should not be tampered with, hence the need for facBase2.
-    v1d facBase2 = facBase;
+    std::vector<int64_t> facBase2 = facBase;
 
     mpz_t sqrtInt;
     mpz_init(sqrtInt);
@@ -98,11 +98,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     
     std::size_t LenB2 = 2 * LenB + 1;
     
-    v1d myInterval(LenB2);
+    std::vector<int64_t> myInterval(LenB2);
     std::iota(myInterval.begin(), myInterval.end(), Lower);
     
-    v2d SieveDist(facSize, v1d(2));
-    SieveDist[0][0] = SieveDist[0][1] = 1;
+    std::vector<std::size_t> SieveDist(facSize * 2, 0u);
+    SieveDist[0] = SieveDist[1] = 1;
     setSieveDist(myNum, facBase, facSize, SieveDist);
     
     const std::size_t mpzContainerSize = facSize * 5;
@@ -314,7 +314,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     std::size_t numPolys = 0;
     std::size_t extraFacs = 0;
     
-    v1d myQuadRes;
+    std::vector<int64_t> myQuadRes;
     std::vector<double> myIntervalSqrd(LenB2);
 
     for (std::size_t i = 0; i < LenB2; ++i)
@@ -360,17 +360,20 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
             mpz_sub(C, C, myNum);
             mpz_divexact(C, C, A);
 
-            v2d polySieveD = v2d(facSize, v1d(2));
+            std::vector<std::size_t> polySieveD(facSize * 2, 0u);
 
-            for (std::size_t i = 0; i < facSize; ++i) {
+            for (std::size_t i = 0, row = 0; i < facSize; ++i, row += 2) {
                 mpz_invert(Atemp2, A, mpzFacBase[i]);
 
-                for (std::size_t j = 0; j <= 1; ++j) {
-                    mpz_ui_sub(temp, SieveDist[i][j], B2);
-                    mpz_mul(temp, temp, Atemp2);
-                    mpz_mod_ui(temp, temp, facBase[i]);
-                    polySieveD[i][j] = static_cast<int64_t>(mpz_get_si(temp));
-                }
+                mpz_ui_sub(temp, SieveDist[row], B2);
+                mpz_mul(temp, temp, Atemp2);
+                mpz_mod_ui(temp, temp, facBase[i]);
+                polySieveD[row] = mpz_get_ui(temp);
+                
+                mpz_ui_sub(temp, SieveDist[row + 1], B2);
+                mpz_mul(temp, temp, Atemp2);
+                mpz_mod_ui(temp, temp, facBase[i]);
+                polySieveD[row + 1] = mpz_get_ui(temp);
             }
 
             for (std::size_t i = 0; i < LenB2; ++i) {
