@@ -11,7 +11,7 @@ Description: Features the multiple polynomial quadratic sieve algorithm
 License: GPL (>= 2)
 Encoding: UTF-8
 SystemRequirements: C++11, gmp (>= 4.2.3)
-Imports: gmp
+Depends: gmp
 LinkingTo: RcppThread
 Suggests: testthat, numbers (>= 0.6-6), RcppAlgos (>= 1.0.1)
 NeedsCompilation: yes
