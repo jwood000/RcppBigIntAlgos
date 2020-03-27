@@ -6,7 +6,6 @@
 constexpr std::size_t intSize = sizeof(int);
 constexpr std::size_t numb = 8 * intSize;
 constexpr std::size_t mpzChunkBig = 50;
-constexpr int64_t zero = 0;
 
 /* Number of Miller-Rabin tests to run when not proving primality. */
 constexpr std::size_t MR_REPS = 25u;
