@@ -18,7 +18,7 @@
 #include <cstdio>
 #include <cstring>
 // This is needed as cinttypes is C++11
-#include <inttypes.h>
+#include <cstdint>
 #include "TonelliShanks.h"
 
 void TonelliShanksC (mpz_t a, mpz_t p, mpz_t *const quadRes) {
@@ -32,7 +32,7 @@ void TonelliShanksC (mpz_t a, mpz_t p, mpz_t *const quadRes) {
     mpz_init(x); mpz_init(b); mpz_init(g);
     mpz_init(Test); mpz_init_set_ui(big2, 2);
 
-    unsigned long int j = 0, r, m = 1;
+    std::size_t j = 0;
 
     j = mpz_scan1 (s, 0);
     mpz_div_2exp (s, s, j);
@@ -46,6 +46,7 @@ void TonelliShanksC (mpz_t a, mpz_t p, mpz_t *const quadRes) {
     } else {
         mpz_div_2exp (temp, P1, 1);
         mpz_powm (Legendre2, n, temp, p);
+        
         while (mpz_cmp_ui(Legendre2, 1) == 0) {
             mpz_add_ui(n, n, 1);
             mpz_powm (Legendre2, n, temp, p);
@@ -57,19 +58,21 @@ void TonelliShanksC (mpz_t a, mpz_t p, mpz_t *const quadRes) {
         mpz_powm(b, a, s, p);
         mpz_powm(g, n, s, p);
 
-        r = j;
-        m = 1;
+        std::size_t r = j;
+        std::size_t m = 1;
         mpz_mod(Test, b, p);
 
-        while ((mpz_cmp_ui(Test, 1) != 0) && (m != 0)) {
+        while ((mpz_cmp_ui(Test, 1) != 0) && m) {
             m = 0;
             mpz_mod(Test, b, p);
+            
             while (mpz_cmp_ui(Test, 1) != 0) {
-                m++;
+                ++m;
                 mpz_pow_ui(temp, big2, m);
                 mpz_powm(Test, b, temp, p);
             }
-            if (m != 0) {
+            
+            if (m) {
                 mpz_pow_ui(temp, big2, r-m-1);
                 mpz_powm(temp, g, temp, p);
                 mpz_mul(temp, temp, x);
@@ -82,8 +85,10 @@ void TonelliShanksC (mpz_t a, mpz_t p, mpz_t *const quadRes) {
                 mpz_mod(b, temp, p);
                 r = m;
             }
+            
             mpz_set_ui(Test, 0);
         }
+        
         mpz_set(myAns1, x);
         mpz_sub(temp, p, x);
         mpz_mod(myAns2, temp, p);
