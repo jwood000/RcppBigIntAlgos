@@ -163,6 +163,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                           (digCount < 50) ? 1.20 : 1.50;
     
     const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
+    
     std::vector<double> LnFB(facSize);
     std::vector<double> myLogs(LenB2, 0.0);
     LnFB.reserve(facSize);
@@ -174,7 +175,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
 
     mpz_mul_ui(temp, sqrtInt, Upper);
     int64_t minPrime = static_cast<int64_t>(mpz_sizeinbase(temp, 10) * 2);
-
+    
     std::vector<bool> indexDiv(LenB2 * facSize, false);
     sieveLists(facSize, facBase, LenB2, sqrDiff.get(), LnFB,
                myLogs, indexDiv, minPrime, SieveDist, largeInterval[0]);

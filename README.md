@@ -174,7 +174,7 @@ system.time(print(quadraticSieve(semiPrime164bits)))
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
    user  system elapsed 
- 53.234   0.140  53.318
+ 50.801   0.117  51.054
 ```
 
 It can also be used as a general prime factoring function:
@@ -188,11 +188,27 @@ Big Integer ('bigz') object of length 5:
 
 However `gmp::factorize` is more suitable for numbers smaller than 60 bits and should be used in such cases.
 
+Acknowledgments and Resources:
+-----
+
+* Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
+
+* [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
+
+* [Factoring large numbers with quadratic sieve](<https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/>) on MSDN Archive.
+
+* A really nice concise example is given here: [Factorization of _n = 87463_ with the Quadratic Sieve](<https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf>)
+
+* [Smooth numbers and the quadratic sieve](<http://library.msri.org/books/Book44/files/03carl.pdf>) by Carl Pomerance
+
+* [Integer Factorization using the Quadratic Sieve
+](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
+
 Current Research:
 -----
 Currenlty, our main focus is on implementing our sieve in a parallel fashion.
 
-We are also working on efficiently integrating `divisorsBig` with `quadraticSieve` as currently, `divisorsBig` utilizes `gmp::factorize`.
+We are also working on efficiently integrating `divisorsBig` with `quadraticSieve` as currently, `divisorsBig` utilizes `gmp::factorize` (from the R gmp library).
 
 Contact
 ----
