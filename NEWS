@@ -1,3 +1,10 @@
+bigIntegerAlgos 0.2.0 (Release date: 2020-03-27)
+
+* Major overhaul of quadratic sieve algorithm
+* You can now safely interrupt execution
+* Removed config files and classes associated with the gmp R library
+* Now uses C++11
+
 bigIntegerAlgos 0.1.2 (Release date: 2018-04-30)
 
 * Fixed additional error found on Solaris flavor in quadraticsieve.cc

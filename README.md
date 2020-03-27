@@ -1,5 +1,8 @@
+[![CRAN status](https://www.r-pkg.org/badges/version/bigIntegerAlgos)](https://cran.r-project.org/package=bigIntegerAlgos)
+[![Travis build status](https://travis-ci.com/jwood000/bigIntegerAlgos.svg?branch=master)](https://travis-ci.com/jwood000/bigIntegerAlgos)
 ![](http://cranlogs.r-pkg.org/badges/bigIntegerAlgos?color=orange)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/bigIntegerAlgos?color=brightgreen)
+[![Dependencies](https://tinyverse.netlify.com/badge/bigIntegerAlgos)](https://cran.r-project.org/package=bigIntegerAlgos)
 
 # bigIntegerAlgos
 
@@ -58,7 +61,8 @@ It is very efficient as well. It is equipped with a modified merge sort algorith
 hugeNumber <- pow.bigz(2, 100) * pow.bigz(3, 100) * pow.bigz(5, 100)
 system.time(overOneMillion <- divisorsBig(hugeNumber))
    user  system elapsed 
-  0.637   0.043   0.682 
+  0.557   0.063   0.622
+  
 length(overOneMillion)
 [1] 1030301
 
@@ -81,6 +85,7 @@ testBaseSort <- testBaseSort[order(asNumeric(testBaseSort))]
 myDiff <- do.call(c, lapply(1:99, function(x) sub.bigz(testBaseSort[x+1], testBaseSort[x])))
 
 ## Should return integer(0) as the difference should always be positive
+## NOTE that the result will be unpredictable because of lack of precision
 which(myDiff < 0)
  [1]  1  3  4  7  9 11 14 17 19 22 24 25 26 28 31 32 33 36 37 38 40 42 45 47 48
 [26] 50 51 54 57 58 59 63 64 65 66 69 70 72 75 78 81 82 85 87 89 91 93 94 97 98
@@ -107,6 +112,18 @@ semiPrime120bits <- prod(nextprime(urand.bigz(2,60,42)))
 semiPrime130bits <- prod(nextprime(urand.bigz(2,65,1)))
 semiPrime140bits <- prod(nextprime(urand.bigz(2,70,42)))
 
+## The 120 bit number is 36 digits
+nchar(as.character(semiPrime120bits))
+[1] 36
+
+## The 130 bit number is 39 digits
+nchar(as.character(semiPrime130bits))
+[1] 39
+
+## The 140 bit number is 42 digits
+nchar(as.character(semiPrime140bits))
+[1] 42
+
 ## Using factorize from gmp package which implements pollard's rho algorithm
 ## We did not test the 140 bit semi-prime as the 130 bit took a very long time
 
@@ -129,19 +146,35 @@ system.time(print(quadraticSieve(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
    user  system elapsed 
-  4.028   0.008   4.036 
+  0.563   0.009   0.571 
   
 system.time(print(quadraticSieve(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
    user  system elapsed 
-  6.310   0.013   6.324
+  0.798   0.011   0.807
 
 system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
- 12.990   0.260  13.249 
+  1.532   0.015   1.542 
+```
+
+And for good measure, here is a 50 digit semiprime factored in under one minute.
+
+```r
+semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
+
+## The 164 bit number is 50 digits
+nchar(as.character(semiPrime164bits))
+[1] 50
+
+system.time(print(quadraticSieve(semiPrime164bits)))
+Big Integer ('bigz') object of length 2:
+[1] 2128750292720207278230259 4721136619794898059404993
+   user  system elapsed 
+ 53.234   0.140  53.318
 ```
 
 It can also be used as a general prime factoring function:
@@ -157,10 +190,10 @@ However `gmp::factorize` is more suitable for numbers smaller than 60 bits and s
 
 Current Research:
 -----
-Improvements are being made to the section of the quadratic sieve algorithm that selects smooth numbers. Right now, we are only selecting **_M-smooth_** numbers where **_M_** is the largest prime in our sieving base. A potential efficiency gain is to also keep track of mostly **_M-smooth_** numbers (i.e. numbers that are almost completely factored by our sieving base but have one factor that contains a prime number greater than **_M_**). This way, we can obtain more smooth numbers by essentially eliminating these larger factors when we find a pair of them (N.B. square terms come out in the wash, so the large factors won't influence the outcome).
+Currenlty, our main focus is on implementing our sieve in a parallel fashion.
 
 We are also working on efficiently integrating `divisorsBig` with `quadraticSieve` as currently, `divisorsBig` utilizes `gmp::factorize`.
 
 Contact
 ----
-I welcome any and all feedback. If you would like to report a bug, have a question, or have suggestions for possible improvements, please contact me here: jwood000@gmail.com
+I welcome any and all feedback. If you would like to report a bug, have a question, or have suggestions for possible improvements, please file an [issue](<https://github.com/jwood000/bigIntegerAlgos/issues>).

@@ -7,10 +7,8 @@ Maintainer: Joseph Wood <jwood000@gmail.com>
 Description: Features the multiple polynomial quadratic sieve algorithm
     for factoring large integers and a vectorized factoring function that
     returns the complete factorization of an integer. Utilizes the C
-    library GMP (GNU Multiple Precision Arithmetic) and classes created
-    by Antoine Lucas et al. found in the 'gmp' package.
+    library GMP (GNU Multiple Precision Arithmetic).
 License: GPL (>= 2)
-BuildResaveData: no
 Encoding: UTF-8
 SystemRequirements: C++11, gmp (>= 4.2.3)
 Imports: gmp
