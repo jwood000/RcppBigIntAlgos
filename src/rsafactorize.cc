@@ -23,7 +23,7 @@ static unsigned char primes_diff[] = {
     #undef P
 };
 
-#define PRIMES_PTAB_ENTRIES (sizeof(primes_diff) / sizeof(primes_diff[0]))
+constexpr std::size_t PRIMES_PTAB_ENTRIES = (sizeof(primes_diff) / sizeof(primes_diff[0]));
 
 // Max number of iterations in the main loop
 constexpr std::size_t POLLARD_RHO_REPS = 100000u;
@@ -103,7 +103,7 @@ std::size_t getPower(mpz_t nmpz) {
     return myPow;
 }
 
-int trialDivision(mpz_t t, int numPrimes,
+int trialDivision(mpz_t t, std::size_t numPrimes,
                   mpz_t factors[], std::size_t& numPs,
                   std::vector<std::size_t>& myLens, 
                   std::size_t arrayMax) {
