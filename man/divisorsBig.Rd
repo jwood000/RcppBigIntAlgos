@@ -39,7 +39,7 @@ Joseph Wood
 }
 \examples{
 ## Get the complete factorization of a single number
-divisorsBig(10^15)
+divisorsBig(100)
 
 ## Or get the complete factorization of many numbers
 set.seed(29)
