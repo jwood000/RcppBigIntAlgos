@@ -13,7 +13,7 @@
 #ifndef GMP_R_RSAFACTORIZE_H
 #define GMP_R_RSAFACTORIZE_H
 
-#include <Algos.h>
+#include "Algos.h"
 
 extern "C" {
     SEXP QuadraticSieveContainer(SEXP n);

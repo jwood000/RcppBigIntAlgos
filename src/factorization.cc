@@ -136,7 +136,7 @@ std::vector<std::size_t> myMergeSort(mpz_t *const arr,
     return myInd;
 }
 
-SEXP factorNum(mpz_t val, mpz_t *const primeFacs) {
+SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
     
     if (mpz_cmp_ui(val, 1) == 0) {
         mpz_t mpzOne;
@@ -169,7 +169,7 @@ SEXP factorNum(mpz_t val, mpz_t *const primeFacs) {
             Rf_error(_("Cannot factorize 0"));
         
         if (sgn < 0) {
-            mpz_abs(val,val);
+            mpz_abs(val, val);
             isNegative = true;
         }
         

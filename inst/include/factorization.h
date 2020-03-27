@@ -21,19 +21,19 @@ extern "C" {
 
 /** \brief Function used to test factorization with small numbers
  */
-void factor_using_division(mpz_t t, int numPrimes,
-                           mpz_t factors[], unsigned int& numPs,
-                           std::vector<unsigned int>& myLens) ;
+void factor_using_division(mpz_t t, std::size_t numPrimes,
+                           mpz_t factors[], std::size_t &numPs,
+                           std::vector<std::size_t> &myLens) ;
 
 /** \brief Pollard Rho method for factorization
  */
-void factor_using_pollard_rho(mpz_t n, unsigned long a,
-                              mpz_t factors[], unsigned int& numPs,
-                              std::vector<unsigned int>& myLens);
+void factor_using_pollard_rho(mpz_t n, std::size_t a,
+                              mpz_t factors[], std::size_t &numPs,
+                              std::vector<std::size_t> &myLens);
 
 /** \brief Function that call an algorithm for factorization
  */
-void getPrimeFactors(mpz_t t, mpz_t factors[], unsigned int& numPs,
-                     std::vector<unsigned int>& myLens);
+void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
+                     std::vector<std::size_t> &myLens);
 
 #endif

@@ -15,9 +15,6 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.  */
 
-// This is needed as cinttypes is C++11
-#include <inttypes.h>
-#include <math.h>
 #include "PollardRho.h"
 
 static unsigned char primes_diff[] = {
@@ -31,12 +28,11 @@ static unsigned char primes_diff[] = {
 /* Number of Miller-Rabin tests to run when not proving primality. */
 #define MR_REPS 25
 
-void factor_using_division (mpz_t t, int numPrimes,
-                            mpz_t factors[], unsigned long int& numPs,
-                            std::vector<unsigned long int>& myLens) {
+void factor_using_division(mpz_t t, std::size_t numPrimes,
+                           mpz_t factors[], std::size_t &numPs,
+                           std::vector<std::size_t> &myLens) {
     mpz_t q;
-    unsigned long int p;
-    int i;
+    std::size_t p;
     
     mpz_init (q);
     p = mpz_scan1 (t, 0);
@@ -49,7 +45,7 @@ void factor_using_division (mpz_t t, int numPrimes,
     }
 
     p = 3;
-    for (i = 1; i < numPrimes;) {
+    for (std::size_t i = 1; i < numPrimes;) {
         if (!mpz_divisible_ui_p(t, p)) {
             p += primes_diff[i++];
             if (mpz_cmp_ui (t, p * p) < 0)
@@ -77,12 +73,12 @@ void factor_using_division (mpz_t t, int numPrimes,
     mpz_clear (q);
 }
 
-void factor_using_pollard_rho (mpz_t n, unsigned long a,
-                               mpz_t factors[], unsigned long int& numPs,
-                               std::vector<unsigned long int>& myLens) {
+void factor_using_pollard_rho(mpz_t n, std::size_t a,
+                              mpz_t factors[], std::size_t& numPs,
+                              std::vector<std::size_t>& myLens) {
     mpz_t x, z, y, P;
     mpz_t t, t2;
-    unsigned long  k, l, i;
+    std::size_t  k, l, i;
     
     mpz_init (t);
     mpz_init (t2);
@@ -173,8 +169,8 @@ void factor_using_pollard_rho (mpz_t n, unsigned long a,
     mpz_clear (y);
 }
 
-void getPrimeFactors (mpz_t t, mpz_t factors[], unsigned long int& numPs,
-                      std::vector<unsigned long int>& myLens) {
+void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
+                     std::vector<std::size_t> &myLens) {
     
     if (mpz_sgn (t) != 0) {
         factor_using_division (t, PRIMES_PTAB_ENTRIES, factors, numPs, myLens);
