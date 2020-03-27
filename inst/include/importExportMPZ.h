@@ -1,7 +1,8 @@
 #ifndef IMPORTEXPORTMPZ_GMP_R
 #define IMPORTEXPORTMPZ_GMP_R
 
-#include <Algos.h>
+#include <Rcpp.h>
+#include <gmp.h>
 
 constexpr std::size_t intSize = sizeof(int);
 constexpr std::size_t numb = 8 * intSize;

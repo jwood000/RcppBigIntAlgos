@@ -12,7 +12,8 @@ License: GPL (>= 2)
 Encoding: UTF-8
 SystemRequirements: C++11, gmp (>= 4.2.3)
 Depends: gmp
-LinkingTo: RcppThread
+Imports: Rcpp
+LinkingTo: Rcpp, RcppThread
 Suggests: testthat, numbers (>= 0.6-6), RcppAlgos (>= 1.0.1)
 NeedsCompilation: yes
 URL: https://github.com/jwood000/bigIntegerAlgos, 

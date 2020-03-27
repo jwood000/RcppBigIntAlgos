@@ -84,11 +84,9 @@ void solutionSearch(std::vector<uint8_t> mat, std::size_t matNRows,
     
     if (lenFree > 0) {
         mpz_t mpzTemp1, mpzTemp2, mpzMin, xMpz, yMpz;
-        mpz_init (mpzTemp1);
-        mpz_init (mpzTemp2);
-        mpz_init (mpzMin);
-        mpz_init (xMpz);
-        mpz_init (yMpz);
+        mpz_init(mpzTemp1); mpz_init(mpzTemp2);
+        mpz_init(mpzMin); mpz_init(xMpz); mpz_init(yMpz);
+        
         mpz_ui_pow_ui (mpzTemp1, 2, lenFree);
         mpz_sub_ui (mpzTemp1, mpzTemp1, 1);
         

@@ -188,6 +188,22 @@ Big Integer ('bigz') object of length 5:
 
 However `gmp::factorize` is more suitable for numbers smaller than 60 bits and should be used in such cases.
 
+Safely Interrupt Execution in **`quadraticSieve`**
+-----
+
+If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution. Underneath, we check for user interruption once every second.
+
+```r
+## User hits Ctrl + c
+## system.time(quadraticSieve(prod(nextprime(urand.bigz(2, 100, 42)))))
+## Seed default initialisation
+## Seed initialisation
+## 
+##  Error in QuadraticSieveContainer(n) : C++ call interrupted by the user.
+##  
+## Timing stopped at: 1.623 0.102 1.726
+```
+
 Acknowledgments and Resources:
 -----
 

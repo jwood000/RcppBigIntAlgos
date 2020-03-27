@@ -12,11 +12,9 @@
  */
 
 #include "QuadraticSieve.h"
-#include "RSAFactorize.h"
 #include "ImportExportMPZ.h"
 #include "Cpp14MakeUnique.h"
 #include "PollardRho.h"
-#include <numeric>
 
 // Max number of iterations in the main loop
 constexpr std::size_t POLLARD_RHO_REPS = 100000u;
@@ -267,12 +265,13 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
 
                 // This should not happen
                 if (numPs == arrayMax)
-                    Rf_error("Too many prime factors!!");
+                    Rcpp::stop("Too many prime factors!!");
             }
         }
     }
 }
 
+// [[Rcpp::export]]
 SEXP QuadraticSieveContainer(SEXP Rn) {
     
     std::size_t vSize;
@@ -291,15 +290,20 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     mpz_init(myVec[0]);
     
     if (vSize > 1)
-        Rf_error(_("Can only factor one number at a time"));
+        Rcpp::stop("Can only factor one number at a time");
     
     // This is from the importExportMPZ header
     createMPZArray(Rn, myVec, 1);
     mpz_t nmpz;
     mpz_init_set(nmpz, myVec[0]);
     
-    if (mpz_sgn(nmpz) <= 0)
-        Rf_error(_("Can only factor positive numbers"));
+    if (mpz_sgn(nmpz) == 0)
+        Rcpp::stop("Cannot factorize 0");
+    
+    const std::size_t IsNegative = (mpz_sgn(nmpz) < 0) ? 1 : 0;
+    
+    if (IsNegative)
+        mpz_abs(nmpz, nmpz);
     
     auto result = FromCpp14::make_unique<mpz_t[]>(2);
     mpz_init(result[0]);
@@ -322,7 +326,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
 
     while (increaseSize) {
         arrayMax += mpzChunkBig;
-        factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
+        factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
         
         for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; ++i)
             mpz_init(factors[i]);
@@ -338,7 +342,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
                                                 1, arrayMax, extraRecursionFacs);
         while (increaseSize) {
             arrayMax += mpzChunkBig;
-            factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
+            factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
             
             for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; ++i)
                 mpz_init(factors[i]);
@@ -360,7 +364,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
 
         if (eRFSize > 0) {
             arrayMax += (eRFSize * mpzChunkBig);
-            factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
+            factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
             
             for (std::size_t i = (arrayMax - (eRFSize * mpzChunkBig)); i < arrayMax; ++i)
                 mpz_init(factors[i]);
@@ -390,7 +394,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
                         ++numUni;
                     }
                 } else {
-                    Rf_error("Too many prime factors!!");
+                    Rcpp::stop("Too many prime factors!!");
                 }
             }
         }
@@ -399,14 +403,14 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
         // size to ensure that the functions below have enough space
         if ((100 * (arrayMax - numUni) / mpzChunkBig) < 60) {
             arrayMax += mpzChunkBig;
-            factors = (mpz_t *) realloc(factors, arrayMax * sizeof factors[0]);
+            factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
             
             for (std::size_t i = arrayMax - mpzChunkBig; i < arrayMax; ++i)
                 mpz_init(factors[i]);
         }
 
         if (mpz_cmp_ui(nmpz, 1) != 0) {
-            // Protect quadratic sieve from perfect powers
+            // Shield quadratic sieve from perfect powers
             if (mpz_perfect_power_p(nmpz))
                 myPow = getPower(nmpz);
 
@@ -425,32 +429,42 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     // lengths vector by the order of the factors array
     quickSort(factors, 0, numUni - 1, lengths);
     
-    const std::size_t totalNum = std::accumulate(lengths.cbegin(), lengths.cend(), 0u);
-    std::size_t tempSize, size = intSize;
+    const std::size_t totalNum = std::accumulate(lengths.cbegin(), lengths.cend(), 0u) + IsNegative;
+    std::size_t size = intSize;
     std::vector<std::size_t> mySizes(totalNum);
-    std::size_t count = 0;
+    
+    mpz_t negOne;
+    mpz_init(negOne);
+    mpz_set_si(negOne, -1);
+    
+    if (IsNegative) {
+        const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(negOne, 2) + numb - 1) / numb);
+        size += tempSize;
+        mySizes[0] = tempSize;
+    }
 
-    for (std::size_t i = 0; i < numUni; ++i) { // adding each bigint's needed size
+    for (std::size_t i = 0, count = IsNegative; i < numUni; ++i) { // adding each bigint's needed size
         for (std::size_t j = 0; j < lengths[i]; ++j, ++count) {
-            tempSize = intSize * (2 + (mpz_sizeinbase(factors[i], 2) + numb - 1) / numb);
+            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(factors[i], 2) + numb - 1) / numb);
             size += tempSize;
             mySizes[count] = tempSize;
         }
     }
-
-    SEXP ans = PROTECT(Rf_allocVector(RAWSXP, size));
+    
+    Rcpp::RawVector ans(size);
     char* r = (char*) (RAW(ans));
     ((int*) (r))[0] = totalNum; // first int is vector-size-header
-
+    
     // current position in pos[] (starting after vector-size-header)
     std::size_t pos = intSize;
-    count = 0;
+    
+    if (IsNegative)
+        pos += myRaw(&r[pos], negOne, mySizes.front());
 
-    for (std::size_t i = 0; i < numUni; ++i)
+    for (std::size_t i = 0, count = IsNegative; i < numUni; ++i)
         for (std::size_t j = 0; j < lengths[i]; ++j, ++count)
             pos += myRaw(&r[pos], factors[i], mySizes[count]);
 
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("bigz"));
-    UNPROTECT(1);
+    ans.attr("class") = Rcpp::CharacterVector::create("bigz");
     return ans;
 }

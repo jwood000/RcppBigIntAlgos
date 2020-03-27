@@ -14,7 +14,6 @@
  */
 
 #include "ImportExportMPZ.h"
-#include <algorithm>
 
 void createMPZArray(SEXP v, mpz_t *const myVec, std::size_t sizevec) {
     
@@ -42,41 +41,47 @@ void createMPZArray(SEXP v, mpz_t *const myVec, std::size_t sizevec) {
             break;
         }
         case REALSXP: {
-            double* myDbl = REAL(v);
+            std::vector<double> myDbl = Rcpp::as<std::vector<double>>(v);
+            constexpr double Sig53 = 9007199254740991.0;
             
             for (std::size_t j = 0; j < sizevec; j++) {
-                /// New:   numeric '+- Inf'  give  +- "Large" instead of NA
-                const double dj = myDbl[j];
+                if (Rcpp::NumericVector::is_na(myDbl[j]) || std::isnan(myDbl[j]))
+                    Rcpp::stop("Elements in v cannot be NA or NaN");
                 
-                if(R_FINITE(dj) || ISNAN(dj)) {
-                    mpz_set_d(myVec[j], dj);
-                } else { 
-                    // dj is +- Inf : use LARGE ( = +- 2 ^ 80000 -- arbitrarily )
-                    // FIXME: Keep 'LARGE' a static const; initialized only once
-                    mpz_ui_pow_ui(myVec[j], 2u, 8000u);
-                    
-                    if (dj == R_NegInf)
-                        mpz_neg(myVec[j], myVec[j]);
+                if (myDbl[j] > Sig53) {
+                    Rcpp::stop("Number is too large for double precision. "
+                                "Consider wrapping v with gmp::as.bigz or "
+                                "as.character (e.g. gmp::as.bigz(v))");
                 }
+                
+                if (static_cast<int64_t>(myDbl[j]) != myDbl[j])
+                    Rcpp::stop("Elements in v must be whole numbers");
+                
+                mpz_set_d(myVec[j], myDbl[j]);
             }
             
             break;
         }
         case INTSXP:
         case LGLSXP: {
-            int* myInt = INTEGER(v);
+            std::vector<int> myInt = Rcpp::as<std::vector<int>>(v);
+            std::vector<double> dblVec = Rcpp::as<std::vector<double>>(v);
             
-            for (std::size_t j = 0; j < sizevec; j++)
+            for (std::size_t j = 0; j < sizevec; j++) {
+                if (Rcpp::NumericVector::is_na(dblVec[j]) || std::isnan(dblVec[j]))
+                    Rcpp::stop("Elements in v cannot be NA or NaN");
+                
                 mpz_set_si(myVec[j], myInt[j]);
+            }
             
             break;
         }
         case STRSXP: {
             for (std::size_t i = 0; i < sizevec; i++) {
-                if (STRING_ELT(v,i) == NA_STRING) {
-                    mpz_set_si(myVec[i], 0);
+                if (STRING_ELT(v, i) == NA_STRING) {
+                    Rcpp::stop("Elements in v  cannot be NA or NaN");
                 } else {
-                    mpz_set_str(myVec[i], CHAR(STRING_ELT(v,i)), 10);
+                    mpz_set_str(myVec[i], CHAR(STRING_ELT(v, i)), 10);
                 }
             }
             
@@ -84,7 +89,7 @@ void createMPZArray(SEXP v, mpz_t *const myVec, std::size_t sizevec) {
         }
         default:
             // no longer: can be fatal later! return bigvec();
-            Rf_error(_("only logical, numeric or character (atomic) vectors can be coerced to 'bigz'"));
+            Rcpp::stop("only logical, numeric or character (atomic) vectors can be coerced to 'bigz'");
     }
 }
 

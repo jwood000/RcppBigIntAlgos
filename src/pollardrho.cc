@@ -70,53 +70,6 @@ int trialDivision(mpz_t t, mpz_t factors[], std::size_t& numPs,
     return 0;
 }
 
-void factor_using_division(mpz_t t, mpz_t factors[], std::size_t &numPs,
-                           std::vector<std::size_t> &myLens) {
-    mpz_t q;
-    std::size_t p;
-    
-    mpz_init (q);
-    p = mpz_scan1 (t, 0);
-    mpz_div_2exp (t, t, p);
-    
-    if (p) {
-        mpz_set_ui(factors[numPs], 2);
-        myLens.push_back(p);
-        ++numPs;
-    }
-
-    p = 3;
-    for (std::size_t i = 1; i < primesDiffPR.size();) {
-        if (!mpz_divisible_ui_p(t, p)) {
-            p += primesDiffPR[i++];
-            
-            if (mpz_cmp_ui (t, p * p) < 0)
-                break;
-        } else {
-            mpz_tdiv_q_ui (t, t, p);
-            mpz_set_ui(factors[numPs], p);
-            myLens.push_back(1);
-            
-            while (mpz_divisible_ui_p(t, p)) {
-                mpz_tdiv_q_ui(t, t, p);
-                ++myLens[numPs];
-            }
-            
-            ++numPs;
-            
-            if (numPs == 50)
-                Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
-            
-            p += primesDiffPR[i++];
-            
-            if (mpz_cmp_ui (t, p * p) < 0)
-                break;
-        }
-    }
-    
-    mpz_clear (q);
-}
-
 void factor_using_pollard_rho(mpz_t n, std::size_t a,
                               mpz_t factors[], std::size_t& numPs,
                               std::vector<std::size_t>& myLens) {
@@ -191,7 +144,7 @@ void factor_using_pollard_rho(mpz_t n, std::size_t a,
             ++numPs;
             
             if (numPs == 50)
-                Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
+                Rcpp::stop("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!");
         }
 
         if (mpz_probab_prime_p(n, MR_REPS) != 0) {
@@ -221,7 +174,7 @@ void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
         int increaseSize = trialDivision(t, factors, numPs, myLens, mpzChunkBig);
         
         if (increaseSize)
-            Rf_error(_("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!"));
+            Rcpp::stop("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!");
         
         if (mpz_cmp_ui (t, 1) != 0) {
     	    if (mpz_probab_prime_p (t, MR_REPS) != 0) {

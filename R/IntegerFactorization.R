@@ -1,3 +1,7 @@
-divisorsBig <- function(v, namedList = FALSE) .Call("getDivisorsC", v, namedList, PACKAGE = "bigIntegerAlgos")
+divisorsBig <- function(v, namedList = FALSE) {
+    getDivisorsC(v, namedList)
+}
 
-quadraticSieve <- function(n) .Call("QuadraticSieveContainer", n, PACKAGE = "bigIntegerAlgos")
+quadraticSieve <- function(n) {
+    QuadraticSieveContainer(n)
+}

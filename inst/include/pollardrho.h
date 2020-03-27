@@ -1,7 +1,8 @@
 #ifndef POLLARDRHO_GMP_R
 #define POLLARDRHO_GMP_R
 
-#include "Algos.h"
+#include <Rcpp.h>
+#include <gmp.h>
 #include "Primes.h"
 
 /**

@@ -1,5 +1,6 @@
 useDynLib(bigIntegerAlgos, .registration=TRUE)
 
+importFrom("Rcpp", evalCpp)
 import(gmp)
 
 export(divisorsBig,

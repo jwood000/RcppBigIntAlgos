@@ -3,7 +3,6 @@
 #include "TonelliShanks.h"
 #include <RcppThread.h>
 #include <unordered_map>
-#include <numeric>
 
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     
@@ -491,14 +490,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
             const auto check_point_2 = std::chrono::steady_clock::now();
 
             if (check_point_2 - check_point_1 > timeout) {
-                // Calling checkUserInterrupt alone crashes R because
-                // of the definitions we have in Algos.h
-                try {
-                    RcppThread::checkUserInterrupt();
-                } catch (RcppThread::UserInterruptException()) {
-                    Rf_error("\nC++ call interrupted by the user.");
-                }
-
+                RcppThread::checkUserInterrupt();
                 check_point_1 = std::chrono::steady_clock::now();
             }
         }
