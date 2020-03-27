@@ -19,6 +19,6 @@ extern "C" {
     SEXP QuadraticSieveContainer(SEXP n);
 }
 
-void QuadraticSieve(mpz_t a, double e1, double e2, int64_t lb, mpz_t *const factors);
+void QuadraticSieve(mpz_t a, mpz_t *const factors);
 
 #endif

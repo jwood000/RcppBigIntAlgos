@@ -33,7 +33,6 @@
  * in the algorithm based off of the literature regarding the QS
  */
 
-void QuadraticSieve(mpz_t myNum, double fudge1, double fudge2,
-                    int64_t LenB, mpz_t *const factors);
+void QuadraticSieve(mpz_t myNum, mpz_t *const factors);
 
 #endif

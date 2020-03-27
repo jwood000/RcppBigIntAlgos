@@ -296,7 +296,7 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
         pollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
                                  powMaster, arrayMax, extraRecursionFacs);
     } else {
-        QuadraticSieve(n, 0.0, 0.0, zero, result);
+        QuadraticSieve(n, result);
         
         for (std::size_t i = 0; i < 2; ++i) {
             std::size_t myPow = 1;
