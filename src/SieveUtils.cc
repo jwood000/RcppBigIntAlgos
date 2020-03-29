@@ -4,7 +4,7 @@
 // details. The array "TS" was used here to make the code
 // more concise and since everything will be stored in
 // SieveDist, TS can easily be cleared from memory when done.
-void setSieveDist(mpz_t myNum, const std::vector<int64_t> &facBase,
+void setSieveDist(mpz_t myNum, const std::vector<std::size_t> &facBase,
                   std::size_t facSize, std::vector<std::size_t> &SieveDist) {
     
     mpz_t TS[13];
@@ -129,23 +129,24 @@ std::vector<uint8_t> myIntToBit(std::size_t x, std::size_t dig) {
     return binaryVec;
 }
 
-std::vector<int64_t> getPrimesQuadRes(mpz_t myN, double n) {
+std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double n) {
     
-    std::vector<char> primes(n + 1, 1);
-    std::vector<int64_t> myps;
+    const std::size_t uN = n;
+    std::vector<char> primes(uN + 1, 1);
+    std::vector<std::size_t> myps;
     
     myps.reserve(n * 2.0 / std::log(n));
-    const int fsqr = std::floor(std::sqrt(n));
+    const std::size_t fsqr = std::floor(std::sqrt(n));
     
-    for (std::size_t j = 4; j <= static_cast<std::size_t>(n); j += 2)
+    for (std::size_t j = 4; j <= uN; j += 2)
         primes[j] = 0;
     
-    for (int lastP = 3; lastP <= fsqr;) {
-        for (int j = lastP * lastP; j <= n; j += 2 * lastP)
+    for (std::size_t lastP = 3; lastP <= fsqr;) {
+        for (std::size_t j = lastP * lastP; j <= uN; j += 2 * lastP)
             primes[j] = 0;
         
-        int k = lastP + 2;
-        int ind = 2;
+        std::size_t k = lastP + 2;
+        std::size_t ind = 2;
         
         while (!primes[k]) {
             k += 2;
@@ -160,9 +161,9 @@ std::vector<int64_t> getPrimesQuadRes(mpz_t myN, double n) {
     mpz_init(jmpz);
     mpz_init(temp);
     
-    myps.push_back(2);
+    myps.push_back(2u);
     
-    for (int64_t j = 3; j <= n; j += 2) {
+    for (std::size_t j = 3; j <= n; j += 2) {
         if (primes[j]) {
             mpz_set_si(jmpz, j);
             mpz_set_si(temp, j);
@@ -179,12 +180,12 @@ std::vector<int64_t> getPrimesQuadRes(mpz_t myN, double n) {
     return myps;
 }
 
-void sieveLists(std::size_t facSize, const std::vector<int64_t> &FBase,
+void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
                 std::size_t LenB2, mpz_t *const sqrDiff,
                 const std::vector<double> &LnFB,
                 std::vector<double> &myLogs,
                 std::vector<bool> &indexDiv,
-                int64_t minPrime,
+                std::size_t minPrime,
                 const std::vector<std::size_t> &polySieveD,
                 mpz_t lowerBound) {
     
@@ -199,13 +200,12 @@ void sieveLists(std::size_t facSize, const std::vector<int64_t> &FBase,
     mpz_init(modTest);
     
     for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
-        const std::size_t uiFB = FBase[i];
-        const std::size_t rowJump = uiFB * facSize;
+        const std::size_t rowJump = FBase[i] * facSize;
         
-        mpz_mod_ui(modTest, lowerBound, uiFB);
+        mpz_mod_ui(modTest, lowerBound, FBase[i]);
         int64_t q = mpz_get_si(modTest);
         
-        mpz_mod_ui(modTest, sqrDiff[0], uiFB);
+        mpz_mod_ui(modTest, sqrDiff[0], FBase[i]);
         int64_t myStart0 = mpz_get_si(modTest);
         
         int64_t myStart1 = 0;
@@ -224,7 +224,7 @@ void sieveLists(std::size_t facSize, const std::vector<int64_t> &FBase,
             myStart0 = 0;
             
             for (std::size_t j = 1; j < LenB2; ++j) {
-                mpz_mod_ui(modTest, sqrDiff[j], uiFB);
+                mpz_mod_ui(modTest, sqrDiff[j], FBase[i]);
                 
                 if (mpz_cmp_ui(modTest, 0) == 0) {
                     myStart1 = j;
@@ -253,14 +253,14 @@ void sieveLists(std::size_t facSize, const std::vector<int64_t> &FBase,
             indexDiv[j] = true;
         
         if (FBase[i] > minPrime)
-            for (std::size_t j = myStart0; j < LenB2; j += uiFB)
+            for (std::size_t j = myStart0; j < LenB2; j += FBase[i])
                 myLogs[j] += LnFB[i];
         
         for (std::size_t j = myStart1 * facSize + i; j < indexLimit; j += rowJump)
             indexDiv[j] = true;
         
         if (FBase[i] > minPrime)
-            for (std::size_t j = myStart1; j < LenB2; j += uiFB)
+            for (std::size_t j = myStart1; j < LenB2; j += FBase[i])
                 myLogs[j] += LnFB[i];
     }
     
