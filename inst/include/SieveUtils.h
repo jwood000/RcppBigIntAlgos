@@ -1,6 +1,7 @@
 #ifndef SIEVE_UTILS_R
 #define SIEVE_UTILS_R
 
+#include "TonelliShanks.h"
 #include <Rcpp.h>
 #include <gmp.h>
 #include <chrono>
@@ -11,8 +12,9 @@ constexpr auto timeout = std::chrono::milliseconds(1000);
 constexpr std::size_t hundredThousand = 100000;
 constexpr double Significand53 = 9007199254740991.0;
 
-void setSieveDist(mpz_t myNum, const std::vector<std::size_t> &facBase,
-                  std::size_t facSize, std::vector<std::size_t> &SieveDist);
+std::vector<std::size_t> setSieveDist(mpz_t myNum, mpz_t *const TS,
+                                      const std::vector<std::size_t> &facBase,
+                                      std::size_t facSize);
 
 std::vector<std::size_t> outersect(std::vector<std::size_t> &x,
                                    std::vector<std::size_t> &y);

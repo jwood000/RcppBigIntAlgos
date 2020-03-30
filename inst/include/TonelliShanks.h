@@ -13,6 +13,7 @@
  * i.e. the Legendre symbol of a with respect to p must be 1
  */
 
-void TonelliShanksC(mpz_t a, mpz_t p, mpz_t *const quadRes);
+void TonelliShanksC(mpz_t myNum, std::size_t p, std::size_t &myAns1,
+                    std::size_t &myAns2, mpz_t *const TS);
 
 #endif

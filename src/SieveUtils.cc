@@ -4,88 +4,24 @@
 // details. The array "TS" was used here to make the code
 // more concise and since everything will be stored in
 // SieveDist, TS can easily be cleared from memory when done.
-void setSieveDist(mpz_t myNum, const std::vector<std::size_t> &facBase,
-                  std::size_t facSize, std::vector<std::size_t> &SieveDist) {
+std::vector<std::size_t> setSieveDist(mpz_t myNum, mpz_t *const TS,
+                                      const std::vector<std::size_t> &facBase,
+                                      std::size_t facSize) {
     
-    mpz_t TS[13];
+    std::vector<std::size_t> SieveDist(facSize * 2, 0u);
+    SieveDist[0] = SieveDist[1] = 1;
     
-    for (std::size_t i = 0; i < 13; ++i)
-        mpz_init(TS[i]);
-    
-    mpz_set_ui(TS[12], 2);
-    
-    for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
-        mpz_set_ui(TS[5], facBase[i]);
-        mpz_set_ui(TS[0], facBase[i]);
-        mpz_sub_ui(TS[0], TS[0], 1);
-        mpz_set(TS[1], TS[0]);
-        mpz_set_ui(TS[7], 2);
-        int pow2 = static_cast<int>(mpz_scan1(TS[1], 0));
-        mpz_div_2exp(TS[1], TS[1], pow2);
+    for (std::size_t i = 1, row = 2,
+         myAns1 = 0, myAns2 = 0; i < facSize; ++i, row += 2) {
         
-        if (pow2 == 1) {
-            mpz_add_ui (TS[4], TS[5], 1);
-            mpz_div_2exp (TS[4], TS[4], 2);
-            mpz_powm (TS[2], myNum, TS[4], TS[5]);
-            mpz_neg (TS[4], TS[2]);
-            mpz_mod (TS[3], TS[4], TS[5]);
-        } else {
-            mpz_div_2exp (TS[4], TS[0], 1);
-            mpz_powm (TS[6], TS[7], TS[4], TS[5]);
-            while (mpz_cmp_ui(TS[6], 1) == 0) {
-                mpz_add_ui(TS[7], TS[7], 1);
-                mpz_powm (TS[6], TS[7], TS[4], TS[5]);
-            }
-            
-            mpz_add_ui(TS[4], TS[1], 1);
-            mpz_div_2exp(TS[4], TS[4], 1);
-            mpz_powm(TS[10], myNum, TS[4], TS[5]);
-            mpz_powm(TS[8], myNum, TS[1], TS[5]);
-            mpz_powm(TS[9], TS[7], TS[1], TS[5]);
-            
-            int iter1 = pow2;
-            int iter2 = 1;
-            mpz_mod(TS[11], TS[8], TS[5]);
-            
-            while ((mpz_cmp_ui(TS[11], 1) != 0) && (iter2 != 0)) {
-                iter2 = 0;
-                mpz_mod(TS[11], TS[8], TS[5]);
-                
-                while (mpz_cmp_ui(TS[11], 1) != 0) {
-                    ++iter2;
-                    mpz_pow_ui(TS[4], TS[12], iter2);
-                    mpz_powm(TS[11], TS[8], TS[4], TS[5]);
-                }
-                
-                if (iter2) {
-                    mpz_pow_ui(TS[4], TS[12], iter1 - iter2 - 1);
-                    mpz_powm(TS[4], TS[9], TS[4], TS[5]);
-                    mpz_mul(TS[4], TS[4], TS[10]);
-                    mpz_mod(TS[10], TS[4], TS[5]);
-                    
-                    mpz_pow_ui(TS[4], TS[12], iter1 - iter2);
-                    mpz_powm(TS[9], TS[9], TS[4], TS[5]);
-                    
-                    mpz_mul(TS[4], TS[8], TS[9]);
-                    mpz_mod(TS[8], TS[4], TS[5]);
-                    iter1 = iter2;
-                }
-                
-                mpz_set_ui(TS[11], 0);
-            }
-            
-            mpz_set(TS[2], TS[10]);
-            mpz_sub(TS[4], TS[5], TS[10]);
-            mpz_mod(TS[3], TS[4], TS[5]);
-        }
+        TonelliShanksC(myNum, facBase[i],
+                       myAns1, myAns2, TS);
         
-        SieveDist[row] = mpz_get_ui(TS[2]);
-        SieveDist[row + 1] = mpz_get_ui(TS[3]);
+        SieveDist[row] = myAns1;
+        SieveDist[row + 1] = myAns2;
     }
     
-    // Finished generating residues.. now free memory
-    for (std::size_t i = 0; i < 13; ++i)
-        mpz_clear(TS[i]);
+    return SieveDist;
 }
 
 std::vector<std::size_t> outersect(std::vector<std::size_t> &x, std::vector<std::size_t> &y) {
