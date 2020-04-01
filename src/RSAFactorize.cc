@@ -163,8 +163,7 @@ int pollardRhoWithConstraint(mpz_t n, std::size_t a, mpz_t factors[], std::size_
             
             mpz_sub(t, z, y);
             mpz_gcd(t, t, n);
-        }
-        while (mpz_cmp_ui(t, 1) == 0);
+        } while (mpz_cmp_ui(t, 1) == 0);
         
         mpz_divexact(n, n, t);	/* divide by t, before t is overwritten */
 
@@ -299,7 +298,6 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     createMPZArray(Rn, myVec, 1);
     mpz_t nmpz;
     mpz_init_set(nmpz, myVec[0]);
-    
     mpz_clear(myVec[0]);
     
     if (mpz_sgn(nmpz) == 0)
@@ -365,7 +363,7 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
         // index to the product (pj * f). We also take note of the index by pushing
         // it to the extraRecursionFacs vector. Below, we take this info and fully
         // factorize these partially factored numbers and add them to our final array.
-        std::size_t eRFSize = extraRecursionFacs.size();
+        const std::size_t eRFSize = extraRecursionFacs.size();
 
         if (eRFSize > 0) {
             arrayMax += (eRFSize * mpzChunkBig);

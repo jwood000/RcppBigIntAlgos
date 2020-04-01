@@ -74,10 +74,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     
     const std::size_t facSize = facBase.size();
-    int64_t Lower = -1 * static_cast<int64_t>(LenB);
-    int64_t Upper = LenB;
-    
-    std::size_t LenB2 = 2 * LenB + 1;
+    const int64_t Lower = -1 * static_cast<int64_t>(LenB);
+    const int64_t Upper = LenB;
+    const std::size_t LenB2 = 2 * LenB + 1;
     
     std::vector<int64_t> myInterval(LenB2);
     std::iota(myInterval.begin(), myInterval.end(), Lower);

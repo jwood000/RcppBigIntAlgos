@@ -131,10 +131,9 @@ void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
     mpz_t modTest;
     mpz_init(modTest);
     
-    std::size_t strt = 0;
-    
-    for (std::size_t i = 1; i < facSize && FBase[i] < minPrime; ++i)
-        strt = i;
+    const auto it = std::find_if(FBase.cbegin(), FBase.cend(),
+                                 [minPrime](std::size_t f) {return f > minPrime;});
+    const std::size_t strt = std::distance(FBase.cbegin(), it);
     
     for (std::size_t i = strt + 1, row = (strt + 1) * 2; i < facSize; ++i, row += 2) {
         mpz_mod_ui(modTest, lowerBound, FBase[i]);
