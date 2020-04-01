@@ -174,7 +174,7 @@ system.time(print(quadraticSieve(semiPrime164bits)))
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
    user  system elapsed 
- 25.882   0.040  25.873
+ 24.754   0.043  24.752
 
  
 ## And here is the 60 digit example
@@ -193,7 +193,7 @@ system.time(print(quadraticSieve(semiPrime200bits)))
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
    user  system elapsed 
-301.894   0.458 302.427
+290.837   0.339 291.093
 ```
 
 It can also be used as a general prime factoring function:
@@ -242,8 +242,6 @@ Acknowledgments and Resources:
 Current Research:
 -----
 Currenlty, our main focus is on implementing our sieve in a parallel fashion.
-
-We are also working on efficiently integrating `divisorsBig` with `quadraticSieve` as currently, `divisorsBig` utilizes `gmp::factorize` (from the R gmp library).
 
 Contact
 ----

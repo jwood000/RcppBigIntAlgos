@@ -143,8 +143,10 @@ void factor_using_pollard_rho(mpz_t n, std::size_t a,
 
             ++numPs;
             
-            if (numPs == 50)
-                Rcpp::stop("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!");
+            if (numPs == mpzChunkBig) {
+                Rcpp::stop("Too many prime factors. Result will contain "
+                               "over one quadrillion (10^15) factors!!");
+            }
         }
 
         if (mpz_probab_prime_p(n, MR_REPS) != 0) {
@@ -173,8 +175,10 @@ void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
     if (mpz_sgn (t) != 0) {
         int increaseSize = trialDivision(t, factors, numPs, myLens, mpzChunkBig);
         
-        if (increaseSize)
-            Rcpp::stop("Too many prime factors. Result will contain over one quadrillion (10^15) factors!!");
+        if (increaseSize) {
+            Rcpp::stop("Too many prime factors. Result will contain "
+                           "over one quadrillion (10^15) factors!!");
+        }
         
         if (mpz_cmp_ui (t, 1) != 0) {
     	    if (mpz_probab_prime_p (t, MR_REPS) != 0) {
