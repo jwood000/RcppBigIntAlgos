@@ -304,7 +304,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
             mpz_set(mpzFacBase[mpzFacSize], Atemp);
             ++mpzFacSize;
             
-            TonelliShanksCAlt(myNum, Atemp, TS);
+            TonelliShanksC(myNum, Atemp, TS);
             
             if (mpz_cmp(TS[1], TS[2]) > 0) {
                 mpz_set(Btemp, TS[1]);

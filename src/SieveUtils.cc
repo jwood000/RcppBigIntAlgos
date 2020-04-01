@@ -11,16 +11,18 @@ std::vector<std::size_t> setSieveDist(mpz_t myNum, mpz_t *const TS,
     std::vector<std::size_t> SieveDist(facSize * 2, 0u);
     SieveDist[0] = SieveDist[1] = 1;
     
-    for (std::size_t i = 1, row = 2,
-         myAns1 = 0, myAns2 = 0; i < facSize; ++i, row += 2) {
+    mpz_t p;
+    mpz_init(p);
+    
+    for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
+        mpz_set_ui(p, facBase[i]);
+        TonelliShanksC(myNum, p, TS);
         
-        TonelliShanksC(myNum, facBase[i],
-                       myAns1, myAns2, TS);
-        
-        SieveDist[row] = myAns1;
-        SieveDist[row + 1] = myAns2;
+        SieveDist[row] = mpz_get_ui(TS[1]);
+        SieveDist[row + 1] = mpz_get_ui(TS[2]);
     }
     
+    mpz_clear(p);
     return SieveDist;
 }
 
