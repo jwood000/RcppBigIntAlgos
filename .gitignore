@@ -6,6 +6,7 @@ src/*.o
 src/*.so
 src/*.dll
 src/.DS_Store
+R/.DS_Store
 inst/.DS_Store
 inst/include/.DS_Store
 .DS_Store
