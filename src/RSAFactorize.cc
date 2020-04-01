@@ -89,8 +89,11 @@ std::size_t getPower(mpz_t nmpz) {
             if (!mpz_perfect_power_p(nmpz))
                 break;
         }
+        
+        mpz_clear(myNextP);
     }
     
+    mpz_clear(testRoot);
     return myPow;
 }
 
@@ -297,6 +300,8 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     mpz_t nmpz;
     mpz_init_set(nmpz, myVec[0]);
     
+    mpz_clear(myVec[0]);
+    
     if (mpz_sgn(nmpz) == 0)
         Rcpp::stop("Cannot factorize 0");
     
@@ -397,6 +402,12 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
                     Rcpp::stop("Too many prime factors!!");
                 }
             }
+            
+            for (std::size_t i = 0; i < mpzChunkBig; ++i)
+                mpz_clear(tempFacs[i]);
+            
+            tempFacs.reset();
+            mpz_clear(tempNum);
         }
 
         // If there is less than 60% of mpzChunkBig, then increase array
@@ -414,13 +425,15 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
             if (mpz_perfect_power_p(nmpz))
                 myPow = getPower(nmpz);
 
-            if (mpz_probab_prime_p (nmpz, MR_REPS) != 0) {
+            if (mpz_probab_prime_p(nmpz, MR_REPS) != 0) {
                 mpz_set(factors[numUni], nmpz);
                 lengths.push_back(1);
                 ++numUni;
             } else {
                 getBigPrimeFacs(nmpz, factors, result.get(), numUni,
                                 lengths, myPow, arrayMax, extraRecursionFacs);
+                mpz_clear(result[0]);
+                mpz_clear(result[1]);
             }
         }
     }
@@ -464,7 +477,13 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     for (std::size_t i = 0, count = IsNegative; i < numUni; ++i)
         for (std::size_t j = 0; j < lengths[i]; ++j, ++count)
             pos += myRaw(&r[pos], factors[i], mySizes[count]);
-
+    
+    for (std::size_t i = 0; i < arrayMax; ++i)
+        mpz_clear(factors[i]);
+    
+    result.reset();
+    mpz_clear(negOne);
+    free(factors);
     ans.attr("class") = Rcpp::CharacterVector::create("bigz");
     return ans;
 }

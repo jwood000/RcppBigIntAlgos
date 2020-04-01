@@ -133,16 +133,9 @@ void solutionSearch(std::vector<uint8_t> mat, std::size_t matNRows,
                     mpz_set_ui(yMpz, 1);
                     
                     for (const auto aV: ansVec) {
-                        // if (i == 2) {
-                        //     Rprintf("ansVec el is: %d\n", aV);
-                        //     gmp_printf("testInterval[aV] is: %Zd\n", testInterval[aV]);
-                        // }
-                        
                         mpz_mul(xMpz, xMpz, testInterval[aV]);
                         mpz_mod(xMpz, xMpz, n);
                     }
-                    
-                    // gmp_printf("xMpz is: %Zd\n", xMpz);
                     
                     for (std::size_t j = 0; j < yExponents.size(); ++j) {
                         mpz_pow_ui(mpzTemp1, mpzFacBase[j], yExponents[j]);
