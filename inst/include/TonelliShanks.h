@@ -16,4 +16,6 @@
 void TonelliShanksC(mpz_t myNum, std::size_t p, std::size_t &myAns1,
                     std::size_t &myAns2, mpz_t *const TS);
 
+void TonelliShanksCAlt(mpz_t myNum, mpz_t p, mpz_t *const TS);
+
 #endif

@@ -74,17 +74,12 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
 
     const std::size_t facSize = facBase.size();
-    std::size_t facSize2 = facSize;
-
-    // facBase2 will be used if multiple polynomials are needed.
-    // With every iteration, a prime will be added to the factor
-    // base for additional factorization. The original facBase
-    // should not be tampered with, hence the need for facBase2.
-    std::vector<std::size_t> facBase2 = facBase;
 
     mpz_t sqrtInt;
     mpz_init(sqrtInt);
     mpz_sqrt(sqrtInt, myNum);
+    
+    gmp_printf("%Zd\n", sqrtInt);
     
     int64_t Lower = -1 * static_cast<int64_t>(LenB);
     int64_t Upper = LenB;
@@ -101,7 +96,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     
     const std::vector<std::size_t> SieveDist = setSieveDist(myNum, TS,
                                                             facBase, facSize);
-    
+    gmp_printf("%Zd\n", sqrtInt);
     const std::size_t mpzContainerSize = facSize * 5;
     
     // testInterval will be the values that are associated
@@ -170,7 +165,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     }
 
     mpz_mul_ui(temp, sqrtInt, Upper);
-    int64_t minPrime = static_cast<int64_t>(mpz_sizeinbase(temp, 10) * 2);
+    const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(temp, 10) * 2);
     
     sieveLists(facSize, facBase, LenB2, sqrDiff.get(), LnFB,
                myLogs, minPrime, SieveDist, largeInterval[0]);
@@ -290,6 +285,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
 
     std::size_t numPolys = 0;
     std::size_t extraFacs = 0;
+    std::size_t mpzFacSize = facSize;
     std::vector<double> myIntervalSqrd(LenB2);
 
     for (std::size_t i = 0; i < LenB2; ++i)
@@ -309,18 +305,18 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                     LegendreTest = false;
             }
 
-            facBase2.push_back(mpz_get_ui(Atemp));
-            ++facSize2;
-
-            std::size_t myAns1 = 0;
-            std::size_t myAns2 = 0;
+            mpz_set(mpzFacBase[mpzFacSize], Atemp);
+            ++mpzFacSize;
             
-            TonelliShanksC(myNum, facBase2.back(),
-                           myAns1, myAns2, TS);
-
-            mpz_set_ui(Btemp, std::max(myAns1, myAns2));
+            TonelliShanksCAlt(myNum, Atemp, TS);
+            
+            if (mpz_cmp(TS[1], TS[2]) > 0) {
+                mpz_set(Btemp, TS[1]);
+            } else {
+                mpz_set(Btemp, TS[2]);
+            }
+            
             mpz_mul_2exp(temp, Btemp, 1);
-
             mpz_invert(temp, temp, Atemp);
             mpz_pow_ui(B, Btemp, 2);
 
@@ -379,8 +375,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                     std::vector<std::size_t> primeIndexVec;
 
                     // Add the index referring to A^2.. (i.e. add it twice)
-                    primeIndexVec.push_back(facSize2);
-                    primeIndexVec.push_back(facSize2);
+                    primeIndexVec.push_back(mpzFacSize);
+                    primeIndexVec.push_back(mpzFacSize);
 
                     // If Negative, we push zero (i.e. the index referring to -1)
                     if (mpz_sgn(sqrDiff[largeLogs[j]]) < 1) {
@@ -461,20 +457,12 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
         }
 
         const std::size_t matRow = numSmooth + partialCount;
-        const std::size_t matWidth = coFactorInd + facSize2 + 1;
-
+        const std::size_t matWidth = coFactorInd + mpzFacSize + 1;
+        
         auto newTestInt = FromCpp14::make_unique<mpz_t[]>(matRow);
         std::vector<uint8_t> newMat(matRow * matWidth, 0);
-
-        std::size_t fSize = facSize;
-        std::size_t facBaseIndex = facSize;
-
-        // This loop is one off from the loop below. Also note
-        // the limit is k < numPolys NOT "<=".
-        for (std::size_t k = 0; k < numPolys; ++k, ++facBaseIndex)
-            mpz_set_ui(mpzFacBase[facBaseIndex], facBase2[facBaseIndex]);
-
-        for (std::size_t k = 0, r = 0, row = 0; k <= numPolys; ++k, ++fSize) {
+        
+        for (std::size_t k = 0, r = 0, row = 0, fSize = facSize; k <= numPolys; ++k, ++fSize) {
             for (std::size_t i = 0; i < powsOfSmooths[k].size(); i += colWidth, row += matWidth, ++r) {
                 mpz_init_set(newTestInt[r], testInterval[r]);
 
@@ -484,9 +472,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                 newMat[row + fSize] = (k > 0) ? 2u : 0u;
             }
         }
-
-        for (std::size_t i = 0; i < coFactorInd; ++i, ++facBaseIndex)
-            mpz_set(mpzFacBase[facBaseIndex], largeCoFactors[i]);
+        
+        for (std::size_t i = 0, j = mpzFacSize; i < coFactorInd; ++i, ++j)
+            mpz_set(mpzFacBase[j], largeCoFactors[i]);
 
         for (std::size_t i = 0, r = numSmooth,
              row = matWidth * numSmooth; i < partialCount; ++i, ++r, row += matWidth) {
@@ -496,7 +484,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
             for (const auto p: powersOfPartials[i])
                 ++newMat[row + p];
 
-            newMat[row + fSize + coFactorIndexVec[i]] = 2u;
+            newMat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
         }
 
         solutionSearch(newMat, matRow, matWidth, myNum,
