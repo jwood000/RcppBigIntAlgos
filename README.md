@@ -146,22 +146,22 @@ system.time(print(quadraticSieve(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
    user  system elapsed 
-  0.563   0.009   0.571 
+  0.547   0.003   0.549 
   
 system.time(print(quadraticSieve(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
    user  system elapsed 
-  0.798   0.011   0.807
+  0.581   0.002   0.583
 
 system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
-  1.532   0.015   1.542 
+  1.148   0.005   1.153 
 ```
 
-And for good measure, here is a 50 digit semiprime factored in under one minute followed by a 60 digit semiprime factored in about 12.5 minutes.
+And for good measure, here is a 50 digit semiprime factored in under 30 secs followed by a 60 digit semiprime factored in about 5 minutes.
 
 ```r
 semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
@@ -174,7 +174,7 @@ system.time(print(quadraticSieve(semiPrime164bits)))
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
    user  system elapsed 
- 49.207   0.093  49.265
+ 25.882   0.040  25.873
 
  
 ## And here is the 60 digit example
@@ -193,7 +193,7 @@ system.time(print(quadraticSieve(semiPrime200bits)))
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
    user  system elapsed 
-743.909   0.760 745.425
+301.894   0.458 302.427
 ```
 
 It can also be used as a general prime factoring function:
