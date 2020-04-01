@@ -120,24 +120,21 @@ void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
                 std::size_t LenB2, mpz_t *const sqrDiff,
                 const std::vector<double> &LnFB,
                 std::vector<double> &myLogs,
-                std::vector<bool> &indexDiv,
                 std::size_t minPrime,
                 const std::vector<std::size_t> &polySieveD,
                 mpz_t lowerBound) {
     
     std::fill(myLogs.begin(), myLogs.end(), 0.0);
-    const std::size_t indexLimit = LenB2 * facSize;
-    const std::size_t strt = (mpz_even_p(sqrDiff[0]) != 0) ? 0 : 1;
-    
-    for (std::size_t j = strt * facSize, rowJump = 2 * facSize; j < indexLimit; j += rowJump)
-        indexDiv[j] = true;
     
     mpz_t modTest;
     mpz_init(modTest);
     
-    for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
-        const std::size_t rowJump = FBase[i] * facSize;
-        
+    std::size_t strt = 0;
+    
+    for (std::size_t i = 1; i < facSize && FBase[i] < minPrime; ++i)
+        strt = i;
+    
+    for (std::size_t i = strt + 1, row = (strt + 1) * 2; i < facSize; ++i, row += 2) {
         mpz_mod_ui(modTest, lowerBound, FBase[i]);
         int64_t q = mpz_get_si(modTest);
         
@@ -185,19 +182,11 @@ void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
             }
         }
         
-        for (std::size_t j = myStart0 * facSize + i; j < indexLimit; j += rowJump)
-            indexDiv[j] = true;
+        for (std::size_t j = myStart0; j < LenB2; j += FBase[i])
+            myLogs[j] += LnFB[i];
         
-        if (FBase[i] > minPrime)
-            for (std::size_t j = myStart0; j < LenB2; j += FBase[i])
-                myLogs[j] += LnFB[i];
-        
-        for (std::size_t j = myStart1 * facSize + i; j < indexLimit; j += rowJump)
-            indexDiv[j] = true;
-        
-        if (FBase[i] > minPrime)
-            for (std::size_t j = myStart1; j < LenB2; j += FBase[i])
-                myLogs[j] += LnFB[i];
+        for (std::size_t j = myStart1; j < LenB2; j += FBase[i])
+            myLogs[j] += LnFB[i];
     }
     
     mpz_clear(modTest);

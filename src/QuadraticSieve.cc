@@ -172,9 +172,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
     mpz_mul_ui(temp, sqrtInt, Upper);
     int64_t minPrime = static_cast<int64_t>(mpz_sizeinbase(temp, 10) * 2);
     
-    std::vector<bool> indexDiv(LenB2 * facSize, false);
     sieveLists(facSize, facBase, LenB2, sqrDiff.get(), LnFB,
-               myLogs, indexDiv, minPrime, SieveDist, largeInterval[0]);
+               myLogs, minPrime, SieveDist, largeInterval[0]);
     
     std::vector<std::size_t> largeLogs;
 
@@ -214,16 +213,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
             }
 
             for (std::size_t i = 0; i < facSize; ++i) {
-                if (indexDiv[largeLogs[j] * facSize + i]) {
-                    bool divides = true;
-
-                    while (divides) {
-                        mpz_divexact_ui(sqrDiff[largeLogs[j]],
-                                        sqrDiff[largeLogs[j]], facBase[i]);
-                        ++myMat[j * colWidth + i + 1];
-                        primeIndexVec.push_back(i + 1);
-                        divides = mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i]);
-                    }
+                while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
+                    mpz_divexact_ui(sqrDiff[largeLogs[j]],
+                                    sqrDiff[largeLogs[j]], facBase[i]);
+                    ++myMat[j * colWidth + i + 1];
+                    primeIndexVec.push_back(i + 1);
                 }
             }
 
@@ -365,10 +359,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                 mpz_mul(Atemp2, Atemp2, A);
                 mpz_add(sqrDiff[i], Atemp2, temp);
             }
-
-            std::fill(indexDiv.begin(), indexDiv.end(), false);
-            sieveLists(facSize, facBase, LenB2, sqrDiff.get(), LnFB,
-                       myLogs, indexDiv, minPrime, polySieveD, lowBound);
+            
+            sieveLists(facSize, facBase, LenB2, sqrDiff.get(),
+                       LnFB, myLogs, minPrime, polySieveD, lowBound);
 
             largeLogs.clear();
 
@@ -397,16 +390,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors) {
                     }
 
                     for (std::size_t i = 0; i < facSize; ++i) {
-                        if (indexDiv[largeLogs[j] * facSize + i]) {
-                            bool divides = true;
-
-                            while (divides) {
-                                mpz_divexact_ui(sqrDiff[largeLogs[j]],
-                                                sqrDiff[largeLogs[j]], facBase[i]);
-                                ++myMat[j * colWidth + i + 1];
-                                primeIndexVec.push_back(i + 1);
-                                divides = mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i]);
-                            }
+                        while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
+                            mpz_divexact_ui(sqrDiff[largeLogs[j]],
+                                            sqrDiff[largeLogs[j]], facBase[i]);
+                            ++myMat[j * colWidth + i + 1];
+                            primeIndexVec.push_back(i + 1);
                         }
                     }
 

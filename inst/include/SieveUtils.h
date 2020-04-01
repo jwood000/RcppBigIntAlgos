@@ -29,7 +29,6 @@ void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
                 std::size_t LenB2, mpz_t *const sqrDiff,
                 const std::vector<double> &LnFB,
                 std::vector<double> &myLogs,
-                std::vector<bool> &indexDiv,
                 std::size_t minPrime,
                 const std::vector<std::size_t> &polySieveD,
                 mpz_t lowerBound);
