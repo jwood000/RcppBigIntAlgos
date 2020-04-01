@@ -2,10 +2,8 @@ Package: bigIntegerAlgos
 Type: Package
 Title: R Tool for Factoring Big Integers
 Version: 0.2.1
-Authors@R: c(
-  person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
-  person("Mike","Tryczak", role="ctb"))
-Author:  
+Authors@R: c(person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
+             person("Mike","Tryczak", role="ctb"))
 Maintainer: Joseph Wood <jwood000@gmail.com>
 Description: Features the multiple polynomial quadratic sieve algorithm
     for factoring large integers and a vectorized factoring function that
