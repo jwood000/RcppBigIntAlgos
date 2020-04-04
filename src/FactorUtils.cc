@@ -148,9 +148,7 @@ SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
         char* r = (char*) (RAW(myFacs));
         ((int*) (r))[0] = 1;
         
-        std::size_t pos = intSize;
-        pos += myRaw(&r[pos], mpzOne, oneSize);
-        
+        myRaw(&r[intSize], mpzOne, oneSize);
         myFacs.attr("class") = Rcpp::CharacterVector::create("bigz");
         mpz_clear(mpzOne);
         return myFacs;
@@ -187,7 +185,7 @@ SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
         quickSort(primeFacs, 0, numUni - 1, lengths);
         
         std::vector<std::size_t> myIndex(lengths[0] + 1);
-        std::size_t ind, facSize = 1, numFacs = 1;
+        std::size_t facSize = 1, numFacs = 1;
         
         for (std::size_t i = 0; i < numUni; ++i)
             numFacs *= (lengths[i] + 1);
@@ -212,7 +210,7 @@ SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
                 facSize *= (lengths[j - 1] + 1);
                 
                 for (std::size_t i = 1; i <= lengths[j]; ++i) {
-                    ind = i*facSize;
+                    const std::size_t ind = i*facSize;
                     mpz_pow_ui(myPow, primeFacs[j], i);
                     
                     for (std::size_t k = 0; k < facSize; ++k) {
@@ -225,11 +223,11 @@ SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
             }
         }
         
-        std::size_t tempSize, size = intSize;
+        std::size_t size = intSize;
         std::vector<std::size_t> mySizes(numFacs);
         
         for (std::size_t i = 0; i < numFacs; ++i) { // adding each bigint's needed size
-            tempSize = intSize * (2 + (mpz_sizeinbase(myMPZ[i],2) + numb - 1) / numb);
+            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(myMPZ[i],2) + numb - 1) / numb);
             size += tempSize;
             mySizes[i] = tempSize;
         }

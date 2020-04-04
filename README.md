@@ -10,7 +10,7 @@
 ## Overview
 
 RcppBigIntAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
-factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from https://gmplib.org/... this is the same algorithm found in the R gmp package (https://cran.r-project.org/web/packages/gmp/gmp.pdf) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
+factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://cran.r-project.org/web/packages/gmp/gmp.pdf>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
 
 ## Installation
 
@@ -266,22 +266,17 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 ## Timing stopped at: 1.623 0.102 1.726
 ```
 
-## Acknowledgments and Resources:
+## Acknowledgments and Resources
 
-* Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
-
-* [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
-
-* [Factoring large numbers with quadratic sieve](<https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/>) on MSDN Archive.
-
-* A really nice concise example is given here: [Factorization of _n = 87463_ with the Quadratic Sieve](<https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf>)
-
-* [Smooth numbers and the quadratic sieve](<http://library.msri.org/books/Book44/files/03carl.pdf>) by Carl Pomerance
-
-* [Integer Factorization using the Quadratic Sieve
+  * Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
+  * [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
+  * [Factoring large numbers with quadratic sieve](<https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/>) on MSDN Archive.
+  * A really nice concise example is given here: [Factorization of _n = 87463_ with the Quadratic Sieve](<https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf>)
+  * [Smooth numbers and the quadratic sieve](<http://library.msri.org/books/Book44/files/03carl.pdf>) by Carl Pomerance
+  * [Integer Factorization using the Quadratic Sieve
 ](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
 
-## Current Research:
+## Current Research
 
 Currenlty, our main focus is on implementing our sieve in a parallel fashion.
 

@@ -263,7 +263,6 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
                      std::size_t nThreads, bool bShowStats) {
     
     std::vector<std::size_t> extraRecursionFacs;
-    std::size_t myPow = 1;
     
     // First we test for small factors.
     int increaseSize = trialDivision(nmpz, factors, numUni, lengths, arrayMax);
@@ -365,8 +364,7 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
             mpz_init(result[1]);
             
             // Shield quadratic sieve from perfect powers
-            if (mpz_perfect_power_p(nmpz))
-                myPow = getPower(nmpz);
+            const std::size_t myPow = (mpz_perfect_power_p(nmpz)) ? getPower(nmpz) : 1;
             
             if (mpz_probab_prime_p(nmpz, MR_REPS) != 0) {
                 mpz_set(factors[numUni], nmpz);
