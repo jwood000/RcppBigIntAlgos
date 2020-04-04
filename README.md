@@ -3,6 +3,7 @@
 ![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c)](https://www.codacy.com/manual/jwood000/RcppBigIntAlgos?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jwood000/RcppBigIntAlgos&amp;utm_campaign=Badge_Grade)
 
 # RcppBigIntAlgos
 
