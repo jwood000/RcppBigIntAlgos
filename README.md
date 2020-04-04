@@ -269,12 +269,18 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 ## Acknowledgments and Resources
 
   * Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
+  
   * [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
+  
   * [Factoring large numbers with quadratic sieve](<https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/>) on MSDN Archive.
+  
   * A really nice concise example is given here: [Factorization of _n = 87463_ with the Quadratic Sieve](<https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf>)
+  
   * [Smooth numbers and the quadratic sieve](<http://library.msri.org/books/Book44/files/03carl.pdf>) by Carl Pomerance
+  
   * [Integer Factorization using the Quadratic Sieve
 ](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
+
 
 ## Current Research
 
