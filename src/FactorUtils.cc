@@ -171,7 +171,10 @@ SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
         
         if (mpz_sizeinbase(val, 10) > 23) {
             std::size_t arrayMax = mpzChunkBig;
-            QuadSieveHelper(val, primeFacs, arrayMax, numUni, lengths);
+            std::size_t nThreads = 1;
+            
+            QuadSieveHelper(val, primeFacs, arrayMax,
+                            numUni, lengths, nThreads, false);
             
             if (numUni > mpzChunkBig) {
                 Rcpp::stop("Too many prime factors. Result will contain "

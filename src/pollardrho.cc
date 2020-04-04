@@ -1,7 +1,7 @@
 /* Factoring with Pollard's rho method.
 
 N.B. Below is the original message of the file. There have been minor
-style edits and slight modifications for the bigIntegerAlgos library
+style edits and slight modifications for the RcppBigIntAlgos library
 
 Copyright 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2009, 2012
 Free Software Foundation, Inc.

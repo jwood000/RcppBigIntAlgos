@@ -12,9 +12,11 @@
  */
 
 #include "RSAFactorUtils.h"
+#include "CleanConvert.h"
 
 // [[Rcpp::export]]
-SEXP QuadraticSieveContainer(SEXP Rn) {
+SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
+                             SEXP RNumThreads, int maxThreads) {
     
     std::size_t vSize;
     
@@ -58,7 +60,14 @@ SEXP QuadraticSieveContainer(SEXP Rn) {
     for (std::size_t i = 0; i < mpzChunkBig; ++i)
         mpz_init(factors[i]);
     
-    QuadSieveHelper(nmpz, factors, arrayMax, numUni, lengths);
+    int nThreads = 1;
+    const bool bShowStats = convertLogical(RShowStats, "bShowStats");
+    
+    if (!Rf_isNull(RNumThreads))
+        convertInt(RNumThreads, nThreads, "nThreads");
+    
+    QuadSieveHelper(nmpz, factors, arrayMax,
+                    numUni, lengths, nThreads, bShowStats);
     
     // Sort the prime factors as well as order the
     // lengths vector by the order of the factors array

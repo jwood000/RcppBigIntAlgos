@@ -4,10 +4,6 @@
 #include "TonelliShanks.h"
 #include <Rcpp.h>
 #include <gmp.h>
-#include <chrono>
-
-// Used for checking whether user has interrupted computation
-constexpr auto timeout = std::chrono::milliseconds(1000);
 
 constexpr std::size_t hundredThousand = 100000;
 constexpr double Significand53 = 9007199254740991.0;

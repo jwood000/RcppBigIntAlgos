@@ -1,7 +1,7 @@
 #include "FactorUtils.h"
 
 // [[Rcpp::export]]
-SEXP getDivisorsC(SEXP Rv, SEXP RNamed) {
+SEXP getDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
     
     std::size_t vSize = 0;
     
@@ -46,9 +46,6 @@ SEXP getDivisorsC(SEXP Rv, SEXP RNamed) {
                 }
             }
             
-            mpz_t val;
-            mpz_init(val);
-            
             if (isNamed) {
                 constexpr int base10 = 10;
                 Rcpp::CharacterVector myNames(vSize);
@@ -72,6 +69,14 @@ SEXP getDivisorsC(SEXP Rv, SEXP RNamed) {
         }
     }
     
+    for (std::size_t i = 0; i < mpzChunkBig; ++i)
+        mpz_clear(primeFacs[i]);
+    
+    for (std::size_t i = 0; i < vSize; ++i)
+        mpz_clear(myVec[i]);
+    
+    myVec.reset();
+    primeFacs.reset();
     Rcpp::IntegerVector resTrivial(1);
     return resTrivial;
 }

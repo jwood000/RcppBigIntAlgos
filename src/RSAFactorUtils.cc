@@ -211,7 +211,8 @@ myReturn:
 
 void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
                      mpz_t *const result, std::size_t& numPs,
-                     std::vector<std::size_t>& myLens,
+                     std::vector<std::size_t>& myLens, 
+                     std::size_t nThreads, bool bShowStats,
                      std::size_t powMaster, std::size_t arrayMax,
                      std::vector<std::size_t>& extraRecursionFacs) {
     
@@ -219,7 +220,7 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
         pollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
                                  powMaster, arrayMax, extraRecursionFacs);
     } else {
-        QuadraticSieve(n, result);
+        QuadraticSieve(n, result, nThreads, bShowStats);
         
         for (std::size_t i = 0; i < 2; ++i) {
             std::size_t myPow = 1;
@@ -233,8 +234,8 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
                 mpz_t recurseTemp[2];
                 mpz_init(recurseTemp[0]); mpz_init(recurseTemp[1]);
                 
-                getBigPrimeFacs(result[i], factors,
-                                recurseTemp, numPs, myLens,
+                getBigPrimeFacs(result[i], factors, recurseTemp,
+                                numPs, myLens, nThreads, bShowStats,
                                 myPow, arrayMax, extraRecursionFacs);
                 
                 mpz_clear(recurseTemp[0]);
@@ -258,7 +259,8 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
 }
 
 void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
-                     std::size_t &numUni, std::vector<std::size_t> &lengths) {
+                     std::size_t &numUni, std::vector<std::size_t> &lengths,
+                     std::size_t nThreads, bool bShowStats) {
     
     std::vector<std::size_t> extraRecursionFacs;
     std::size_t myPow = 1;
@@ -371,8 +373,8 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
                 lengths.push_back(1);
                 ++numUni;
             } else {
-                getBigPrimeFacs(nmpz, factors, result.get(), numUni,
-                                lengths, myPow, arrayMax, extraRecursionFacs);
+                getBigPrimeFacs(nmpz, factors, result.get(), numUni, lengths,
+                                nThreads, bShowStats, myPow, arrayMax, extraRecursionFacs);
                 mpz_clear(result[0]);
                 mpz_clear(result[1]);
             }

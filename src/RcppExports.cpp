@@ -6,36 +6,52 @@
 using namespace Rcpp;
 
 // getDivisorsC
-SEXP getDivisorsC(SEXP Rv, SEXP RNamed);
-RcppExport SEXP _bigIntegerAlgos_getDivisorsC(SEXP RvSEXP, SEXP RNamedSEXP) {
+SEXP getDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads);
+RcppExport SEXP _RcppBigIntAlgos_getDivisorsC(SEXP RvSEXP, SEXP RNamedSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type Rv(RvSEXP);
     Rcpp::traits::input_parameter< SEXP >::type RNamed(RNamedSEXP);
-    rcpp_result_gen = Rcpp::wrap(getDivisorsC(Rv, RNamed));
+    Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
+    Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(getDivisorsC(Rv, RNamed, RNumThreads, maxThreads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp11GetNumThreads
+int cpp11GetNumThreads();
+RcppExport SEXP _RcppBigIntAlgos_cpp11GetNumThreads() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(cpp11GetNumThreads());
     return rcpp_result_gen;
 END_RCPP
 }
 // QuadraticSieveContainer
-SEXP QuadraticSieveContainer(SEXP Rn);
-RcppExport SEXP _bigIntegerAlgos_QuadraticSieveContainer(SEXP RnSEXP) {
+SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats, SEXP RNumThreads, int maxThreads);
+RcppExport SEXP _RcppBigIntAlgos_QuadraticSieveContainer(SEXP RnSEXP, SEXP RShowStatsSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type Rn(RnSEXP);
-    rcpp_result_gen = Rcpp::wrap(QuadraticSieveContainer(Rn));
+    Rcpp::traits::input_parameter< SEXP >::type RShowStats(RShowStatsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
+    Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(QuadraticSieveContainer(Rn, RShowStats, RNumThreads, maxThreads));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_bigIntegerAlgos_getDivisorsC", (DL_FUNC) &_bigIntegerAlgos_getDivisorsC, 2},
-    {"_bigIntegerAlgos_QuadraticSieveContainer", (DL_FUNC) &_bigIntegerAlgos_QuadraticSieveContainer, 1},
+    {"_RcppBigIntAlgos_getDivisorsC", (DL_FUNC) &_RcppBigIntAlgos_getDivisorsC, 4},
+    {"_RcppBigIntAlgos_cpp11GetNumThreads", (DL_FUNC) &_RcppBigIntAlgos_cpp11GetNumThreads, 0},
+    {"_RcppBigIntAlgos_QuadraticSieveContainer", (DL_FUNC) &_RcppBigIntAlgos_QuadraticSieveContainer, 4},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_bigIntegerAlgos(DllInfo *dll) {
+RcppExport void R_init_RcppBigIntAlgos(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
