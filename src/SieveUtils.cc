@@ -166,20 +166,22 @@ void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
                 }
             }
         } else {
+            const int64_t signedFB = FBase[i];
+            
             if (myMin > q) {
                 myStart0 = myMin - q;
             } else if (mpz_sgn(lowerBound) < 0) {
-                myStart0 = -1 * (q - FBase[i] - myMin);
+                myStart0 = -1 * (q - signedFB - myMin);
             } else {
-                myStart0 = FBase[i] - ((myMax + q) % FBase[i]);
+                myStart0 = signedFB - ((myMax + q) % signedFB);
             }
             
             if (myMax > q) {
                 myStart1 = myMax - q;
             } else if (mpz_sgn(lowerBound) < 0) {
-                myStart1 = -1 * (q - FBase[i] - myMax);
+                myStart1 = -1 * (q - signedFB - myMax);
             } else {
-                myStart1 = FBase[i] - ((myMin + q) % FBase[i]);
+                myStart1 = signedFB - ((myMin + q) % signedFB);
             }
         }
         
