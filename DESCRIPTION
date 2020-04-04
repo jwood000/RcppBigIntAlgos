@@ -1,6 +1,6 @@
-Package: bigIntegerAlgos
+Package: RcppBigIntAlgos
 Type: Package
-Title: R Tool for Factoring Big Integers
+Title: Factor Big Integers with the Quadratic Sieve
 Version: 0.2.1
 Authors@R: c(person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
              person("Mike","Tryczak", role="ctb"))
@@ -17,7 +17,7 @@ Imports: Rcpp
 LinkingTo: Rcpp, RcppThread
 Suggests: testthat, numbers (>= 0.6-6), RcppAlgos (>= 1.0.1)
 NeedsCompilation: yes
-URL: https://github.com/jwood000/bigIntegerAlgos, 
+URL: https://github.com/jwood000/RcppBigIntAlgos, 
         http://mathworld.wolfram.com/QuadraticSieve.html
-BugReports: https://github.com/jwood000/bigIntegerAlgos/issues
+BugReports: https://github.com/jwood000/RcppBigIntAlgos/issues
 RoxygenNote: 6.1.1

@@ -1,24 +1,24 @@
-[![CRAN status](https://www.r-pkg.org/badges/version/bigIntegerAlgos)](https://cran.r-project.org/package=bigIntegerAlgos)
-[![Travis build status](https://travis-ci.com/jwood000/bigIntegerAlgos.svg?branch=master)](https://travis-ci.com/jwood000/bigIntegerAlgos)
-![](http://cranlogs.r-pkg.org/badges/bigIntegerAlgos?color=orange)
-![](http://cranlogs.r-pkg.org/badges/grand-total/bigIntegerAlgos?color=brightgreen)
-[![Dependencies](https://tinyverse.netlify.com/badge/bigIntegerAlgos)](https://cran.r-project.org/package=bigIntegerAlgos)
+[![CRAN status](https://www.r-pkg.org/badges/version/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
+[![Travis build status](https://travis-ci.com/jwood000/RcppBigIntAlgos.svg?branch=master)](https://travis-ci.com/jwood000/RcppBigIntAlgos)
+![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
+![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
+[![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
 
-# bigIntegerAlgos
+# RcppBigIntAlgos
 
 Overview
 ---------
-bigIntegerAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
+RcppBigIntAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
 factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from https://gmplib.org/... this is the same algorithm found in the R gmp package (https://cran.r-project.org/web/packages/gmp/gmp.pdf) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
 
 Installation
 ------------
 
 ``` r
-install.packages("bigIntegerAlgos")
+install.packages("RcppBigIntAlgos")
 
 ## Or install the development version
-devtools::install_github("jwood000/bigIntegerAlgos")
+devtools::install_github("jwood000/RcppBigIntAlgos")
 ```
 
 Usage
@@ -170,17 +170,18 @@ semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
 nchar(as.character(semiPrime164bits))
 [1] 50
 
-system.time(print(quadraticSieve(semiPrime164bits)))
-Big Integer ('bigz') object of length 2:
-[1] 2128750292720207278230259 4721136619794898059404993
-   user  system elapsed 
- 24.754   0.043  24.752
+quadraticSieve(semiPrime164bit, showStats=TRUE)
+
+Summary Statistics for Factoring:
+    10050120961360479179164300841596861740399588283187
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|      25s 297ms     |   100%   |     1391    |     739    |     805    |
 
  
 ## And here is the 60 digit example
 semiPrime200bits <- prod(nextprime(urand.bigz(2, 100, 1729)))
-Seed default initialisation
-Seed initialisation
 
 semiPrime200bits
 Big Integer ('bigz') :
@@ -189,11 +190,41 @@ Big Integer ('bigz') :
 nchar(as.character(semiPrime200bits))
 [1] 60
 
-system.time(print(quadraticSieve(semiPrime200bits)))
+quadraticSieve(semiPrime200bit, showStats=TRUE)
+
+Summary Statistics for Factoring:
+    394753378083444510740772455309612207212651808400888672450967
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|    4m 49s 319ms    |   100%   |     7742    |    1371    |    1699    |
+
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
-   user  system elapsed 
-290.837   0.339 291.093
+```
+
+```r
+threePrime195bit <- prod(nextprime(urand.bigz(3, 65, 97)))
+
+quadraticSieve(threePrime195bit, showStats=TRUE)
+
+Summary Statistics for Factoring:
+    6634573213431810791169420577087478977215298519759798575509
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|     3m 7s 951ms    |   100%   |     5345    |    1243    |    1609    |
+
+
+Summary Statistics for Factoring:
+    202568699792573213335520384055117307693
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|       1s 97ms      |   100%   |      77     |     286    |     332    |
+
+Big Integer ('bigz') object of length 3:
+[1] 11281626468262639417 17955629036507943829 32752213052784053513
 ```
 
 It can also be used as a general prime factoring function:
@@ -245,4 +276,4 @@ Currenlty, our main focus is on implementing our sieve in a parallel fashion.
 
 Contact
 ----
-I welcome any and all feedback. If you would like to report a bug, have a question, or have suggestions for possible improvements, please file an [issue](<https://github.com/jwood000/bigIntegerAlgos/issues>).
+I welcome any and all feedback. If you would like to report a bug, have a question, or have suggestions for possible improvements, please file an [issue](<https://github.com/jwood000/RcppBigIntAlgos/issues>).

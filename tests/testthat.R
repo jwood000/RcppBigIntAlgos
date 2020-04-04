@@ -1,4 +1,4 @@
 library(testthat)
-library(bigIntegerAlgos)
+library(RcppBigIntAlgos)
 
-test_check("bigIntegerAlgos")
+test_check("RcppBigIntAlgos")

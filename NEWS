@@ -1,22 +1,23 @@
-bigIntegerAlgos 0.2.0 (Release date: 2020-03-27)
+RcppBigIntAlgos 0.2.0 (Release date: 2020-03-27)
 
+* Now uses Rcpp & RcppThread
+* Changed the package name to be more in line with the related RcppAlgos package.
 * Major overhaul of quadratic sieve algorithm
 * You can now safely interrupt execution
 * Removed config files and classes associated with the gmp R library
 * Now uses C++11
-* Now links to Rcpp & RcppThread
 * quadraticSieve now accepts negative numbers. It behaves similarly to gmp::factorize
 
-bigIntegerAlgos 0.1.2 (Release date: 2018-04-30)
+RcppBigIntAlgos 0.1.2 (Release date: 2018-04-30)
 
 * Fixed additional error found on Solaris flavor in quadraticsieve.cc
 
-bigIntegerAlgos 0.1.1 (Release date: 2018-04-25)
+RcppBigIntAlgos 0.1.1 (Release date: 2018-04-25)
 
 * Fixed error associated with the Solaris flavor in factorization.cc file.
 * Forced complilation with C++11 on Windows build only (see Makevars.win) to address the following warnings : "ISO C++ 1998 does not support 'long long' [-Wlong-long]"
 * Slightly altered factors that determine the cutoff point for sieving the log sum of the prime decomposition of the sieving interval constituents
 
-bigIntegerAlgos 0.1.0 (Release date: 2018-04-11)
+RcppBigIntAlgos 0.1.0 (Release date: 2018-04-11)
 
 * Initial Release
