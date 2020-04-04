@@ -6,13 +6,12 @@
 
 # RcppBigIntAlgos
 
-Overview
----------
+## Overview
+
 RcppBigIntAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
 factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from https://gmplib.org/... this is the same algorithm found in the R gmp package (https://cran.r-project.org/web/packages/gmp/gmp.pdf) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
 
-Installation
-------------
+## Installation
 
 ``` r
 install.packages("RcppBigIntAlgos")
@@ -21,8 +20,8 @@ install.packages("RcppBigIntAlgos")
 devtools::install_github("jwood000/RcppBigIntAlgos")
 ```
 
-Usage
------
+## Usage
+
 First, we take a look at `divisorsBig`. It is vectorized and can also return a named list.
 ``` r
 ## Get all divisors of a given number:
@@ -55,6 +54,8 @@ Big Integer ('bigz') object of length 12:
 [11] 130676004909113784553654997198 261352009818227569107309994396
 ```
 
+### Efficiency
+
 It is very efficient as well. It is equipped with a modified merge sort algorithm that significantly outperforms the `std::sort`/`bigvec` (the class utilized in the `R gmp` package) combination.
 
 ```r
@@ -76,6 +77,9 @@ Big Integer ('bigz') object of length 6:
 [5] 2576887603660056655182305648828106363510537610005000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 [6] 5153775207320113310364611297656212727021075220010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 ```
+
+### Correct Ordering
+
  Another benefit is that it will return correct orderings on extremely large numbers when compared to sorting large vectors in `base R`.  Typically in `base R` you must execute the following: `order(asNumeric(myVectorHere))`. When the numbers get large enough, precision is lost which leads to incorrect orderings. Observe:
  
 ```r
@@ -102,15 +106,15 @@ Big Integer ('bigz') object of length 6:
 
 ```
 
-The Quadratic Sieve
---------------
-The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 50 digits (~160 bits).
+## The Quadratic Sieve
+
+The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 60 digits (~200 bits).
 
 ```r
 ## Generate large semi-primes
-semiPrime120bits <- prod(nextprime(urand.bigz(2,60,42)))
-semiPrime130bits <- prod(nextprime(urand.bigz(2,65,1)))
-semiPrime140bits <- prod(nextprime(urand.bigz(2,70,42)))
+semiPrime120bits <- prod(nextprime(urand.bigz(2, 60, 42)))
+semiPrime130bits <- prod(nextprime(urand.bigz(2, 65, 1)))
+semiPrime140bits <- prod(nextprime(urand.bigz(2, 70, 42)))
 
 ## The 120 bit number is 36 digits
 nchar(as.character(semiPrime120bits))
@@ -161,7 +165,9 @@ Big Integer ('bigz') object of length 2:
   1.148   0.005   1.153 
 ```
 
-And for good measure, here is a 50 digit semiprime factored in under 30 secs followed by a 60 digit semiprime factored in about 5 minutes.
+### 50+ Digits
+
+And for good measure, here is a 50 digit semiprime factored in under 30 secs followed by a 60 digit semiprime factored in under 5 minutes.
 
 ```r
 semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
@@ -203,6 +209,10 @@ Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
 ```
 
+### Factor More Than Just Semiprimes
+
+If you encounter a number that is a product of multiple large primes, the algorithm will recursively factor the number into two numbers until every number is part is prime.
+
 ```r
 threePrime195bit <- prod(nextprime(urand.bigz(3, 65, 97)))
 
@@ -227,6 +237,8 @@ Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
 ```
 
+### General Prime Factoring
+
 It can also be used as a general prime factoring function:
 
 ```r
@@ -238,8 +250,7 @@ Big Integer ('bigz') object of length 5:
 
 However `gmp::factorize` is more suitable for numbers smaller than 60 bits and should be used in such cases.
 
-Safely Interrupt Execution in **`quadraticSieve`**
------
+## Safely Interrupt Execution in **`quadraticSieve`**
 
 If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution. Underneath, we check for user interruption once every second.
 
@@ -254,10 +265,9 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 ## Timing stopped at: 1.623 0.102 1.726
 ```
 
-Acknowledgments and Resources:
------
+## Acknowledgments and Resources:
 
-* Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
+* Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
 
 * [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
 
@@ -270,10 +280,10 @@ Acknowledgments and Resources:
 * [Integer Factorization using the Quadratic Sieve
 ](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
 
-Current Research:
------
+## Current Research:
+
 Currenlty, our main focus is on implementing our sieve in a parallel fashion.
 
-Contact
-----
+## Contact
+
 I welcome any and all feedback. If you would like to report a bug, have a question, or have suggestions for possible improvements, please file an [issue](<https://github.com/jwood000/RcppBigIntAlgos/issues>).
