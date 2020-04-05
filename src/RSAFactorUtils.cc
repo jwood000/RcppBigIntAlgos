@@ -223,12 +223,8 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
         QuadraticSieve(n, result, nThreads, bShowStats);
         
         for (std::size_t i = 0; i < 2; ++i) {
-            std::size_t myPow = 1;
-            
-            if (mpz_perfect_power_p(result[i]))
-                myPow = getPower(result[i]);
-
-            myPow *= powMaster;
+            const std::size_t myPow = ((mpz_perfect_power_p(result[i])) ?
+                                        getPower(result[i]) : 1) * powMaster;
             
             if (mpz_probab_prime_p(result[i], MR_REPS) == 0) {
                 mpz_t recurseTemp[2];
@@ -286,15 +282,15 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
         while (increaseSize) {
             arrayMax += mpzChunkBig;
             factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-            
+
             for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; ++i)
                 mpz_init(factors[i]);
-            
+
             increaseSize = pollardRhoWithConstraint(nmpz, 1, factors, numUni,
                                                     lengths, POLLARD_RHO_REPS,
                                                     1, arrayMax, extraRecursionFacs);
         }
-        
+
         // extraRecursionFacs are factors that are a result of the pollarRho algo
         // terminating early because of the limitations on the size of the factors
         // array. As a result, we are left with an extra factor, say f, that can't
@@ -304,33 +300,33 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
         // it to the extraRecursionFacs vector. Below, we take this info and fully
         // factorize these partially factored numbers and add them to our final array.
         const std::size_t eRFSize = extraRecursionFacs.size();
-        
+
         if (eRFSize > 0) {
             arrayMax += (eRFSize * mpzChunkBig);
             factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-            
+
             for (std::size_t i = (arrayMax - (eRFSize * mpzChunkBig)); i < arrayMax; ++i)
                 mpz_init(factors[i]);
-            
+
             auto tempFacs = FromCpp14::make_unique<mpz_t[]>(mpzChunkBig);
-            
+
             for (std::size_t i = 0; i < mpzChunkBig; ++i)
                 mpz_init(tempFacs[i]);
-            
+
             mpz_t tempNum;
             mpz_init(tempNum);
-            
+
             for (const auto xtraFacs: extraRecursionFacs) {
                 mpz_set(tempNum, factors[xtraFacs]);
                 std::size_t tempUni = 0;
                 std::vector<std::size_t> tempLens, dummyVec;
-                
+
                 int temp = pollardRhoWithConstraint(tempNum, 1, tempFacs.get(), tempUni,
                                                     tempLens, 10000000, 1,
                                                     100000, dummyVec);
                 if (temp == 0) {
                     mpz_set(factors[xtraFacs], tempFacs[0]);
-                    
+
                     for (std::size_t i = 1; i < tempUni; ++i) {
                         mpz_set(factors[numUni], tempFacs[i]);
                         lengths.push_back(tempLens[i]);
@@ -340,20 +336,20 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
                     Rcpp::stop("Too many prime factors!!");
                 }
             }
-            
+
             for (std::size_t i = 0; i < mpzChunkBig; ++i)
                 mpz_clear(tempFacs[i]);
-            
+
             tempFacs.reset();
             mpz_clear(tempNum);
         }
-        
+
         // If there is less than 60% of mpzChunkBig, then increase array
         // size to ensure that the functions below have enough space
         if ((100 * (arrayMax - numUni) / mpzChunkBig) < 60) {
             arrayMax += mpzChunkBig;
             factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-            
+
             for (std::size_t i = arrayMax - mpzChunkBig; i < arrayMax; ++i)
                 mpz_init(factors[i]);
         }
@@ -368,7 +364,7 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
             
             if (mpz_probab_prime_p(nmpz, MR_REPS) != 0) {
                 mpz_set(factors[numUni], nmpz);
-                lengths.push_back(1);
+                lengths.push_back(myPow);
                 ++numUni;
             } else {
                 getBigPrimeFacs(nmpz, factors, result.get(), numUni, lengths,
