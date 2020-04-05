@@ -163,7 +163,7 @@ system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
-  1.148   0.005   1.153 
+  1.073   0.009   1.082
 ```
 
 ### 50+ Digits
