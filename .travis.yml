@@ -15,9 +15,6 @@ addons:
       
 r_packages:
   - covr
-  
-before_install:
-    - tlmgr install inconsolata
       
 after_success:
   - Rscript -e "covr::codecov()"
