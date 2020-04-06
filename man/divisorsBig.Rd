@@ -7,12 +7,11 @@ Vectorized Factorization (Complete) with GMP
 Quickly generates the complete factorization for many (possibly large) numbers.
 }
 \usage{
-divisorsBig(v, namedList = FALSE, nThreads = NULL)
+divisorsBig(v, namedList = FALSE)
 }
 \arguments{
   \item{v}{Vector of integers, numerics, string values, or elements of class bigz.}
   \item{namedList}{Logical flag. If \code{TRUE} and the \code{length(v) > 1}, a named list is returned. The default is \code{FALSE}.}
-  \item{nThreads}{Specific number of threads to be used. The default is \code{NULL}.}
 }
 \details{
 Highly optimized algorithm to generate the complete factorization for many numbers. It is built specifically for the data type that is used in the gmp library (i.e. \href{https://gmplib.org/manual/Nomenclature-and-Types.html#Nomenclature-and-Types}{\code{mpz_t}}).
