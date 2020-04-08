@@ -133,7 +133,7 @@ std::vector<std::size_t> myMergeSort(mpz_t *const arr,
     return myInd;
 }
 
-SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
+SEXP FactorNum(mpz_t val, std::unique_ptr<mpz_t[]> &primeFacs) {
     
     if (mpz_cmp_ui(val, 1) == 0) {
         mpz_t mpzOne;
@@ -179,10 +179,10 @@ SEXP factorNum(mpz_t val, mpz_t primeFacs[]) {
                                "over one quadrillion (10^15) factors!!");
             }
         } else {
-            getPrimeFactors(val, primeFacs, numUni, lengths);
+            GetPrimeFactors(val, primeFacs.get(), numUni, lengths);
         }
         
-        quickSort(primeFacs, 0, numUni - 1, lengths);
+        QuickSort(primeFacs.get(), 0, numUni - 1, lengths);
         
         std::vector<std::size_t> myIndex(lengths[0] + 1);
         std::size_t facSize = 1, numFacs = 1;

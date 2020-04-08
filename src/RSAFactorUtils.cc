@@ -1,9 +1,10 @@
 #include "RSAFactorUtils.h"
+#include "GrowMPZArray.h"
 
 // Max number of iterations in the main loop
 constexpr std::size_t POLLARD_RHO_REPS = 100000u;
 
-std::size_t getPower(mpz_t nmpz) {
+std::size_t GetPower(mpz_t nmpz) {
     
     mpz_t testRoot;
     mpz_init(testRoot);
@@ -81,10 +82,10 @@ std::size_t getPower(mpz_t nmpz) {
     return myPow;
 }
 
-int pollardRhoWithConstraint(mpz_t n, std::size_t a, mpz_t factors[], std::size_t& numPs,
+int PollardRhoWithConstraint(mpz_t n, std::size_t a, mpz_t *const factors, std::size_t& numPs,
                              std::vector<std::size_t>& myLens, std::size_t myLimit,
                              std::size_t powMultiplier, std::size_t arrayMax,
-                             std::vector<std::size_t>& extraRecursionFacs) {
+                             std::vector<std::size_t>& xtraRecFacs) {
     mpz_t x, z, y, P;
     mpz_t t, t2;
     int returnVal = 0;
@@ -152,16 +153,16 @@ int pollardRhoWithConstraint(mpz_t n, std::size_t a, mpz_t factors[], std::size_
         mpz_divexact(n, n, t);	/* divide by t, before t is overwritten */
 
         if (mpz_probab_prime_p(t, MR_REPS) == 0) {
-            returnVal = pollardRhoWithConstraint(t, a + 1, factors, numPs,
+            returnVal = PollardRhoWithConstraint(t, a + 1, factors, numPs,
                                                   myLens, myLimit, powMultiplier, 
-                                                  arrayMax, extraRecursionFacs);
+                                                  arrayMax, xtraRecFacs);
             if (returnVal == 1) {
                 int ind = numPs - 1;
                 
                 while (mpz_probab_prime_p(factors[ind], MR_REPS) == 0)
                     --ind;
                 
-                extraRecursionFacs.push_back(ind);
+                xtraRecFacs.push_back(ind);
                 mpz_mul(factors[ind], factors[ind], t);
                 goto myReturn;
             }
@@ -209,7 +210,7 @@ myReturn:
     return returnVal;
 }
 
-void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
+void GetBigPrimeFacs(mpz_t n, mpz_t *const factors,
                      mpz_t *const result, std::size_t& numPs,
                      std::vector<std::size_t>& myLens, 
                      std::size_t nThreads, bool bShowStats,
@@ -217,20 +218,20 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
                      std::vector<std::size_t>& extraRecursionFacs) {
     
     if (mpz_sizeinbase(n, 10) < 24) {
-        pollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
+        PollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
                                  powMaster, arrayMax, extraRecursionFacs);
     } else {
         QuadraticSieve(n, result, nThreads, bShowStats);
         
         for (std::size_t i = 0; i < 2; ++i) {
             const std::size_t myPow = ((mpz_perfect_power_p(result[i])) ?
-                                        getPower(result[i]) : 1) * powMaster;
+                                        GetPower(result[i]) : 1) * powMaster;
             
             if (mpz_probab_prime_p(result[i], MR_REPS) == 0) {
                 mpz_t recurseTemp[2];
                 mpz_init(recurseTemp[0]); mpz_init(recurseTemp[1]);
                 
-                getBigPrimeFacs(result[i], factors, recurseTemp,
+                GetBigPrimeFacs(result[i], factors, recurseTemp,
                                 numPs, myLens, nThreads, bShowStats,
                                 myPow, arrayMax, extraRecursionFacs);
                 
@@ -254,39 +255,33 @@ void getBigPrimeFacs(mpz_t n, mpz_t *const factors,
     }
 }
 
-void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
+void QuadSieveHelper(mpz_t nmpz, std::unique_ptr<mpz_t[]> &factors, std::size_t &arrayMax,
                      std::size_t &numUni, std::vector<std::size_t> &lengths,
                      std::size_t nThreads, bool bShowStats) {
     
     std::vector<std::size_t> extraRecursionFacs;
     
     // First we test for small factors.
-    int increaseSize = trialDivision(nmpz, factors, numUni, lengths, arrayMax);
+    int increaseSize = TrialDivision(nmpz, factors.get(), numUni, lengths, arrayMax);
     
     while (increaseSize) {
-        arrayMax += mpzChunkBig;
-        factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-        
-        for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; ++i)
-            mpz_init(factors[i]);
-        
-        increaseSize = trialDivision(nmpz, factors, numUni, lengths, arrayMax);
+        const std::size_t oldMax = arrayMax;
+        arrayMax <<= 1;
+        Grow(factors, oldMax, arrayMax);
+        increaseSize = TrialDivision(nmpz, factors.get(), numUni, lengths, arrayMax);
     }
     
     if (mpz_cmp_ui(nmpz, 1) != 0) {
         // We now test for larger primes using pollard's rho
         // algorithm, but constrain it to a limited number of checks
-        increaseSize = pollardRhoWithConstraint(nmpz, 1, factors, numUni,
+        increaseSize = PollardRhoWithConstraint(nmpz, 1, factors.get(), numUni,
                                                 lengths, POLLARD_RHO_REPS,
                                                 1, arrayMax, extraRecursionFacs);
         while (increaseSize) {
-            arrayMax += mpzChunkBig;
-            factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-
-            for (std::size_t i = (arrayMax - mpzChunkBig); i < arrayMax; ++i)
-                mpz_init(factors[i]);
-
-            increaseSize = pollardRhoWithConstraint(nmpz, 1, factors, numUni,
+            const std::size_t oldMax = arrayMax;
+            arrayMax <<= 1;
+            Grow(factors, oldMax, arrayMax);
+            increaseSize = PollardRhoWithConstraint(nmpz, 1, factors.get(), numUni,
                                                     lengths, POLLARD_RHO_REPS,
                                                     1, arrayMax, extraRecursionFacs);
         }
@@ -302,12 +297,10 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
         const std::size_t eRFSize = extraRecursionFacs.size();
 
         if (eRFSize > 0) {
+            const std::size_t oldMax = arrayMax;
             arrayMax += (eRFSize * mpzChunkBig);
-            factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-
-            for (std::size_t i = (arrayMax - (eRFSize * mpzChunkBig)); i < arrayMax; ++i)
-                mpz_init(factors[i]);
-
+            Grow(factors, oldMax, arrayMax);
+            
             auto tempFacs = FromCpp14::make_unique<mpz_t[]>(mpzChunkBig);
 
             for (std::size_t i = 0; i < mpzChunkBig; ++i)
@@ -321,7 +314,7 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
                 std::size_t tempUni = 0;
                 std::vector<std::size_t> tempLens, dummyVec;
 
-                int temp = pollardRhoWithConstraint(tempNum, 1, tempFacs.get(), tempUni,
+                int temp = PollardRhoWithConstraint(tempNum, 1, tempFacs.get(), tempUni,
                                                     tempLens, 10000000, 1,
                                                     100000, dummyVec);
                 if (temp == 0) {
@@ -347,11 +340,9 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
         // If there is less than 60% of mpzChunkBig, then increase array
         // size to ensure that the functions below have enough space
         if ((100 * (arrayMax - numUni) / mpzChunkBig) < 60) {
-            arrayMax += mpzChunkBig;
-            factors = (mpz_t *) realloc(factors, arrayMax * sizeof(factors[0]));
-
-            for (std::size_t i = arrayMax - mpzChunkBig; i < arrayMax; ++i)
-                mpz_init(factors[i]);
+            std::size_t oldMax = arrayMax;
+            arrayMax <<= 1;
+            Grow(factors, oldMax, arrayMax);
         }
         
         if (mpz_cmp_ui(nmpz, 1) != 0) {
@@ -360,14 +351,14 @@ void QuadSieveHelper(mpz_t nmpz, mpz_t factors[], std::size_t &arrayMax,
             mpz_init(result[1]);
             
             // Shield quadratic sieve from perfect powers
-            const std::size_t myPow = (mpz_perfect_power_p(nmpz)) ? getPower(nmpz) : 1;
+            const std::size_t myPow = (mpz_perfect_power_p(nmpz)) ? GetPower(nmpz) : 1;
             
             if (mpz_probab_prime_p(nmpz, MR_REPS) != 0) {
                 mpz_set(factors[numUni], nmpz);
                 lengths.push_back(myPow);
                 ++numUni;
             } else {
-                getBigPrimeFacs(nmpz, factors, result.get(), numUni, lengths,
+                GetBigPrimeFacs(nmpz, factors.get(), result.get(), numUni, lengths,
                                 nThreads, bShowStats, myPow, arrayMax, extraRecursionFacs);
                 mpz_clear(result[0]);
                 mpz_clear(result[1]);

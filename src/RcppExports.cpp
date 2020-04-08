@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// getDivisorsC
-SEXP getDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads);
-RcppExport SEXP _RcppBigIntAlgos_getDivisorsC(SEXP RvSEXP, SEXP RNamedSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
+// GetDivisorsC
+SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads);
+RcppExport SEXP _RcppBigIntAlgos_GetDivisorsC(SEXP RvSEXP, SEXP RNamedSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -15,7 +15,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< SEXP >::type RNamed(RNamedSEXP);
     Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
     Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(getDivisorsC(Rv, RNamed, RNumThreads, maxThreads));
+    rcpp_result_gen = Rcpp::wrap(GetDivisorsC(Rv, RNamed, RNumThreads, maxThreads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -45,7 +45,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RcppBigIntAlgos_getDivisorsC", (DL_FUNC) &_RcppBigIntAlgos_getDivisorsC, 4},
+    {"_RcppBigIntAlgos_GetDivisorsC", (DL_FUNC) &_RcppBigIntAlgos_GetDivisorsC, 4},
     {"_RcppBigIntAlgos_cpp11GetNumThreads", (DL_FUNC) &_RcppBigIntAlgos_cpp11GetNumThreads, 0},
     {"_RcppBigIntAlgos_QuadraticSieveContainer", (DL_FUNC) &_RcppBigIntAlgos_QuadraticSieveContainer, 4},
     {NULL, NULL, 0}

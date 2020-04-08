@@ -37,7 +37,7 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
         Rcpp::stop("Can only factor one number at a time");
     
     // This is from the importExportMPZ header
-    createMPZArray(Rn, myVec, 1);
+    CreateMPZArray(Rn, myVec, 1);
     mpz_t nmpz;
     mpz_init_set(nmpz, myVec[0]);
     mpz_clear(myVec[0]);
@@ -54,8 +54,7 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
     std::vector<std::size_t> lengths;
     std::size_t numUni = 0;
     
-    mpz_t *factors;
-    factors = (mpz_t *) malloc(mpzChunkBig * sizeof(mpz_t));
+    auto factors = FromCpp14::make_unique<mpz_t[]>(mpzChunkBig);
     
     for (std::size_t i = 0; i < mpzChunkBig; ++i)
         mpz_init(factors[i]);
@@ -71,7 +70,7 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
     
     // Sort the prime factors as well as order the
     // lengths vector by the order of the factors array
-    quickSort(factors, 0, numUni - 1, lengths);
+    QuickSort(factors.get(), 0, numUni - 1, lengths);
     
     const std::size_t totalNum = std::accumulate(lengths.cbegin(),
                                                  lengths.cend(), 0u) + IsNegative;
@@ -114,7 +113,7 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
         mpz_clear(factors[i]);
     
     mpz_clear(negOne);
-    free(factors);
+    factors.reset();
     ans.attr("class") = Rcpp::CharacterVector::create("bigz");
     return ans;
 }

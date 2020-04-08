@@ -1,6 +1,7 @@
 #include "SolutionSearch.h"
 #include "Cpp14MakeUnique.h"
 #include "StatsUtils.h"
+#include "GrowMPZArray.h"
 #include <unordered_map>
 
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
@@ -136,13 +137,15 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         mpz_init(largeCoFactors[i]);
     }
     
-    std::size_t mpzFSzLIMIT = facSize * 5;
+    std::size_t mpzFSzLIMIT = facSize * 10;
     // This array will be passed to solutionSeach.
-    mpz_t* mpzFacBase = (mpz_t *) malloc(mpzFSzLIMIT * sizeof(mpz_t));
+    // mpz_t* mpzFacBase = (mpz_t *) malloc(mpzFSzLIMIT * sizeof(mpz_t));
     
-    if (mpzFacBase == nullptr) {
-        Rcpp::stop("Cannot allocate memory for mpzFacBase");
-    }
+    auto mpzFacBase = FromCpp14::make_unique<mpz_t[]>(mpzFSzLIMIT);
+    
+    // if (mpzFacBase == nullptr) {
+    //     Rcpp::stop("Cannot allocate memory for mpzFacBase");
+    // }
     
     for (std::size_t i = 0; i < mpzFSzLIMIT; ++i)
         mpz_init(mpzFacBase[i]);
@@ -359,6 +362,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
+        mpz_t* testRealloc = nullptr;
         
         // Find enough smooth numbers to guarantee a non-trivial solution
         while (currLim <= loopLimit) {
@@ -371,21 +375,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     LegendreTest = false;
             }
             
-            if (mpzFacSize == mpzFSzLIMIT) {
+            if (mpzFacSize >= mpzFSzLIMIT) {
                 mpzFSzLIMIT <<= 1;
-                mpz_t* testRealloc = (mpz_t *) realloc(mpzFacBase,
-                                      mpzFSzLIMIT * sizeof *mpzFacBase);
-                
-                if (testRealloc == nullptr) {
-                    Rcpp::stop("Cannot reallocate the size of mpzFacBase!!");
-                } else {
-                    mpzFacBase = testRealloc;
-                }
-                
-                for (std::size_t i = mpzFacSize; i < mpzFSzLIMIT; ++i)
-                    mpz_init(mpzFacBase[i]);
+                Grow(mpzFacBase, mpzFacSize, mpzFSzLIMIT);
             }
-            
+
             mpz_set(mpzFacBase[mpzFacSize], Atemp);
             ++mpzFacSize;
             
@@ -558,11 +552,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
         auto newTestInt = FromCpp14::make_unique<mpz_t[]>(matRow);
         std::vector<uint8_t> newMat(matRow * matWidth, 0);
-        
+
         std::size_t k = 0;
         std::size_t r = 0;
         std::size_t row = 0;
-        
+
         for (const auto &pows: powsOfSmooths) {
             for (std::size_t i = 0; i < pows.size(); i += colWidth, row += matWidth, ++r) {
                 mpz_init_set(newTestInt[r], smoothInterval[r]);
@@ -572,28 +566,18 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
                 newMat[row + powsFacInd[k]] = (k > 0) ? 2u : 0u;
             }
-            
+
             ++k;
         }
-        
+
         if ((coFactorInd + mpzFacSize) >= mpzFSzLIMIT) {
             mpzFSzLIMIT <<= 1;
-            mpz_t* testRealloc = (mpz_t *) realloc(mpzFacBase,
-                                  mpzFSzLIMIT * sizeof *mpzFacBase);
-            
-            if (testRealloc == nullptr) {
-                Rcpp::stop("Cannot reallocate the size of mpzFacBase!!");
-            } else {
-                mpzFacBase = testRealloc;
-            }
-            
-            for (std::size_t i = mpzFacSize; i < mpzFSzLIMIT; ++i)
-                mpz_init(mpzFacBase[i]);
+            Grow(mpzFacBase, mpzFacSize, mpzFSzLIMIT);
         }
-        
+
         for (std::size_t i = 0, j = mpzFacSize; i < coFactorInd; ++i, ++j)
             mpz_set(mpzFacBase[j], largeCoFactors[i]);
-        
+
         for (std::size_t i = 0, r = nSmooth,
              row = matWidth * nSmooth; i < nPartial; ++i, ++r, row += matWidth) {
 
@@ -604,16 +588,16 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
             newMat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
         }
-        
+
         solutionSearch(newMat, matRow, matWidth, myNum,
-                       mpzFacBase, newTestInt.get(), factors);
-        
+                       mpzFacBase.get(), newTestInt.get(), factors);
+
         for (std::size_t i = 0; i < matRow; ++i)
             mpz_clear(newTestInt[i]);
 
         newTestInt.reset();
         extraFacs += 5;
-        
+
         if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
             const auto checkPoint3 = std::chrono::steady_clock::now();
             makeStats(loopLimit, loopLimit, nPolys, nSmooth,
@@ -638,8 +622,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         mpz_clear(mpzFacBase[i]);
     
     // We must free mpzFacBase as it was initiallized with malloc
-    free(mpzFacBase);
-    
+    // free(mpzFacBase);
+    mpzFacBase.reset();
     smoothInterval.reset();
     partialInterval.reset();
     largeCoFactors.reset();
