@@ -139,13 +139,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     std::size_t mpzFSzLIMIT = facSize * 10;
     // This array will be passed to solutionSeach.
-    // mpz_t* mpzFacBase = (mpz_t *) malloc(mpzFSzLIMIT * sizeof(mpz_t));
-    
     auto mpzFacBase = FromCpp14::make_unique<mpz_t[]>(mpzFSzLIMIT);
-    
-    // if (mpzFacBase == nullptr) {
-    //     Rcpp::stop("Cannot allocate memory for mpzFacBase");
-    // }
     
     for (std::size_t i = 0; i < mpzFSzLIMIT; ++i)
         mpz_init(mpzFacBase[i]);
@@ -362,7 +356,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
-        mpz_t* testRealloc = nullptr;
         
         // Find enough smooth numbers to guarantee a non-trivial solution
         while (currLim <= loopLimit) {
@@ -621,8 +614,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     for (std::size_t i = 0; i < mpzFSzLIMIT; ++i)
         mpz_clear(mpzFacBase[i]);
     
-    // We must free mpzFacBase as it was initiallized with malloc
-    // free(mpzFacBase);
     mpzFacBase.reset();
     smoothInterval.reset();
     partialInterval.reset();
