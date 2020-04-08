@@ -15,7 +15,7 @@
 
 #include "ImportExportMPZ.h"
 
-void createMPZArray(SEXP v, mpz_t *const myVec, std::size_t sizevec) {
+void CreateMPZArray(SEXP v, mpz_t *const myVec, std::size_t sizevec) {
     
     switch (TYPEOF(v)) {
         case RAWSXP: {
@@ -105,7 +105,7 @@ int myRaw(char* raw, mpz_t value, std::size_t totals) {
     return totals;
 }
 
-void quickSort(mpz_t *const arr, int left, int right,
+void QuickSort(mpz_t *const arr, int left, int right,
                std::vector<std::size_t> &lens) {
     
     int i = left, j = right, mid;
@@ -135,8 +135,8 @@ void quickSort(mpz_t *const arr, int left, int right,
     
     /* recursion */
     if (left < j)
-        quickSort(arr, left, j, lens);
+        QuickSort(arr, left, j, lens);
     
     if (i < right)
-        quickSort(arr, i, right, lens);
+        QuickSort(arr, i, right, lens);
 }

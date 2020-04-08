@@ -1,7 +1,7 @@
 #include "FactorUtils.h"
 
 // [[Rcpp::export]]
-SEXP getDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
+SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
     
     std::size_t vSize = 0;
     
@@ -21,14 +21,14 @@ SEXP getDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
     for (std::size_t i = 0; i < vSize; ++i)
         mpz_init(myVec[i]);
     
-    createMPZArray(Rv, myVec.get(), vSize);
+    CreateMPZArray(Rv, myVec.get(), vSize);
     
     for (std::size_t i = 0; i < mpzChunkBig; ++i)
         mpz_init(primeFacs[i]);
     
     if (vSize > 0) {
         if (vSize == 1) {
-            return factorNum(myVec[0], primeFacs.get());
+            return FactorNum(myVec[0], primeFacs);
         } else {
             Rcpp::List res(vSize);
             bool isNamed = false;
@@ -57,12 +57,12 @@ SEXP getDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
                 }
                 
                 for (std::size_t i = 0; i < vSize; ++i)
-                    res[i] = factorNum(myVec[i], primeFacs.get());
+                    res[i] = FactorNum(myVec[i], primeFacs);
                 
                 res.attr("names") = myNames;
             } else {
                 for (std::size_t i = 0; i < vSize; ++i)
-                    res[i] = factorNum(myVec[i], primeFacs.get());
+                    res[i] = FactorNum(myVec[i], primeFacs);
             }
 
             return res;

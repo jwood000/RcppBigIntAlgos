@@ -1,5 +1,5 @@
 divisorsBig <- function(v, namedList = FALSE) {
-    getDivisorsC(v, namedList, NULL, pkgEnv$nThreads)
+    GetDivisorsC(v, namedList, NULL, pkgEnv$nThreads)
 }
 
 quadraticSieve <- function(n, showStats = FALSE) {

@@ -12,10 +12,10 @@
  *
  * Note: this is adapted from demo "factorize.c" file from gmplib
  */
-void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
+void GetPrimeFactors(mpz_t t, mpz_t *const factors, std::size_t &numPs,
                      std::vector<std::size_t> &myLens);
 
-int trialDivision(mpz_t t, mpz_t factors[], std::size_t& numPs,
+int TrialDivision(mpz_t t, mpz_t *const factors, std::size_t& numPs,
                   std::vector<std::size_t>& myLens, 
                   std::size_t arrayMax);
 

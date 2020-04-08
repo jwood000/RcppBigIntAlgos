@@ -20,7 +20,7 @@ this program.  If not, see http://www.gnu.org/licenses/.  */
 
 #include "PollardRho.h"
 
-int trialDivision(mpz_t t, mpz_t factors[], std::size_t& numPs,
+int TrialDivision(mpz_t t, mpz_t *const factors, std::size_t& numPs,
                   std::vector<std::size_t>& myLens, 
                   std::size_t arrayMax) {
     mpz_t q;
@@ -70,9 +70,9 @@ int trialDivision(mpz_t t, mpz_t factors[], std::size_t& numPs,
     return 0;
 }
 
-void factor_using_pollard_rho(mpz_t n, std::size_t a,
-                              mpz_t factors[], std::size_t& numPs,
-                              std::vector<std::size_t>& myLens) {
+void PollardRho(mpz_t n, std::size_t a, mpz_t *const factors,
+                std::size_t& numPs, std::vector<std::size_t>& myLens) {
+    
     mpz_t x, z, y, P;
     mpz_t t, t2;
     std::size_t  k, l, i;
@@ -131,7 +131,7 @@ void factor_using_pollard_rho(mpz_t n, std::size_t a,
         mpz_divexact (n, n, t);	/* divide by t, before t is overwritten */
 
         if (mpz_probab_prime_p (t, MR_REPS) == 0) {
-            factor_using_pollard_rho (t, a + 1, factors, numPs, myLens);
+            PollardRho(t, a + 1, factors, numPs, myLens);
         } else {
             mpz_set(factors[numPs], t);
             myLens.push_back(1);
@@ -169,11 +169,11 @@ void factor_using_pollard_rho(mpz_t n, std::size_t a,
     mpz_clear (y);
 }
 
-void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
+void GetPrimeFactors(mpz_t t, mpz_t *const factors, std::size_t &numPs,
                      std::vector<std::size_t> &myLens) {
     
     if (mpz_sgn (t) != 0) {
-        int increaseSize = trialDivision(t, factors, numPs, myLens, mpzChunkBig);
+        int increaseSize = TrialDivision(t, factors, numPs, myLens, mpzChunkBig);
         
         if (increaseSize) {
             Rcpp::stop("Too many prime factors. Result will contain "
@@ -186,7 +186,7 @@ void getPrimeFactors(mpz_t t, mpz_t factors[], std::size_t &numPs,
     	        myLens.push_back(1);
     	        ++numPs;
     	    } else{
-    	        factor_using_pollard_rho(t, 1, factors, numPs, myLens);
+    	        PollardRho(t, 1, factors, numPs, myLens);
             }
         }
     }
