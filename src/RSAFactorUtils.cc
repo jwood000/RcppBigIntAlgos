@@ -339,7 +339,8 @@ void QuadSieveHelper(mpz_t nmpz, std::unique_ptr<mpz_t[]> &factors, std::size_t 
 
         // If there is less than 60% of mpzChunkBig, then increase array
         // size to ensure that the functions below have enough space
-        if ((100 * (arrayMax - numUni) / mpzChunkBig) < 60) {
+        if ((100.0 * static_cast<double>(arrayMax - numUni) /
+                            static_cast<double>(mpzChunkBig)) < 60.0) {
             std::size_t oldMax = arrayMax;
             arrayMax <<= 1;
             Grow(factors, oldMax, arrayMax);
