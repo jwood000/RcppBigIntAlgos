@@ -28,6 +28,40 @@ test_that("quadraticSieve generates correct numbers", {
     
     quadSieveFacs <- lapply(testNums, quadraticSieve)
     expect_equal(gmpFactorize, quadSieveFacs);
+    
+    prime500 <- c(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53,
+                  59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
+                  127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181,
+                  191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251,
+                  257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317,
+                  331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397,
+                  401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463,
+                  467, 479, 487, 491, 499)
+    
+    ## We are ensuring that the resizing of the factors array is correct
+    expect_equal(quadraticSieve(prod.bigz(prime500)),
+                 factorize(prod.bigz(prime500)))
+    
+    prime5K58 <- c(5003, 5009, 5011, 5021, 5023, 5039, 5051, 5059, 5077, 5081,
+                   5087, 5099, 5101, 5107, 5113, 5119, 5147, 5153, 5167, 5171,
+                   5179, 5189, 5197, 5209, 5227, 5231, 5233, 5237, 5261, 5273,
+                   5279, 5281, 5297, 5303, 5309, 5323, 5333, 5347, 5351, 5381,
+                   5387, 5393, 5399, 5407, 5413, 5417, 5419, 5431, 5437, 5441,
+                   5443, 5449, 5471, 5477, 5479, 5483, 5501, 5503, 5507, 5519,
+                   5521, 5527, 5531, 5557, 5563, 5569, 5573, 5581, 5591, 5623,
+                   5639, 5641, 5647, 5651, 5653, 5657, 5659, 5669, 5683, 5689,
+                   5693, 5701, 5711, 5717, 5737, 5741, 5743, 5749, 5779, 5783,
+                   5791)
+    
+    ## Again, we are ensuring that the resizing of the factors array is
+    ## correct (It can occur in multiple places in quadraticSieve)
+    a <- quadraticSieve(prod.bigz(c(prime500, prime5K58)))
+    b <- factorize(prod.bigz(c(prime500, prime5K58)))
+    
+    ## factorize does not sort the output when the prime numbers are greater
+    ## than 4001. This is actually when the pollard rho algorithm is engaged
+    b <- b[order(asNumeric(b))]
+    expect_equal(a, b)
 })
 
 test_that("quadraticSieve produces appropriate error messages", {
