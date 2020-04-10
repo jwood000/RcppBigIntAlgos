@@ -1,7 +1,13 @@
-RcppBigIntAlgos 0.2.0 (Release date: 2020-03-27)
+RcppBigIntAlgos 0.2.1 (Release date: 2020-04-10)
 
-* Now uses Rcpp & RcppThread
-* Changed the package name to be more in line with the related RcppAlgos package.
+* Added references in DESCRIPTION file
+* Added Mike Tryczak as contributor
+* One can now see summary statistics via the showStats parameter in the quadraticSieve function
+
+RcppBigIntAlgos 0.2.0 (Release date: Never released)
+
+* Now uses Rcpp & RcppThread (Multiple threads are not enabled yet, but will be the focus of the next major release)
+* Changed the package name to be more in line with the related RcppAlgos package
 * Major overhaul of quadratic sieve algorithm
 * You can now safely interrupt execution
 * Removed config files and classes associated with the gmp R library
