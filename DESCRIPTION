@@ -5,19 +5,29 @@ Version: 0.2.1
 Authors@R: c(person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
              person("Mike","Tryczak", role="ctb"))
 Maintainer: Joseph Wood <jwood000@gmail.com>
-Description: Features the multiple polynomial quadratic sieve algorithm
+Description: Features the multiple polynomial quadratic sieve (MPQS) algorithm
     for factoring large integers and a vectorized factoring function that
-    returns the complete factorization of an integer. Utilizes the C
-    library GMP (GNU Multiple Precision Arithmetic).
+    returns the complete factorization of an integer. The MPQS is based off of
+    the seminal work of Carl Pomerance (1984) <doi:10.1007/3-540-39757-4_17>
+    along with the modification of multiple polynomials introduced by Peter
+    Montgomery and J. Davis as outlined by Robert D. Silverman (1987)
+    <doi:10.1090/S0025-5718-1987-0866119-8>. Utilizes the C library
+    GMP (GNU Multiple Precision Arithmetic). The Pollard's Rho algorithm for
+    factoring smaller numbers is the same algorithm used by the factorize
+    function in the 'gmp' package. Formerly called 'bigIntegerAlgos'.
 License: GPL (>= 2)
 Encoding: UTF-8
 SystemRequirements: C++11, gmp (>= 4.2.3)
 Depends: gmp
 Imports: Rcpp
 LinkingTo: Rcpp, RcppThread
-Suggests: testthat, numbers (>= 0.6-6), RcppAlgos (>= 1.0.1)
+Suggests: testthat, numbers, RcppAlgos
 NeedsCompilation: yes
-URL: https://github.com/jwood000/RcppBigIntAlgos, 
-        http://mathworld.wolfram.com/QuadraticSieve.html
+URL: https://github.com/jwood000/RcppBigIntAlgos, https://gmplib.org/,
+        http://mathworld.wolfram.com/QuadraticSieve.html,
+        http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf,
+        http://www.cs.virginia.edu/crab/QFS_Simple.pdf,
+        https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf,
+        https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/
 BugReports: https://github.com/jwood000/RcppBigIntAlgos/issues
 RoxygenNote: 6.1.1
