@@ -16,7 +16,7 @@ quadraticSieve(n, showStats = FALSE)
 \details{
 First, \href{https://en.wikipedia.org/wiki/Trial_division}{trial division} is carried out to remove small prime numbers, then a modified version of \href{https://en.wikipedia.org/wiki/Pollard\%27s_rho_algorithm}{Pollard's rho algorithm} that is constrained is called to quickly remove further prime numbers. Next, we check to make sure that we are not passing a perfect power to the main quadratic sieve algorithm. After removing any perfect powers, we finally call the quadratic sieve with multiple polynomials in a recursive fashion until we have completely factored our number.
 
-When \code{showStats = TRUE}, summary statistics will be shown if the quadratic sieve is needed. The statistics are:
+When \code{showStats = TRUE}, summary statistics will be shown if the quadratic sieve is needed. The frequency of updates is dynamic as writing to stdout can be expensive. It is determined by how fast smooth numbers (including partially smooth numbers) are found along with the total number of smooth numbers required in order to find a non-trivial factorization. The statistics are:
 \describe{
     \item{\code{Time}}{The time measured in hours \code{h}, minutes \code{m}, seconds \code{s}, and milliseconds \code{ms}.}
     \item{\code{Complete}}{The percent of smooth numbers plus partially smooth numbers required to guarantee a non-trivial solution when \href{https://en.wikipedia.org/wiki/Gaussian_elimination}{Gaussian Elimination} is performed on the matrix of powers of primes.}
