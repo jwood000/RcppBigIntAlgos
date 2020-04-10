@@ -3,6 +3,7 @@
 ![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
+[![Coverage status](https://codecov.io/gh/jwood000/RcppBigIntAlgos/branch/master/graph/badge.svg)](https://codecov.io/github/jwood000/RcppBigIntAlgos?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c)](https://www.codacy.com/manual/jwood000/RcppBigIntAlgos?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jwood000/RcppBigIntAlgos&amp;utm_campaign=Badge_Grade)
 
 # RcppBigIntAlgos
@@ -212,7 +213,7 @@ Big Integer ('bigz') object of length 2:
 
 ### Factor More Than Just Semiprimes
 
-If you encounter a number that is a product of multiple large primes, the algorithm will recursively factor the number into two numbers until every number is part is prime.
+If you encounter a number that is a product of multiple large primes, the algorithm will recursively factor the number into two numbers until every part is prime.
 
 ```r
 threePrime195bit <- prod(nextprime(urand.bigz(3, 65, 97)))
@@ -249,7 +250,7 @@ Big Integer ('bigz') object of length 5:
 [1] 5       31      307     2441    4702723
 ```
 
-However `gmp::factorize` is more suitable for numbers smaller than 60 bits and should be used in such cases.
+However `gmp::factorize` is more suitable for numbers smaller than 70 bits (about 22 decimal digits) and should be used in such cases.
 
 ## Safely Interrupt Execution in **`quadraticSieve`**
 
@@ -268,7 +269,7 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 
 ## Acknowledgments and Resources
 
-  * Huge credit to user [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
+  * Credit to [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his excellent answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
   
   * [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
   
