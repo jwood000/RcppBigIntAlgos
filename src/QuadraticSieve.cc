@@ -3,6 +3,7 @@
 #include "StatsUtils.h"
 #include "GrowMPZArray.h"
 #include <unordered_map>
+#include <fstream>
 
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
@@ -41,7 +42,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                                              * std::pow(dblDigCount, 3.0) + 0.0016806
                                              * std::pow(dblDigCount, 4.0) + 3637.0671);
     
-    std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
+    const std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
     
     while (LimB < myTarget) {
         LimB = std::exp((0.5 + fudge1) * sqrLogLog);
@@ -172,13 +173,16 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     mpz_sqrt(temp, temp);
     mpz_mul_ui(temp, temp, Upper);
     
-    const double fudge2 = (digCount < 30) ? 0.70 : 
-                          (digCount < 35) ? 0.90 : 
-                          (digCount < 40) ? 1.05 : 
-                          (digCount < 45) ? 1.10 :
-                          (digCount < 50) ? 1.20 : 1.50;
-    
+    // rawCoef <- unname(lm(c(0.7, 0.9, 1.05, 1.1, 1.2, 1.5) ~ c(25, seq(34, 49, 5), 65))$coefficients)
+    // names(rawCoef) <- c("intercept", "x^1")
+    // rawCoef
+    //  intercept        x^1 
+    // 0.23420680 0.01970609
+    const double fudge2 = 0.23420680 + digCount * 0.01970609;
     const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
+    const double partFacLimit = static_cast<double>((fudge2 * 200) * facBase.back());
+    
+    Rcpp::Rcout << partFacLimit << "\n";
     
     std::vector<double> LnFB(facSize);
     std::vector<double> myLogs(LenB2, 0.0);
@@ -221,7 +225,22 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     std::size_t nPartial = 0u;
     std::size_t coFactorInd = 0u;
     std::size_t nSmooth = 0u;
-
+    
+    // std::ofstream partialFile;
+    // std::ofstream smoothFile;
+    // partialFile.open("cutFudge2Partial.csv");
+    
+    mpz_t myMax, realMax;
+    mpz_init(myMax); mpz_init(realMax);
+    mpz_set_ui(myMax, 0u);
+    mpz_set_ui(realMax, 0u);
+    
+    // std::size_t count = 0;
+    // 
+    // std::size_t numBreak = 56865667;
+    // std::ofstream valFile;
+    // valFile.open("partialCofactors.csv");
+    
     if (largeLogsSize > 0) {
         for (std::size_t j = 0; j < largeLogsSize; ++j) {
             std::vector<std::size_t> primeIndexVec;
@@ -231,7 +250,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 mpz_abs(sqrDiff[largeLogs[j]], sqrDiff[largeLogs[j]]);
                 primeIndexVec.push_back(0u);
             }
-
+            
             for (std::size_t i = 0; i < facSize; ++i) {
                 while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
                     mpz_divexact_ui(sqrDiff[largeLogs[j]],
@@ -244,14 +263,36 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
                 // Found a smooth number
                 mpz_set(smoothInterval[nSmooth], largeInterval[largeLogs[j]]);
+                
+                // auto buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(smoothInterval[nSmooth], 10) + 2);
+                // mpz_get_str(buffer.get(), 10, smoothInterval[nSmooth]);
+                // std::string strMyNum = buffer.get();
+                // 
+                // smoothFile << strMyNum << "\n";
+                
                 smoothFacsRow.push_back(j * colWidth);
                 ++nSmooth;
-            } else {
-                const uint64_t myKey = makeKey(sqrDiff[largeLogs[j]]);
+            } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], partFacLimit) < 0) {
+                
+                const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
                 const auto pFacIt = partFactorsMap.find(myKey);
+                
+                // if (mpz_cmp(sqrDiff[largeLogs[j]], myMax) > 0) {
+                //     mpz_set(myMax, sqrDiff[largeLogs[j]]);
+                // }
+                // 
+                // if (mpz_cmp_ui(sqrDiff[largeLogs[j]], numBreak) > 0) {
+                //     ++count;
+                // }
 
                 if (pFacIt != partFactorsMap.end()) {
                     const auto trackIt = keepingTrack.find(myKey);
+                    
+                    // if (mpz_cmp(sqrDiff[largeLogs[j]], realMax) > 0) {
+                    //     mpz_set(realMax, sqrDiff[largeLogs[j]]);
+                    // }
+                    // double myVal = mpz_get_d(sqrDiff[largeLogs[j]]);
+                    // valFile << myVal << "\n";
 
                     if (trackIt != keepingTrack.end()) {
                         coFactorIndexVec.push_back(trackIt->second);
@@ -267,7 +308,19 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
                     powsOfPartials.push_back(primeIndexVec);
                     const auto intervalIt = partIntvlMap.find(myKey);
-
+                    
+                    // auto buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(intervalIt->second, 10) + 2);
+                    // mpz_get_str(buffer.get(), 10, intervalIt->second);
+                    // std::string strMyNum = buffer.get();
+                    // 
+                    // partialFile << strMyNum << "\n";
+                    // 
+                    // buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(largeInterval[largeLogs[j]], 10) + 2);
+                    // mpz_get_str(buffer.get(), 10, largeInterval[largeLogs[j]]);
+                    // strMyNum = buffer.get();
+                    // 
+                    // partialFile << strMyNum << "\n";
+                    
                     mpz_mul(partialInterval[nPartial],
                             largeInterval[largeLogs[j]],
                             intervalIt->second);
@@ -353,6 +406,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         RcppThread::Rcout << "|--------------------|----------|-------------|---------"
                           << "---|------------|" << std::endl;
     }
+    
+    // Rcpp::Rcout << theCut << std::endl;
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
@@ -465,17 +520,38 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     mpz_mul_si(temp, A, myInterval[largeLogs[j]]);
 
                     if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
+                        
                         // Found a smooth number
                         smoothFacsRow.push_back(j * colWidth);
                         mpz_add(smoothInterval[nSmooth], temp, B);
+                        
+                        // auto buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(smoothInterval[nSmooth], 10) + 2);
+                        // mpz_get_str(buffer.get(), 10, smoothInterval[nSmooth]);
+                        // std::string strMyNum = buffer.get();
+                        // 
+                        // smoothFile << strMyNum << "\n";
+                        
                         ++nSmooth;
-                    } else {
-                        const uint64_t myKey = makeKey(sqrDiff[largeLogs[j]]);
+                    } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], partFacLimit) < 0) {
+                        const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
                         const auto pFacIt = partFactorsMap.find(myKey);
+                        
+                        // if (mpz_cmp(sqrDiff[largeLogs[j]], myMax) > 0) {
+                        //     mpz_set(myMax, sqrDiff[largeLogs[j]]);
+                        // }
+                        // 
+                        // if (mpz_cmp_ui(sqrDiff[largeLogs[j]], numBreak) > 0) {
+                        //     ++count;
+                        // }
 
                         if (pFacIt != partFactorsMap.end()) {
                             const auto trackIt = keepingTrack.find(myKey);
-
+                            // double myVal = mpz_get_d(sqrDiff[largeLogs[j]]);
+                            // valFile << myVal << "\n";
+                            // if (mpz_cmp(sqrDiff[largeLogs[j]], realMax) > 0) {
+                            //     mpz_set(realMax, sqrDiff[largeLogs[j]]);
+                            // }
+                            
                             if (trackIt != keepingTrack.end()) {
                                 coFactorIndexVec.push_back(trackIt->second);
                             } else {
@@ -492,6 +568,18 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                             const auto intervalIt = partIntvlMap.find(myKey);
 
                             mpz_add(temp, temp, B);
+                            // auto buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(intervalIt->second, 10) + 2);
+                            // mpz_get_str(buffer.get(), 10, intervalIt->second);
+                            // std::string strMyNum = buffer.get();
+                            // 
+                            // partialFile << strMyNum << "\n";
+                            // 
+                            // buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(temp, 10) + 2);
+                            // mpz_get_str(buffer.get(), 10, temp);
+                            // strMyNum = buffer.get();
+                            // 
+                            // partialFile << strMyNum << "\n";
+                            // 
                             mpz_mul(partialInterval[nPartial],
                                     temp, intervalIt->second);
 
@@ -540,6 +628,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             }
         }
         
+        // gmp_printf("myMax : %Zd\n", myMax);
+        // gmp_printf("realMax : %Zd\n", realMax);
+        // Rcpp::Rcout << count << ' ' << partFactorsMap.size() << std::endl;
+        
         const std::size_t matRow = nSmooth + nPartial;
         const std::size_t matWidth = coFactorInd + mpzFacSize + 1;
 
@@ -581,7 +673,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
             newMat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
         }
-
+        
+        // partialFile.close();
+        // smoothFile.close();
+        // valFile.close();
+        
         solutionSearch(newMat, matRow, matWidth, myNum,
                        mpzFacBase.get(), newTestInt.get(), factors);
 
