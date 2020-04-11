@@ -169,7 +169,7 @@ Big Integer ('bigz') object of length 2:
 
 ### 50+ Digits
 
-And for good measure, here is a 50 digit semiprime factored in under 30 secs followed by a 60 digit semiprime factored in under 5 minutes.
+Below, we factor a 50 digit semiprime in under 30 secs followed by a 60 digit semiprime factored in under 5 minutes.
 
 ```r
 semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
@@ -178,7 +178,7 @@ semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
 nchar(as.character(semiPrime164bits))
 [1] 50
 
-quadraticSieve(semiPrime164bit, showStats=TRUE)
+quadraticSieve(semiPrime164bits, showStats=TRUE)
 
 Summary Statistics for Factoring:
     10050120961360479179164300841596861740399588283187
@@ -209,6 +209,28 @@ Summary Statistics for Factoring:
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
+```
+
+Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 40 minutes.
+
+```r
+mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
+
+mostWanted1983
+Big Integer ('bigz') :
+[1] 11111111111111111111111111111111111111111111111111111111111111111111111
+
+quadraticSieve(mostWanted1983, showStats=TRUE)
+
+Summary Statistics for Factoring:
+    11111111111111111111111111111111111111111111111111111111111111111111111
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|    38m 49s 508ms   |   100%   |    28313    |    2836    |    3497    |
+
+Big Integer ('bigz') object of length 2:
+[1] 241573142393627673576957439049            45994811347886846310221728895223034301839
 ```
 
 ### Factor More Than Just Semiprimes
