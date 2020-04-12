@@ -179,6 +179,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                           (digCount < 50) ? 1.20 : 1.50;
     
     const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
+    const double partFacLim = fudge2 * 1000.0 * facBase.back();
     
     std::vector<double> LnFB(facSize);
     std::vector<double> myLogs(LenB2, 0.0);
@@ -246,8 +247,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 mpz_set(smoothInterval[nSmooth], largeInterval[largeLogs[j]]);
                 smoothFacsRow.push_back(j * colWidth);
                 ++nSmooth;
-            } else {
-                const uint64_t myKey = makeKey(sqrDiff[largeLogs[j]]);
+            } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], partFacLim) < 0){
+                const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
                 const auto pFacIt = partFactorsMap.find(myKey);
 
                 if (pFacIt != partFactorsMap.end()) {
@@ -469,8 +470,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                         smoothFacsRow.push_back(j * colWidth);
                         mpz_add(smoothInterval[nSmooth], temp, B);
                         ++nSmooth;
-                    } else {
-                        const uint64_t myKey = makeKey(sqrDiff[largeLogs[j]]);
+                    } else  if (mpz_cmp_d(sqrDiff[largeLogs[j]], partFacLim) < 0) {
+                        const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
                         const auto pFacIt = partFactorsMap.find(myKey);
 
                         if (pFacIt != partFactorsMap.end()) {
@@ -484,7 +485,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                                 coFactorIndexVec.push_back(coFactorInd);
                                 ++coFactorInd;
                             }
-
+                            
                             for (const auto p: pFacIt->second)
                                 primeIndexVec.push_back(p);
 
