@@ -172,12 +172,12 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     mpz_sqrt(temp, temp);
     mpz_mul_ui(temp, temp, Upper);
     
-    const double fudge2 = (digCount < 30) ? 0.70 : 
-                          (digCount < 35) ? 0.90 : 
-                          (digCount < 40) ? 1.05 : 
-                          (digCount < 45) ? 1.10 :
-                          (digCount < 50) ? 1.20 : 1.50;
-    
+    // rawCoef <- unname(lm(c(0.7, 0.9, 1.05, 1.1, 1.2, 1.5) ~ c(25, seq(34, 49, 5), 65))$coefficients)
+    // names(rawCoef) <- c("intercept", "x^1")
+    // rawCoef
+    //  intercept        x^1 
+    // 0.23420680 0.01970609
+    const double fudge2 = 0.23420680 + digCount * 0.01970609;
     const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
     const double partFacLim = fudge2 * 1000.0 * facBase.back();
     
