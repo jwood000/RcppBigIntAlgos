@@ -169,7 +169,7 @@ Big Integer ('bigz') object of length 2:
 
 ### 50+ Digits
 
-Below, we factor a 50 digit semiprime in under 30 secs followed by a 60 digit semiprime factored in under 5 minutes.
+Below, we factor a 50 digit semiprime in under 25 secs followed by a 60 digit semiprime factored in under 4 minutes.
 
 ```r
 semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
@@ -185,33 +185,32 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      25s 297ms     |   100%   |     1391    |     739    |     805    |
+|      22s 431ms     |   100%   |     1167    |     616    |     931    |
+
+Big Integer ('bigz') object of length 2:
+[1] 2128750292720207278230259 4721136619794898059404993
 
  
 ## And here is the 60 digit example
-semiPrime200bits <- prod(nextprime(urand.bigz(2, 100, 1729)))
-
-semiPrime200bits
-Big Integer ('bigz') :
-[1] 394753378083444510740772455309612207212651808400888672450967
+semiPrime200bits <- prod(nextprime(urand.bigz(2, 100, 54321)))
 
 nchar(as.character(semiPrime200bits))
 [1] 60
 
-quadraticSieve(semiPrime200bit, showStats=TRUE)
+quadraticSieve(semiPrime200bits, showStats=TRUE)
 
 Summary Statistics for Factoring:
-    394753378083444510740772455309612207212651808400888672450967
+    351690280992157967931534477809979835705469970606369788279951
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    4m 49s 319ms    |   100%   |     7742    |    1371    |    1699    |
+|     3m 58s 7ms     |   100%   |     5734    |    1256    |    1818    |
 
 Big Integer ('bigz') object of length 2:
-[1] 514864663444011777835756770809 766712897798959945129214210063
+[1] 370456074864725714139792118423 949344078432456021073759272137
 ```
 
-Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 40 minutes.
+Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in just over 36 minutes.
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
@@ -227,7 +226,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    38m 49s 508ms   |   100%   |    28313    |    2836    |    3497    |
+|    36m 9s 969ms    |   100%   |    25460    |    2548    |    3785    |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -238,24 +237,24 @@ Big Integer ('bigz') object of length 2:
 If you encounter a number that is a product of multiple large primes, the algorithm will recursively factor the number into two numbers until every part is prime.
 
 ```r
-threePrime195bit <- prod(nextprime(urand.bigz(3, 65, 97)))
+threePrime195bits <- prod(nextprime(urand.bigz(3, 65, 97)))
 
-quadraticSieve(threePrime195bit, showStats=TRUE)
+quadraticSieve(threePrime195bits, showStats=TRUE)
 
 Summary Statistics for Factoring:
     6634573213431810791169420577087478977215298519759798575509
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|     3m 7s 951ms    |   100%   |     5345    |    1243    |    1609    |
+|     3m 1s 296ms    |   100%   |     4773    |    1122    |    1730    |
 
 
 Summary Statistics for Factoring:
-    202568699792573213335520384055117307693
+    369498233670465681342232176125551121921
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|       1s 97ms      |   100%   |      77     |     286    |     332    |
+|        816ms       |   100%   |      62     |     292    |     327    |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
