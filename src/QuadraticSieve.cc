@@ -139,6 +139,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     }
     
     std::size_t mpzFSzLIMIT = facSize * 10;
+    
     // This array will be passed to solutionSeach.
     auto mpzFacBase = FromCpp14::make_unique<mpz_t[]>(mpzFSzLIMIT);
     
@@ -227,66 +228,64 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     std::vector<uint8_t> smoothMat(facSize * colWidth, 0u);
 
-    if (largeLogsSize > 0) {
-        for (std::size_t j = 0; j < largeLogsSize; ++j) {
-            std::vector<std::size_t> primeIndexVec;
+    for (std::size_t j = 0; j < largeLogs.size(); ++j) {
+        std::vector<std::size_t> primeIndexVec;
 
-            if (mpz_sgn(sqrDiff[largeLogs[j]]) < 0) {
-                mpz_abs(sqrDiff[largeLogs[j]], sqrDiff[largeLogs[j]]);
-                primeIndexVec.push_back(0u);
+        if (mpz_sgn(sqrDiff[largeLogs[j]]) < 0) {
+            mpz_abs(sqrDiff[largeLogs[j]], sqrDiff[largeLogs[j]]);
+            primeIndexVec.push_back(0u);
+        }
+
+        for (std::size_t i = 0; i < facSize; ++i) {
+            while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
+                mpz_divexact_ui(sqrDiff[largeLogs[j]],
+                                sqrDiff[largeLogs[j]], facBase[i]);
+                primeIndexVec.push_back(i + 1);
             }
+        }
 
-            for (std::size_t i = 0; i < facSize; ++i) {
-                while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
-                    mpz_divexact_ui(sqrDiff[largeLogs[j]],
-                                    sqrDiff[largeLogs[j]], facBase[i]);
-                    primeIndexVec.push_back(i + 1);
-                }
-            }
+        if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
+            // Found a smooth number
+            mpz_set(smoothInterval[nSmooth], largeInterval[largeLogs[j]]);
+            smoothFacsRow.push_back(j * colWidth);
+            
+            for (auto p: primeIndexVec)
+                ++smoothMat[nSmooth * colWidth + p];
+            
+            ++nSmooth;
+        } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], Significand53) < 0) {
+            const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
+            const auto pFacIt = partFactorsMap.find(myKey);
 
-            if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
-                // Found a smooth number
-                mpz_set(smoothInterval[nSmooth], largeInterval[largeLogs[j]]);
-                smoothFacsRow.push_back(j * colWidth);
-                
-                for (auto p: primeIndexVec)
-                    ++smoothMat[nSmooth * colWidth + p];
-                
-                ++nSmooth;
-            } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], Significand53) < 0) {
-                const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
-                const auto pFacIt = partFactorsMap.find(myKey);
+            if (pFacIt != partFactorsMap.end()) {
+                const auto trackIt = keepingTrack.find(myKey);
 
-                if (pFacIt != partFactorsMap.end()) {
-                    const auto trackIt = keepingTrack.find(myKey);
-
-                    if (trackIt != keepingTrack.end()) {
-                        coFactorIndexVec.push_back(trackIt->second);
-                    } else {
-                        keepingTrack[myKey] = coFactorInd;
-                        mpz_set(largeCoFactors[coFactorInd], sqrDiff[largeLogs[j]]);
-                        coFactorIndexVec.push_back(coFactorInd);
-                        ++coFactorInd;
-                    }
-
-                    for (const auto p: pFacIt->second)
-                        primeIndexVec.push_back(p);
-
-                    powsOfPartials.push_back(primeIndexVec);
-                    const auto intervalIt = partIntvlMap.find(myKey);
-
-                    mpz_mul(partialInterval[nPartial],
-                            largeInterval[largeLogs[j]],
-                            intervalIt->second);
-
-                    partFactorsMap.erase(pFacIt);
-                    partIntvlMap.erase(intervalIt);
-                    ++nPartial;
+                if (trackIt != keepingTrack.end()) {
+                    coFactorIndexVec.push_back(trackIt->second);
                 } else {
-                    partFactorsMap[myKey] = primeIndexVec;
-                    mpz_init(partIntvlMap[myKey]);
-                    mpz_set(partIntvlMap[myKey], largeInterval[largeLogs[j]]);
+                    keepingTrack[myKey] = coFactorInd;
+                    mpz_set(largeCoFactors[coFactorInd], sqrDiff[largeLogs[j]]);
+                    coFactorIndexVec.push_back(coFactorInd);
+                    ++coFactorInd;
                 }
+
+                for (const auto p: pFacIt->second)
+                    primeIndexVec.push_back(p);
+
+                powsOfPartials.push_back(primeIndexVec);
+                const auto intervalIt = partIntvlMap.find(myKey);
+
+                mpz_mul(partialInterval[nPartial],
+                        largeInterval[largeLogs[j]],
+                        intervalIt->second);
+
+                partFactorsMap.erase(pFacIt);
+                partIntvlMap.erase(intervalIt);
+                ++nPartial;
+            } else {
+                partFactorsMap[myKey] = primeIndexVec;
+                mpz_init(partIntvlMap[myKey]);
+                mpz_set(partIntvlMap[myKey], largeInterval[largeLogs[j]]);
             }
         }
     }
@@ -316,10 +315,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     std::size_t nPolys = 0;
     std::size_t extraFacs = 0;
     std::size_t mpzFacSize = facSize;
-    std::vector<double> myIntervalSqrd(LenB2);
-
-    for (std::size_t i = 0; i < LenB2; ++i)
-        myIntervalSqrd[i] = static_cast<double>(myInterval[i] * myInterval[i]);
     
     auto showStatsTime = (trialTest1 - trialTest0);
     const std::size_t onePercentComplete = facSize / 100;
@@ -350,10 +345,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         RcppThread::Rcout << "|--------------------|----------|-------------|---------"
                           << "---|------------|" << std::endl;
     }
-    
-    mpz_t val1, val2;
-    mpz_init(val1); mpz_init(val2);
-    mpz_set_str(val1, "-429079190358839780591", 10);
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
@@ -402,7 +393,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
             for (std::size_t i = 0, row = 0; i < facSize; ++i, row += 2) {
                 mpz_invert(Atemp2, A, mpzFacBase[i]);
-
+                
                 mpz_ui_sub(temp, SieveDist[row], B);
                 mpz_mul(temp, temp, Atemp2);
                 mpz_mod_ui(temp, temp, facBase[i]);
@@ -415,11 +406,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             }
 
             for (std::size_t i = 0; i < LenB2; ++i) {
-                mpz_mul_si(temp, B, myInterval[i]);
-                mpz_mul_2exp(temp, temp, 1);
+                mpz_mul_si(temp, B, 2 * myInterval[i]);
                 mpz_add(temp, temp, C);
-                mpz_set_d(Atemp2, myIntervalSqrd[i]);
-                mpz_mul(Atemp2, Atemp2, A);
+                mpz_mul_si(Atemp2, A, myInterval[i]);
+                mpz_mul_si(Atemp2, Atemp2, myInterval[i]);
                 mpz_add(sqrDiff[i], Atemp2, temp);
             }
 
@@ -432,82 +422,74 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 if (myLogs[i] > theCut)
                     largeLogs.push_back(i);
 
-            const std::size_t largeLogsSize = largeLogs.size();
             smoothFacsRow.clear();
+            
+            for (std::size_t j = 0; j < largeLogs.size(); ++j) {
+                std::vector<std::size_t> primeIndexVec;
+                
+                // If Negative, we push zero (i.e. the index referring to -1)
+                if (mpz_sgn(sqrDiff[largeLogs[j]]) < 0) {
+                    mpz_abs(sqrDiff[largeLogs[j]], sqrDiff[largeLogs[j]]);
+                    primeIndexVec.push_back(0u);
+                }
 
-            if (largeLogsSize > 0) {
-                for (std::size_t j = 0; j < largeLogsSize; ++j) {
-                    std::vector<std::size_t> primeIndexVec;
-                    mpz_mul_si(temp, A, myInterval[largeLogs[j]]);
-                    mpz_add(val2, temp, B);
-                    
-                    if (mpz_cmp(val2, val1) == 0) {
-                        gmp_printf("%d, %Zd, %Zd, %Zd, %Zd\n", myInterval[largeLogs[j]], A, temp, B, sqrDiff[largeLogs[j]]);
+                for (std::size_t i = 0; i < facSize; ++i) {
+                    while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
+                        mpz_divexact_ui(sqrDiff[largeLogs[j]],
+                                        sqrDiff[largeLogs[j]], facBase[i]);
+                        primeIndexVec.push_back(i + 1);
                     }
+                }
+                
+                mpz_mul_si(temp, A, myInterval[largeLogs[j]]);
+                
+                if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
+                    // Found a smooth number
+                    smoothFacsRow.push_back(j * colWidth);
+                    mpz_add(smoothInterval[nSmooth], temp, B);
+                    powsFacInd[nSmooth] = mpzFacSize;
                     
-                    // If Negative, we push zero (i.e. the index referring to -1)
-                    if (mpz_sgn(sqrDiff[largeLogs[j]]) < 1) {
-                        if (mpz_cmp(val2, val1) == 0) {
-                            Rcpp::print(Rcpp::wrap("digggggg"));
-                        }
-                        mpz_abs(sqrDiff[largeLogs[j]], sqrDiff[largeLogs[j]]);
-                        primeIndexVec.push_back(0u);
-                    }
-
-                    for (std::size_t i = 0; i < facSize; ++i) {
-                        while (mpz_divisible_ui_p(sqrDiff[largeLogs[j]], facBase[i])) {
-                            mpz_divexact_ui(sqrDiff[largeLogs[j]],
-                                            sqrDiff[largeLogs[j]], facBase[i]);
-                            primeIndexVec.push_back(i + 1);
-                        }
-                    }
-
+                    for (auto p: primeIndexVec)
+                        ++smoothMat[nSmooth * colWidth + p];
                     
+                    ++nSmooth;
+                } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], Significand53) < 0) {
+                    const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
+                    const auto pFacIt = partFactorsMap.find(myKey);
+                    
+                    // Add the index referring to A^2.. (i.e. add it twice)
+                    primeIndexVec.push_back(mpzFacSize);
+                    primeIndexVec.push_back(mpzFacSize);
 
-                    if (mpz_cmp_ui(sqrDiff[largeLogs[j]], 1) == 0) {
-                        // Found a smooth number
-                        smoothFacsRow.push_back(j * colWidth);
-                        mpz_add(smoothInterval[nSmooth], temp, B);
-                        powsFacInd[nSmooth] = mpzFacSize;
-                        
-                        for (auto p: primeIndexVec)
-                            ++smoothMat[nSmooth * colWidth + p];
-                        
-                        ++nSmooth;
-                    } else if (mpz_cmp_d(sqrDiff[largeLogs[j]], Significand53) < 0) {
-                        const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(sqrDiff[largeLogs[j]]));
-                        const auto pFacIt = partFactorsMap.find(myKey);
+                    if (pFacIt != partFactorsMap.end()) {
+                        const auto trackIt = keepingTrack.find(myKey);
 
-                        if (pFacIt != partFactorsMap.end()) {
-                            const auto trackIt = keepingTrack.find(myKey);
-
-                            if (trackIt != keepingTrack.end()) {
-                                coFactorIndexVec.push_back(trackIt->second);
-                            } else {
-                                keepingTrack[myKey] = coFactorInd;
-                                mpz_set(largeCoFactors[coFactorInd], sqrDiff[largeLogs[j]]);
-                                coFactorIndexVec.push_back(coFactorInd);
-                                ++coFactorInd;
-                            }
-                            
-                            for (const auto p: pFacIt->second)
-                                primeIndexVec.push_back(p);
-
-                            powsOfPartials.push_back(primeIndexVec);
-                            const auto intervalIt = partIntvlMap.find(myKey);
-
-                            mpz_add(temp, temp, B);
-                            mpz_mul(partialInterval[nPartial],
-                                    temp, intervalIt->second);
-
-                            partFactorsMap.erase(pFacIt);
-                            partIntvlMap.erase(intervalIt);
-                            ++nPartial;
+                        if (trackIt != keepingTrack.end()) {
+                            coFactorIndexVec.push_back(trackIt->second);
                         } else {
-                            partFactorsMap[myKey] = primeIndexVec;
-                            mpz_init(partIntvlMap[myKey]);
-                            mpz_add(partIntvlMap[myKey], temp, B);
+                            keepingTrack[myKey] = coFactorInd;
+                            mpz_set(largeCoFactors[coFactorInd], sqrDiff[largeLogs[j]]);
+                            coFactorIndexVec.push_back(coFactorInd);
+                            ++coFactorInd;
                         }
+                        
+                        for (const auto p: pFacIt->second)
+                            primeIndexVec.push_back(p);
+
+                        powsOfPartials.push_back(primeIndexVec);
+                        const auto intervalIt = partIntvlMap.find(myKey);
+
+                        mpz_add(temp, temp, B);
+                        mpz_mul(partialInterval[nPartial],
+                                temp, intervalIt->second);
+
+                        partFactorsMap.erase(pFacIt);
+                        partIntvlMap.erase(intervalIt);
+                        ++nPartial;
+                    } else {
+                        partFactorsMap[myKey] = primeIndexVec;
+                        mpz_init(partIntvlMap[myKey]);
+                        mpz_add(partIntvlMap[myKey], temp, B);
                     }
                 }
             }
@@ -538,52 +520,16 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         auto newTestInt = FromCpp14::make_unique<mpz_t[]>(matRow);
         std::vector<uint8_t> newMat(matRow * matWidth, 0);
         
-        // Rcpp::print(Rcpp::wrap(powsFacInd));
-        
-        bool showJunk = true;
-        
-        for (std::size_t k = 0, r = 0, oldRow = 0, newRow = 0;
-             k < nSmooth; ++k, oldRow += colWidth, newRow += matWidth, ++r) {
+        for (std::size_t r = 0, oldRow = 0, newRow = 0;
+             r < nSmooth; oldRow += colWidth, newRow += matWidth, ++r) {
             
             mpz_init_set(newTestInt[r], smoothInterval[r]);
             
             for (std::size_t j = 0; j < colWidth; ++j)
                 newMat[newRow + j] = smoothMat[oldRow + j];
 
-            if (powsFacInd[k]) {
-                newMat[newRow + powsFacInd[k]] = 2u;
-                
-                if (showJunk) {
-                    std::ofstream myfile;
-                    myfile.open("example.csv");
-                    
-                    gmp_printf("%Zd, %Zd\n", smoothInterval[r], mpzFacBase[powsFacInd[k] - 1]);
-                    
-                    for (std::size_t j = 0 ; j < matWidth; ++j) {
-                        myfile << std::to_string(newMat[newRow + j]);
-                        
-                        if (j < (matWidth - 1))
-                            myfile << ", ";
-                    }
-                    
-                    myfile << "\n";
-                    myfile << "-1, ";
-                    
-                    for (std::size_t j = 1 ; j < matWidth; ++j) {
-                        if (j <= facSize) {
-                            myfile << std::to_string(facBase[j - 1]);
-                        } else {
-                            myfile << "0";
-                        }
-                        
-                        if (j < (matWidth - 1))
-                            myfile << ", ";
-                    }
-                    
-                    myfile << "\n";
-                    myfile.close();
-                    showJunk = false;
-                }
+            if (powsFacInd[r]) {
+                newMat[newRow + powsFacInd[r]] = 2u;
             }
         }
 
@@ -606,8 +552,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             newMat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
         }
 
-        // solutionSearch(newMat, matRow, matWidth, myNum,
-        //                mpzFacBase.get(), newTestInt.get(), factors);
+        solutionSearch(newMat, matRow, matWidth, myNum,
+                       mpzFacBase.get(), newTestInt.get(), factors);
 
         for (std::size_t i = 0; i < matRow; ++i)
             mpz_clear(newTestInt[i]);
@@ -615,9 +561,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         newTestInt.reset();
         extraFacs += 5;
         
-        mpz_set_ui(factors[0], 11);
-        mpz_set_ui(factors[1], 13);
-
         if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
             const auto checkPoint3 = std::chrono::steady_clock::now();
             makeStats(loopLimit, loopLimit, nPolys, nSmooth,
