@@ -292,8 +292,6 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 
   * Credit to [primo](<https://codegolf.stackexchange.com/users/4098/primo>) (Mike Tryczak) and his excellent answer to [Fastest semiprime factorization](<https://codegolf.stackexchange.com/a/9088/52987>).
   
-  * [The Quadratic Sieve Factoring Algorithm](<http://www.cs.virginia.edu/crab/QFS_Simple.pdf>) by Eric Landquist.
-  
   * [Factoring large numbers with quadratic sieve](<https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/>) on MSDN Archive.
   
   * A really nice concise example is given here: [Factorization of _n = 87463_ with the Quadratic Sieve](<https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf>)

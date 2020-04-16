@@ -329,33 +329,33 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 mpzFSzLIMIT <<= 1;
                 Grow(mpzFacBase, mpzFacSize, mpzFSzLIMIT);
             }
-
+            
             mpz_set(mpzFacBase[mpzFacSize], Atemp);
             ++mpzFacSize;
             
             TonelliShanksC(myNum, Atemp, TS);
-
+            
             if (mpz_cmp(TS[1], TS[2]) > 0) {
                 mpz_set(Btemp, TS[1]);
             } else {
                 mpz_set(Btemp, TS[2]);
             }
-
+            
             mpz_mul_2exp(temp, Btemp, 1);
             mpz_invert(temp, temp, Atemp);
             mpz_pow_ui(B, Btemp, 2u);
-
+            
             mpz_sub(B, myNum, B);
             mpz_mul(B, B, temp);
             mpz_add(B, B, Btemp);
-
+            
             mpz_pow_ui(A, Atemp, 2u);
             mpz_mod(B, B, A);
-
+            
             mpz_pow_ui(C, B, 2u);
             mpz_sub(C, C, myNum);
             mpz_divexact(C, C, A);
-
+            
             for (std::size_t i = 0, row = 0; i < facSize; ++i, row += 2) {
                 mpz_invert(Atemp2, A, mpzFacBase[i]);
                 
@@ -363,13 +363,13 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 mpz_mul(temp, temp, Atemp2);
                 mpz_mod_ui(temp, temp, facBase[i]);
                 polySieveD[row] = mpz_get_ui(temp);
-
+                
                 mpz_ui_sub(temp, SieveDist[row + 1], B);
                 mpz_mul(temp, temp, Atemp2);
                 mpz_mod_ui(temp, temp, facBase[i]);
                 polySieveD[row + 1] = mpz_get_ui(temp);
             }
-
+            
             for (std::size_t i = 0; i < DoubleLenB; ++i) {
                 mpz_mul_si(temp, B, 2 * myInterval[i]);
                 mpz_add(temp, temp, C);
@@ -377,12 +377,12 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 mpz_mul_si(Atemp2, Atemp2, myInterval[i]);
                 mpz_add(sqrDiff[i], Atemp2, temp);
             }
-
+            
             sieveLists(facSize, facBase, DoubleLenB, sqrDiff.get(),
                        LnFB, myLogs, minPrime, polySieveD, lowBound);
-
+            
             largeLogs.clear();
-
+            
             for (std::size_t i = 0; i < DoubleLenB; ++i)
                 if (myLogs[i] > theCut)
                     largeLogs.push_back(i);
@@ -400,7 +400,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     mpz_abs(intVal, intVal);
                     primeIndexVec.push_back(0u);
                 }
-
+                
                 for (std::size_t i = 0; i < facSize; ++i) {
                     while (mpz_divisible_ui_p(intVal, facBase[i])) {
                         mpz_divexact_ui(intVal, intVal, facBase[i]);
@@ -418,10 +418,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 } else if (mpz_cmp_d(intVal, Significand53) < 0) {
                     const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(intVal));
                     const auto pFacIt = partFactorsMap.find(myKey);
-
+                    
                     if (pFacIt != partFactorsMap.end()) {
                         const auto trackIt = keepingTrack.find(myKey);
-
+                        
                         if (trackIt != keepingTrack.end()) {
                             coFactorIndexVec.push_back(trackIt->second);
                         } else {
@@ -433,14 +433,14 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                         
                         for (const auto p: pFacIt->second)
                             primeIndexVec.push_back(p);
-
+                        
                         powsOfPartials.push_back(primeIndexVec);
                         const auto intervalIt = partIntvlMap.find(myKey);
-
+                        
                         mpz_add(temp, temp, B);
                         mpz_mul(partialInterval[nPartial],
                                 temp, intervalIt->second);
-
+                        
                         partFactorsMap.erase(pFacIt);
                         partIntvlMap.erase(intervalIt);
                         ++nPartial;
@@ -455,7 +455,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             ++nPolys;
             currLim = nSmooth + nPartial;
             const auto checkPoint3 = std::chrono::steady_clock::now();
-
+            
             if ((checkPoint3 - checkPoint1) > checkInterTime) {
                 // Check for user interrupt and udpate timepoint
                 RcppThread::checkUserInterrupt();
@@ -474,7 +474,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         
         const std::size_t matRow = nSmooth + nPartial;
         const std::size_t matWidth = coFactorInd + mpzFacSize + 1;
-
+        
         auto newTestInt = FromCpp14::make_unique<mpz_t[]>(matRow);
         std::vector<uint8_t> newMat(matRow * matWidth, 0);
         
@@ -484,32 +484,31 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             
             mpz_init_set(newTestInt[r], smoothInterval[r]);
         }
-
+        
         if ((coFactorInd + mpzFacSize) >= mpzFSzLIMIT) {
             mpzFSzLIMIT <<= 1;
             Grow(mpzFacBase, mpzFacSize, mpzFSzLIMIT);
         }
-
+        
         for (std::size_t i = 0, j = mpzFacSize; i < coFactorInd; ++i, ++j)
             mpz_set(mpzFacBase[j], largeCoFactors[i]);
-
+        
         for (std::size_t i = 0, r = nSmooth,
              row = matWidth * nSmooth; i < nPartial; ++i, ++r, row += matWidth) {
-
-            mpz_init_set(newTestInt[r], partialInterval[i]);
-
+            
             for (const auto p: powsOfPartials[i])
                 ++newMat[row + p];
-
+            
             newMat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
+            mpz_init_set(newTestInt[r], partialInterval[i]);
         }
-
+        
         solutionSearch(newMat, matRow, matWidth, myNum,
                        mpzFacBase.get(), newTestInt.get(), factors);
-
+        
         for (std::size_t i = 0; i < matRow; ++i)
             mpz_clear(newTestInt[i]);
-
+        
         newTestInt.reset();
         extraFacs += 5;
         
@@ -518,15 +517,13 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             
             makeStats(loopLimit, loopLimit, nPolys, nSmooth,
                       nPartial, lastLim, checkPoint3 - checkPoint0);
-
+            
             RcppThread::Rcout << "\n" << std::endl;
         }
     }
     
     for (std::size_t i = 0; i < DoubleLenB; ++i)
         mpz_clear(sqrDiff[i]);
-    
-    sqrDiff.reset();
     
     for (std::size_t i = 0; i < mpzContainerSize; ++i) {
         mpz_clear(smoothInterval[i]);
@@ -537,11 +534,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     for (std::size_t i = 0; i < mpzFSzLIMIT; ++i)
         mpz_clear(mpzFacBase[i]);
     
+    sqrDiff.reset();
     mpzFacBase.reset();
     smoothInterval.reset();
     partialInterval.reset();
     largeCoFactors.reset();
-    coFactorIndexVec.clear();
     
     for (auto v: partIntvlMap)
         mpz_clear(v.second);
@@ -549,6 +546,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     partIntvlMap.clear();
     partFactorsMap.clear();
     keepingTrack.clear();
+    coFactorIndexVec.clear();
     
     mpz_clear(temp); mpz_clear(sqrtInt); mpz_clear(A);
     mpz_clear(C); mpz_clear(Atemp); mpz_clear(Btemp);
