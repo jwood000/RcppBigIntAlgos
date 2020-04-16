@@ -19,7 +19,8 @@ uint64_t makeKey(mpz_t x);
 
 std::vector<uint8_t> myIntToBit(std::size_t x, std::size_t dig);
 
-std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double n);
+std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
+                                          double sqrLogLog, std::size_t myTarget);
 
 void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
                 std::size_t LenB2, mpz_t *const sqrDiff,

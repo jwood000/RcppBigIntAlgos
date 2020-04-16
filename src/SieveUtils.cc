@@ -67,14 +67,15 @@ std::vector<uint8_t> myIntToBit(std::size_t x, std::size_t dig) {
     return binaryVec;
 }
 
-std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double n) {
+std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
+                                          double sqrLogLog, std::size_t myTarget) {
     
-    const std::size_t uN = n;
+    const std::size_t uN = LimB;
     std::vector<char> primes(uN + 1, 1);
     std::vector<std::size_t> myps;
     
-    myps.reserve(n * 2.0 / std::log(n));
-    const std::size_t fsqr = std::floor(std::sqrt(n));
+    myps.reserve(LimB * 2.0 / std::log(LimB));
+    const std::size_t fsqr = std::floor(std::sqrt(LimB));
     
     for (std::size_t j = 4; j <= uN; j += 2)
         primes[j] = 0;
@@ -101,7 +102,7 @@ std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double n) {
     
     myps.push_back(2u);
     
-    for (std::size_t j = 3; j <= n; j += 2) {
+    for (std::size_t j = 3; j <= uN; j += 2) {
         if (primes[j]) {
             mpz_set_si(jmpz, j);
             mpz_set_si(temp, j);
@@ -114,7 +115,33 @@ std::vector<std::size_t> getPrimesQuadRes(mpz_t myN, double n) {
         }
     }
     
-    mpz_clear(jmpz); mpz_clear(temp); mpz_clear(test);
+    mpz_clear(jmpz); mpz_clear(temp);
+    mpz_clear(test);
+    
+    mpz_t currP, nextP, resTest, CP1;
+    mpz_init(currP); mpz_init(nextP);
+    mpz_init(CP1); mpz_init(resTest);
+    
+    while (myps.size() < myTarget) {
+        fudge1 += 0.005;
+        LimB = std::exp((0.5 + fudge1) * sqrLogLog);
+        mpz_set_ui(currP, myps.back());
+        mpz_nextprime(nextP, currP);
+        
+        while (mpz_cmp_ui(nextP, LimB) < 0) {
+            mpz_set(currP, nextP);
+            mpz_nextprime(nextP, currP);
+            mpz_sub_ui(CP1, currP, 1);
+            mpz_div_2exp(CP1, CP1, 1);
+            mpz_powm(resTest, myN, CP1, currP);
+            
+            if (mpz_cmp_ui(resTest, 1) == 0)
+                myps.push_back(mpz_get_ui(currP));
+        }
+    }
+    
+    mpz_clear(currP); mpz_clear(nextP);
+    mpz_clear(CP1); mpz_clear(resTest);
     return myps;
 }
 
