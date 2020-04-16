@@ -226,7 +226,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     std::size_t coFactorInd = 0u;
     std::size_t nSmooth = 0u;
     
-    std::vector<uint8_t> smoothMat(facSize * colWidth, 0u);
+    const std::size_t smoothRow = (digCount < 50) ? facSize : facSize / 2;
+    std::vector<uint8_t> smoothMat(smoothRow * colWidth, 0u);
 
     for (std::size_t j = 0; j < largeLogs.size(); ++j) {
         std::vector<std::size_t> primeIndexVec;
