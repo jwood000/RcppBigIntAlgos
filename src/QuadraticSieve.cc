@@ -206,9 +206,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         if (myLogs[i] > theCut)
             largeLogs.push_back(i);
     
-    std::size_t largeLogsSize = largeLogs.size();
-    const std::size_t colWidth = facSize + 1;
-    
     // Used to identify the row of the matrix that
     // contains a smooth number
     std::vector<std::size_t> smoothFacsRow;
@@ -227,6 +224,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     std::size_t nSmooth = 0u;
     
     const std::size_t smoothRow = (digCount < 50) ? facSize : facSize / 2;
+    const std::size_t colWidth = facSize + 1;
     std::vector<uint8_t> smoothMat(smoothRow * colWidth, 0u);
 
     for (std::size_t j = 0; j < largeLogs.size(); ++j) {
