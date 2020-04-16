@@ -1,4 +1,11 @@
-RcppBigIntAlgos 0.2.1 (Release date: 2020-04-10)
+RcppBigIntAlgos 0.2.2 (Release date: 2020-04-19)
+
+* Added "Free Software Foundation, Inc." as copy right holder in DESCRIPTION
+* Adjusted sieving factors for improved efficiency, especially on numbers with greater than 50 digits
+* Improved efficiency by utilizing more light weight data structures
+* Added safety measures to ensure mpz_t arrays don't overflow
+
+RcppBigIntAlgos 0.2.1 (Release date: Never released)
 
 * Added references in DESCRIPTION file
 * Added Mike Tryczak as contributor
