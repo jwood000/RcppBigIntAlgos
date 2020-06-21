@@ -267,9 +267,9 @@ void SinglePoly(const std::vector<int> &myInterval, std::vector<std::size_t> &po
         if (myLogs[i] > theCut)
             largeLogs.push_back(i);
     
-    for (std::size_t j = 0; j < largeLogs.size(); ++j) {
+    for (auto lrglog: largeLogs) {
         std::vector<std::size_t> primeIndexVec;
-        const int myIntVal = myInterval[largeLogs[j]];
+        const int myIntVal = myInterval[lrglog];
         
         mpz_mul_si(temp, B, 2 * myIntVal);
         mpz_add(temp, temp, C);
