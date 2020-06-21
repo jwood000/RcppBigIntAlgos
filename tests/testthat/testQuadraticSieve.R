@@ -17,12 +17,12 @@ test_that("quadraticSieve generates correct numbers", {
                  rep(nextprime("1234567890987654321"), 10))
     
     ## Test semi-primes
-    testNums <- lapply(1:5, function(x) {
-                            prod(nextprime(urand.bigz(2, 42, x)))
+    testNums <- lapply(42:65, function(x) {
+                            prod(nextprime(urand.bigz(2, x, x)))
                         })
     
-    gmpFactorize <- lapply(testNums, function(x) {
-                            facs <- factorize(x)
+    gmpFactorize <- lapply(42:65, function(x) {
+                            facs <- nextprime(urand.bigz(2, x, x))
                             facs[order(asNumeric(facs))]
                         })
     
