@@ -30,4 +30,4 @@ URL: https://github.com/jwood000/RcppBigIntAlgos, https://gmplib.org/,
         https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf,
         https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/
 BugReports: https://github.com/jwood000/RcppBigIntAlgos/issues
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
