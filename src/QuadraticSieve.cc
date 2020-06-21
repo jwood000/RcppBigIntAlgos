@@ -124,14 +124,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     mpz_sqrt(temp, temp);
     mpz_mul_ui(temp, temp, LenB);
     
-    const double fudge2 = (digCount < 30) ? 0.700 :
-                          (digCount < 35) ? 0.900 :
-                          (digCount < 40) ? 1.050 :
-                          (digCount < 45) ? 1.100 :
-                          (digCount < 50) ? 1.180 :
-                          (digCount < 55) ? 1.250 :
-                          (digCount < 60) ? 1.300 :
-                          (digCount < 65) ? 1.325 : 1.35;
+    const double fudge2 = (digCount < 45) ? 1.410 :
+                          (digCount < 50) ? 1.440 :
+                          (digCount < 60) ? 1.500 : 
+                          (digCount < 65) ? 1.515 : 1.530;
     
     const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
     
@@ -144,16 +140,12 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         LnFB[i] = std::log(static_cast<double>(facBase[i]));
     }
     
-    mpz_t sqrtInt;
-    mpz_init(sqrtInt);
+    mpz_t sqrtInt, firstInt;
+    mpz_init(sqrtInt); mpz_init(firstInt);
     mpz_sqrt(sqrtInt, myNum);
-    mpz_mul_ui(temp, sqrtInt, LenB);
+    mpz_mul_ui(firstInt, sqrtInt, LenB);
     
-    const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(temp, 10) * 2);
-    
-    mpz_t firstInt;
-    mpz_init(firstInt);
-    mpz_sub_ui(firstInt, sqrtInt, LenB);
+    const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(firstInt, 10) * 2);
     
     mpz_pow_ui(temp, firstInt, 2u);
     mpz_sub(temp, temp, myNum);
