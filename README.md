@@ -152,24 +152,24 @@ system.time(print(quadraticSieve(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
    user  system elapsed 
-  0.440   0.006   0.445
+  0.205   0.001   0.205
   
 system.time(print(quadraticSieve(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
    user  system elapsed 
-  0.480   0.004   0.484
+  0.232   0.000   0.232
 
 system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
-  0.962   0.010   0.966 
+  0.483   0.001   0.484 
 ```
 
 ### 50+ Digits
 
-Below, we factor a 50 digit semiprime in under 20 secs followed by a 60 digit semiprime factored in under 4 minutes.
+Below, we factor a 50 digit semiprime in under 5 secs followed by a 60 digit semiprime factored in under 40 seconds.
 
 ```r
 semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
@@ -185,7 +185,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      18s 593ms     |   100%   |     1148    |     605    |     939    |
+|      4s 297ms      |   100%   |     1148    |     605    |     939    |
 
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
@@ -204,13 +204,13 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    3m 30s 177ms    |   100%   |     6664    |    1174    |    1895    |
+|      38s 982ms     |   100%   |     6664    |    1174    |    1895    |
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
 ```
 
-Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in just over 30 minutes.
+Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 9 minutes.
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
@@ -226,7 +226,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    30m 38s 838ms   |   100%   |    25757    |    2581    |    3754    |
+|    8m 29s 581ms    |   100%   |    25757    |    2581    |    3754    |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -246,7 +246,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|     2m 27s 57ms    |   100%   |     4773    |    1122    |    1730    |
+|      29s 845ms     |   100%   |     4773    |    1122    |    1730    |
 
 
 Summary Statistics for Factoring:
@@ -254,7 +254,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|        748ms       |   100%   |      62     |     292    |     327    |
+|        480ms       |   100%   |      62     |     292    |     327    |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
