@@ -1,3 +1,10 @@
+RcppBigIntAlgos 0.2.3 (Release date: 2020-06-22)
+
+* Removed unnecessary includes
+* Replaced array of precalculated interval values by only calculating interval values that meet the threshold. This greatly improves efficiency.
+* Refactored portions of the algorithm in preparation for parallel computing.
+* Improved helper algorithm (i.e. sieveLists in SieveUtils.cc)
+
 RcppBigIntAlgos 0.2.2 (Release date: 2020-04-19)
 
 * Added "Free Software Foundation, Inc." as copy right holder in DESCRIPTION
