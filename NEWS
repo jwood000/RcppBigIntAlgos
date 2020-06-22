@@ -1,6 +1,9 @@
-RcppBigIntAlgos 0.2.3 (Release date: 2020-06-22)
+RcppBigIntAlgos 0.2.4 (Release date: 2020-06-23)
 
-* Removed unnecessary includes
+* Fixed link in documentation in accordance with the new policy in Writing R Extensions (section: Cross-references)
+
+RcppBigIntAlgos 0.2.3 (Release date: Never released)
+
 * Replaced array of precalculated interval values by only calculating interval values that meet the threshold. This greatly improves efficiency.
 * Refactored portions of the algorithm in preparation for parallel computing.
 * Improved helper algorithm (i.e. sieveLists in SieveUtils.cc)

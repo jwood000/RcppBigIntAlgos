@@ -47,7 +47,7 @@ Vector of class bigz
 Joseph Wood
 }
 \seealso{
-\code{\link[gmp]{factorize}}
+\code{\link[gmp:factor]{factorize}}
 }
 \examples{
 mySemiPrime <- prod(nextprime(urand.bigz(2, 40, 17)))

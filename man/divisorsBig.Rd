@@ -34,7 +34,7 @@ Joseph Wood
 }
 
 \seealso{
-\code{\link[RcppAlgos]{divisorsRcpp}}, \code{\link[numbers]{divisors}}, \code{\link[gmp]{factorize}}
+\code{\link[RcppAlgos]{divisorsRcpp}}, \code{\link[numbers]{divisors}}, \code{\link[gmp:factor]{factorize}}
 }
 \examples{
 ## Get the complete factorization of a single number
