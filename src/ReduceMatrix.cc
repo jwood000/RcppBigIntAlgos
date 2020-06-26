@@ -1,7 +1,7 @@
 #include "ReduceMatrix.h"
 
 void reduceMatrix(std::size_t nCols, std::size_t nRows, 
-                  std::vector<uint8_t> &nullMat,
+                  std::vector<std::uint8_t> &nullMat,
                   std::vector<std::size_t> &myCols) {
 
     std::size_t matSize = nullMat.size();
@@ -15,7 +15,7 @@ void reduceMatrix(std::size_t nCols, std::size_t nRows,
                 myOnes.push_back(i);
 
         if (!myOnes.empty()) {
-            std::size_t firstRow = myOnes.front();
+            const std::size_t firstRow = myOnes.front();
 
             if (firstRow != rowInd)
                 for (std::size_t k = 0; k < nCols; ++k)

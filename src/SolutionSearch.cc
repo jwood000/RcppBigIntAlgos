@@ -1,10 +1,10 @@
 #include "SolutionSearch.h"
 
-void solutionSearch(std::vector<uint8_t> mat, std::size_t matNRows,
+void solutionSearch(std::vector<std::uint8_t> mat, std::size_t matNRows,
                     std::size_t matNCols, mpz_t n, mpz_t *const mpzFacBase,
                     mpz_t *const testInterval, mpz_t *const factors) {
     
-    std::vector<uint8_t> nullMat;
+    std::vector<std::uint8_t> nullMat;
     
     for (std::size_t j = 0; j < matNCols; ++j) {
         std::size_t i = 0;
@@ -98,8 +98,8 @@ void solutionSearch(std::vector<uint8_t> mat, std::size_t matNRows,
             if (bExit) {break;}
             
             std::vector<std::size_t> ansVec;
-            std::vector<uint8_t> posVec(nCols, 0u);
-            std::vector<uint8_t> posAns = myIntToBit(i, lenFree);
+            std::vector<std::uint8_t> posVec(nCols, 0u);
+            std::vector<std::uint8_t> posAns = myIntToBit(i, lenFree);
             
             for (std::size_t j = 0; j < myList.size(); ++j) {
                 for (const auto it: myList[j]) {
