@@ -1,3 +1,7 @@
+RcppBigIntAlgos 0.2.5 (Release date: TBD)
+
+* Improved efficiency of quadraticSieve by segmenting the sieving portion. For larger number (greater than 65 decimal digits) it has a great impact.
+
 RcppBigIntAlgos 0.2.4 (Release date: 2020-06-23)
 
 * Fixed link in documentation in accordance with the new policy in Writing R Extensions (section: Cross-references)
