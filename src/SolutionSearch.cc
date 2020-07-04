@@ -1,28 +1,30 @@
 #include "SolutionSearch.h"
 
-void solutionSearch(std::vector<std::uint8_t> mat, std::size_t matNRows,
+void solutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                     std::size_t matNCols, mpz_t n, mpz_t *const mpzFacBase,
                     mpz_t *const testInterval, mpz_t *const factors) {
     
+    const std::size_t matSize = mat.size();
+    const std::size_t nCols = matNRows;
+    
     std::vector<std::uint8_t> nullMat;
+    nullMat.reserve(matSize);
     
     for (std::size_t j = 0; j < matNCols; ++j) {
         std::size_t i = 0;
         
-        while ((i < matNRows) && ((mat[i + j] % 2) == 0))
+        while ((i < matSize) && ((mat[i + j] % 2) == 0))
             i += matNCols;
         
-        if (i < mat.size())
-            for (std::size_t k = 0; k < mat.size(); k += matNCols)
+        if (i < matSize)
+            for (std::size_t k = 0; k < matSize; k += matNCols)
                 nullMat.push_back(mat[k + j] % 2);
     }
     
-    const std::size_t nCols = matNRows;
     const std::size_t nRows = nullMat.size() / nCols;
-    std::vector<std::size_t> myCols(nCols, 0);
     
-    for (std::size_t i = 0; i < nCols; ++i)
-        myCols[i] = i;
+    std::vector<std::size_t> myCols(nCols, 0);
+    std::iota(myCols.begin(), myCols.end(), 0);
     
     reduceMatrix(nCols, nRows, nullMat, myCols);
     const std::size_t newNrow = nullMat.size() / nCols;
