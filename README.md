@@ -190,7 +190,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      3s 234ms      |   100%   |     1391    |     739    |     805    |
+|      3s 207ms      |   100%   |     1234    |     707    |     837    |
 
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
@@ -209,13 +209,13 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      33s 235ms     |   100%   |     7952    |    1398    |    1671    |
+|      31s 81ms      |   100%   |     7709    |    1372    |    1697    |
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
 ```
 
-Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 9 minutes.
+Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 4 minutes followed by [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under half an hour.
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
@@ -231,10 +231,25 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    8m 38s 680ms    |   100%   |    29484    |    2952    |    3382    |
+|    3m 43s 638ms    |   100%   |    27724    |    2931    |    3402    |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
+
+
+rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
+
+quadraticSieve(rsa79, showStats=TRUE)
+
+Summary Statistics for Factoring:
+    7293469445285646172092483905177589838606665884410340391954917800303813280275279
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|    28m 21s 327ms   |   100%   |    122127   |    5384    |    6765    |
+
+Big Integer ('bigz') object of length 2:
+[1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
 ```
 
 ### Factor More Than Just Semiprimes
@@ -251,15 +266,15 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      21s 853ms     |   100%   |     5345    |    1243    |    1609    |
+|      21s 540ms     |   100%   |     4907    |    1201    |    1651    |
 
 
 Summary Statistics for Factoring:
-    202568699792573213335520384055117307693
+    369498233670465681342232176125551121921
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|        150ms       |   100%   |     117     |     409    |     211    |
+|        191ms       |   100%   |      90     |     425    |     200    |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
