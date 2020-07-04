@@ -5,10 +5,12 @@
 #include <unordered_map>
 #include <fstream>
 
+constexpr std::size_t L1Cache = 32768 * 2; // This is for holding 8 byte data type
+
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
     
-    const auto trialTest0 = std::chrono::steady_clock::now();
+    const auto trialTest = std::chrono::steady_clock::now();
     const std::size_t digCount = mpz_sizeinbase(myNum, 10);
     const std::size_t bits = mpz_sizeinbase(myNum, 2);
     
@@ -47,6 +49,8 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     const std::vector<std::size_t> facBase = getPrimesQuadRes(myNum, LimB, fudge1,
                                                               sqrLogLog, myTarget);
     
+    const std::size_t vecMaxSize = (1u + facBase.back() / L1Cache) * L1Cache;
+    
     // rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
     // rawCoef
@@ -65,9 +69,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     const std::size_t facSize = facBase.size();
     const std::size_t DoubleLenB = 2 * LenB + 1;
-    
-    std::vector<int> myInterval(DoubleLenB);
-    std::iota(myInterval.begin(), myInterval.end(), -1 * static_cast<int>(LenB));
     
     mpz_t TS[10];
     
@@ -132,7 +133,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
     
     std::vector<double> LnFB(facSize);
-    std::vector<double> myLogs(DoubleLenB, 0.0);
     LnFB.reserve(facSize);
     
     for (std::size_t i = 0; i < facSize; ++i) {
@@ -143,21 +143,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     mpz_t sqrtInt, firstInt;
     mpz_init(sqrtInt); mpz_init(firstInt);
     mpz_sqrt(sqrtInt, myNum);
-    mpz_mul_ui(firstInt, sqrtInt, LenB);
+    mpz_sub_ui(firstInt, sqrtInt, LenB);
     
     const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(firstInt, 10) * 2);
-    
-    mpz_pow_ui(temp, firstInt, 2u);
-    mpz_sub(temp, temp, myNum);
-    
-    sieveLists(facSize, facBase, DoubleLenB, temp, LnFB,
-               myLogs, minPrime, SieveDist, firstInt);
-    
-    std::vector<std::size_t> largeLogs;
-
-    for (std::size_t i = 0; i < DoubleLenB; ++i)
-        if (myLogs[i] > theCut)
-            largeLogs.push_back(i);
     
     // The map below is for almost smooth numbers, i.e. numbers
     // that are almost completely factored by our factor base
@@ -178,97 +166,15 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     vec2dsize_t powsOfSmooths;
     powsOfSmooths.reserve(facSize);
     
-    for (auto lrglog: largeLogs) {
-        std::vector<std::size_t> primeIndexVec;
-        
-        mpz_add_ui(largeInt, firstInt, lrglog);
-        mpz_pow_ui(temp, largeInt, 2u);
-        mpz_sub(intVal, temp, myNum);
-
-        if (mpz_sgn(intVal) < 0) {
-            mpz_abs(intVal, intVal);
-            primeIndexVec.push_back(0u);
-        }
-
-        for (std::size_t i = 0; i < facSize; ++i) {
-            while (mpz_divisible_ui_p(intVal, facBase[i])) {
-                mpz_divexact_ui(intVal, intVal, facBase[i]);
-                primeIndexVec.push_back(i + 1);
-            }
-        }
-
-        if (mpz_cmp_ui(intVal, 1) == 0) {
-            // Found a smooth number
-            mpz_set(smoothInterval[nSmooth], largeInt);
-            powsOfSmooths.push_back(primeIndexVec);
-            ++nSmooth;
-        } else if (mpz_cmp_d(intVal, Significand53) < 0) {
-            const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(intVal));
-            const auto pFacIt = partFactorsMap.find(myKey);
-
-            if (pFacIt != partFactorsMap.end()) {
-                const auto trackIt = keepingTrack.find(myKey);
-
-                if (trackIt != keepingTrack.end()) {
-                    coFactorIndexVec.push_back(trackIt->second);
-                } else {
-                    keepingTrack[myKey] = coFactorInd;
-                    mpz_set(largeCoFactors[coFactorInd], intVal);
-                    coFactorIndexVec.push_back(coFactorInd);
-                    ++coFactorInd;
-                }
-
-                for (const auto p: pFacIt->second)
-                    primeIndexVec.push_back(p);
-
-                powsOfPartials.push_back(primeIndexVec);
-                const auto intervalIt = partIntvlMap.find(myKey);
-
-                mpz_mul(partialInterval[nPartial],
-                        largeInt, intervalIt->second);
-
-                partFactorsMap.erase(pFacIt);
-                partIntvlMap.erase(intervalIt);
-                ++nPartial;
-            } else {
-                partFactorsMap[myKey] = primeIndexVec;
-                mpz_init(partIntvlMap[myKey]);
-                mpz_set(partIntvlMap[myKey], largeInt);
-            }
-        }
-    }
-    
-    const auto trialTest1 = std::chrono::steady_clock::now();
-
-    mpz_t A, B, C, Atemp, Atemp2, Btemp, lowBound;
-    mpz_init(A); mpz_init(B); mpz_init(C);
-    mpz_init(Atemp); mpz_init(Atemp2); mpz_init(Btemp);
-
-    mpz_init(lowBound);
-    mpz_set_si(lowBound, myInterval.front());
-
-    mpz_mul_2exp(Atemp, myNum, 1);
-    mpz_sqrt(Atemp, Atemp);
-    mpz_div_ui(Atemp, Atemp, LenB);
-    mpz_sqrt(Atemp, Atemp);
-
-    if (mpz_cmp_ui(Atemp, facBase.back()) < 0)
-        mpz_set_ui(Atemp, facBase.back());
-
     std::size_t nPolys = 0;
     std::size_t extraFacs = 0;
     std::size_t mpzFacSize = facSize;
     
-    auto showStatsTime = (trialTest1 - trialTest0);
-    
-    if (bShowStats) {
-        const std::size_t onePercentComplete = facSize / 100;
-        updateStatTime(nSmooth + nPartial, onePercentComplete, showStatsTime, showStatsTime);
-    }
-    
     auto checkPoint0 = std::chrono::steady_clock::now();
     auto checkPoint1 = checkPoint0;
     auto checkPoint2 = checkPoint0;
+    
+    auto showStatsTime = (checkPoint0 - trialTest);
     
     std::size_t lastLim = 0;
     std::size_t currLim = nSmooth + nPartial;
@@ -290,6 +196,21 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
         
+        mpz_t A, B, C, Atemp, Atemp2, Btemp, lowBound;
+        mpz_init(A); mpz_init(B); mpz_init(C);
+        mpz_init(Atemp); mpz_init(Atemp2); mpz_init(Btemp);
+        
+        mpz_init(lowBound);
+        mpz_set_si(lowBound, -1 * static_cast<int>(LenB));
+        
+        mpz_mul_2exp(Atemp, myNum, 1);
+        mpz_sqrt(Atemp, Atemp);
+        mpz_div_ui(Atemp, Atemp, LenB);
+        mpz_sqrt(Atemp, Atemp);
+        
+        if (mpz_cmp_ui(Atemp, facBase.back()) < 0)
+            mpz_set_ui(Atemp, facBase.back());
+        
         // Find enough smooth numbers to guarantee a non-trivial solution
         while (currLim <= loopLimit) {
             bool LegendreTest = true;
@@ -309,16 +230,15 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             mpz_set(mpzFacBase[mpzFacSize], Atemp);
             ++mpzFacSize;
              
-            SinglePoly(myInterval, polySieveD, smoothInterval.get(), SieveDist, TS, facBase,
-                       mpzFacBase.get(), LnFB, myLogs, largeCoFactors.get(), partialInterval.get(),
+            SinglePoly(polySieveD, smoothInterval.get(), SieveDist, TS, facBase,
+                       mpzFacBase.get(), LnFB, largeCoFactors.get(), partialInterval.get(),
                        powsOfSmooths, powsOfPartials, partFactorsMap, partIntvlMap, keepingTrack,
                        coFactorIndexVec, nPartial, nSmooth, coFactorInd, intVal, myNum, Atemp,
                        Btemp, temp, A, B, C, Atemp2, lowBound, minPrime, theCut, DoubleLenB,
-                       mpzFacSize, facSize);
+                       mpzFacSize, facSize, vecMaxSize);
             
             ++nPolys;
             currLim = nSmooth + nPartial;
-            
             const auto checkPoint3 = std::chrono::steady_clock::now();
             
             if ((checkPoint3 - checkPoint1) > checkInterTime) {
@@ -384,6 +304,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
             RcppThread::Rcout << "\n" << std::endl;
         }
+        
+        mpz_clear(A); mpz_clear(B); mpz_clear(C);
+        mpz_clear(lowBound); mpz_clear(Atemp);
+        mpz_clear(Atemp2); mpz_clear(Btemp);
     }
     
     for (std::size_t i = 0; i < mpzContainerSize; ++i) {
@@ -408,11 +332,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     keepingTrack.clear();
     coFactorIndexVec.clear();
     
-    mpz_clear(temp); mpz_clear(sqrtInt); mpz_clear(A);
-    mpz_clear(C); mpz_clear(Atemp); mpz_clear(largeInt);
-    mpz_clear(lowBound); mpz_clear(B); mpz_clear(firstInt);
-    mpz_clear(Atemp2); mpz_clear(intVal); mpz_clear(Btemp);
-
+    mpz_clear(temp); mpz_clear(intVal); mpz_clear(sqrtInt);
+    mpz_clear(largeInt); mpz_clear(firstInt);
+    
     for (std::size_t i = 0; i < 10; ++i)
         mpz_clear(TS[i]);
 }
