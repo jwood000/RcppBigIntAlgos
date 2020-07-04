@@ -4,7 +4,7 @@
 #include "SieveUtils.h"
 #include "ReduceMatrix.h"
 
-void solutionSearch(std::vector<std::uint8_t> mat, std::size_t matNRows,
+void solutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                     std::size_t matNCols, mpz_t n, mpz_t *const mpzFacBase,
                     mpz_t *const test, mpz_t *const factors);
 
