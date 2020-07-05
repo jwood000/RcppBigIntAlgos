@@ -149,7 +149,7 @@ void sieveListsInit(std::size_t facSize, const std::vector<std::size_t> &FBase,
     
     for (std::size_t i = strt + 1, row = (strt + 1) * 2; i < facSize; ++i, row += 2) {
         mpz_mod_ui(modTest, lowerBound, FBase[i]);
-        std::int64_t q = mpz_get_si(modTest);
+        const std::int64_t q = mpz_get_si(modTest);
         
         mpz_mod_ui(modTest, firstSqrDiff, FBase[i]);
         std::int64_t myStart0 = mpz_get_si(modTest);
@@ -198,8 +198,8 @@ void sieveListsInit(std::size_t facSize, const std::vector<std::size_t> &FBase,
         for (std::size_t j = myStart1; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[row] = (FBase[i] * (1u + (vecMaxSize - myStart0) / FBase[i]) + myStart0) % vecMaxSize;
-        myStart[row + 1] = (FBase[i] * (1u + (vecMaxSize - myStart1) / FBase[i]) + myStart1) % vecMaxSize;
+        myStart[row] = (FBase[i] * ((vecMaxSize - myStart0 + FBase[i] - 1u) / FBase[i]) + myStart0) % vecMaxSize;
+        myStart[row + 1] = (FBase[i] * ((vecMaxSize - myStart1 + FBase[i] - 1u) / FBase[i]) + myStart1) % vecMaxSize;
     }
     
     mpz_clear(modTest);
@@ -219,8 +219,24 @@ void sieveLists(std::size_t facSize, const std::vector<std::size_t> &FBase,
         for (std::size_t j = myStart[row + 1]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[row] = (FBase[i] * (1u + (vecMaxSize - myStart[row]) / FBase[i]) + myStart[row]) % vecMaxSize;
-        myStart[row + 1] = (FBase[i] * (1u + (vecMaxSize - myStart[row + 1]) / FBase[i]) + myStart[row + 1]) % vecMaxSize;
+        myStart[row] = (FBase[i] * ((vecMaxSize - myStart[row] + FBase[i] - 1u) / FBase[i]) + myStart[row]) % vecMaxSize;
+        myStart[row + 1] = (FBase[i] * ((vecMaxSize - myStart[row + 1] + FBase[i] - 1u) / FBase[i]) + myStart[row + 1]) % vecMaxSize;
+    }
+}
+
+void sieveListsFinal(std::size_t facSize, const std::vector<std::size_t> &FBase,
+                     const std::vector<double> &LnFB, std::vector<double> &myLogs,
+                     const std::vector<std::size_t> &myStart, std::size_t strt) {
+    
+    std::fill(myLogs.begin(), myLogs.end(), 0.0);
+    const std::size_t vecMaxSize = myLogs.size();
+    
+    for (std::size_t i = strt + 1, row = (strt + 1) * 2; i < facSize; ++i, row += 2) {
+        for (std::size_t j = myStart[row]; j < vecMaxSize; j += FBase[i])
+            myLogs[j] += LnFB[i];
+        
+        for (std::size_t j = myStart[row + 1]; j < vecMaxSize; j += FBase[i])
+            myLogs[j] += LnFB[i];
     }
 }
 
@@ -293,7 +309,7 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
     for (std::size_t chunk = 0; chunk < DoubleLenB; chunk += vecMaxSize) {
         std::vector<std::size_t> largeLogs;
         
-        for (std::size_t i = 0; i < vecMaxSize; ++i)
+        for (std::size_t i = 0; i < myLogs.size(); ++i)
             if (myLogs[i] > theCut)
                 largeLogs.push_back(i + chunk);
         
@@ -347,8 +363,8 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
                         ++coFactorInd;
                     }
                     
-                    for (const auto p: pFacIt->second)
-                        primeIndexVec.push_back(p);
+                    primeIndexVec.insert(primeIndexVec.begin(),
+                                         pFacIt->second.cbegin(), pFacIt->second.cend());
                     
                     powsOfPartials.push_back(primeIndexVec);
                     const auto intervalIt = partIntvlMap.find(myKey);
@@ -368,6 +384,11 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
             }
         }
         
-        sieveLists(facSize, facBase, LnFB, myLogs, myStart, strt);
+        if (chunk + 2 * vecMaxSize < DoubleLenB) {
+            sieveLists(facSize, facBase, LnFB, myLogs, myStart, strt);
+        } else if (chunk + vecMaxSize < DoubleLenB) {
+            myLogs.resize(DoubleLenB % vecMaxSize);
+            sieveListsFinal(facSize, facBase, LnFB, myLogs, myStart, strt);
+        }
     }
 }
