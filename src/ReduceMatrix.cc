@@ -19,11 +19,12 @@ void reduceMatrix(std::size_t nCols, std::size_t nRows,
 
             if (firstRow != rowInd)
                 for (std::size_t k = 0; k < nCols; ++k)
-                    std::swap(nullMat[firstRow + k], nullMat[rowInd + k]);
+                    if (nullMat[firstRow + k] != nullMat[rowInd + k])
+                        std::swap(nullMat[firstRow + k], nullMat[rowInd + k]);
 
             for (auto it = myOnes.begin() + 1; it != myOnes.end(); ++it)
-                for (std::size_t k = 0; k < nCols; ++k)
-                    nullMat[*it + k] = nullMat[*it + k] ^ nullMat[rowInd + k];
+                for (std::size_t k = 0, ind = *it; k < nCols; ++k, ++ind)
+                    nullMat[ind] = nullMat[ind] ^ nullMat[rowInd + k];
 
             rowInd += nCols;
         }
