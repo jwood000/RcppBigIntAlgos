@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <fstream>
 
-constexpr std::size_t L1Cache = 32768 * 2; // This is for holding 8 byte data type
+constexpr std::size_t L1Cache = 32768;
 
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
@@ -49,8 +49,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     const std::vector<std::size_t> facBase = getPrimesQuadRes(myNum, LimB, fudge1,
                                                               sqrLogLog, myTarget);
     
-    const std::size_t vecMaxSize = (1u + facBase.back() / L1Cache) * L1Cache;
-    
     // rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
     // rawCoef
@@ -67,8 +65,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                                          * std::pow(dblDigCount, 4.0) - 213.1466450);
     
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
-    const std::size_t facSize = facBase.size();
     const std::size_t DoubleLenB = 2 * LenB + 1;
+    
+    const std::size_t facSize = facBase.size();
+    const std::size_t vecMaxSize = std::min((1u + facBase.back() / L1Cache) * L1Cache, DoubleLenB);
     
     mpz_t TS[10];
     
@@ -193,23 +193,23 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                           << "---|------------|" << std::endl;
     }
     
+    mpz_t A, B, C, Atemp, Atemp2, Btemp, lowBound;
+    mpz_init(A); mpz_init(B); mpz_init(C);
+    mpz_init(Atemp); mpz_init(Atemp2); mpz_init(Btemp);
+    
+    mpz_init(lowBound);
+    mpz_set_si(lowBound, -1 * static_cast<int>(LenB));
+    
+    mpz_mul_2exp(Atemp, myNum, 1);
+    mpz_sqrt(Atemp, Atemp);
+    mpz_div_ui(Atemp, Atemp, LenB);
+    mpz_sqrt(Atemp, Atemp);
+    
+    if (mpz_cmp_ui(Atemp, facBase.back()) < 0)
+        mpz_set_ui(Atemp, facBase.back());
+    
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
-        
-        mpz_t A, B, C, Atemp, Atemp2, Btemp, lowBound;
-        mpz_init(A); mpz_init(B); mpz_init(C);
-        mpz_init(Atemp); mpz_init(Atemp2); mpz_init(Btemp);
-        
-        mpz_init(lowBound);
-        mpz_set_si(lowBound, -1 * static_cast<int>(LenB));
-        
-        mpz_mul_2exp(Atemp, myNum, 1);
-        mpz_sqrt(Atemp, Atemp);
-        mpz_div_ui(Atemp, Atemp, LenB);
-        mpz_sqrt(Atemp, Atemp);
-        
-        if (mpz_cmp_ui(Atemp, facBase.back()) < 0)
-            mpz_set_ui(Atemp, facBase.back());
         
         // Find enough smooth numbers to guarantee a non-trivial solution
         while (currLim <= loopLimit) {
@@ -295,6 +295,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
         newTestInt.reset();
         extraFacs += 5;
+        
+        // mpz_set_ui(factors[0], 11u);
+        // mpz_set_ui(factors[1], 13u);
 
         if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
             const auto checkPoint3 = std::chrono::steady_clock::now();
@@ -304,10 +307,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
             RcppThread::Rcout << "\n" << std::endl;
         }
-        
-        mpz_clear(A); mpz_clear(B); mpz_clear(C);
-        mpz_clear(lowBound); mpz_clear(Atemp);
-        mpz_clear(Atemp2); mpz_clear(Btemp);
     }
     
     for (std::size_t i = 0; i < mpzContainerSize; ++i) {
@@ -334,6 +333,10 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     mpz_clear(temp); mpz_clear(intVal); mpz_clear(sqrtInt);
     mpz_clear(largeInt); mpz_clear(firstInt);
+    
+    mpz_clear(A); mpz_clear(B); mpz_clear(C);
+    mpz_clear(lowBound); mpz_clear(Atemp);
+    mpz_clear(Atemp2); mpz_clear(Btemp);
     
     for (std::size_t i = 0; i < 10; ++i)
         mpz_clear(TS[i]);
