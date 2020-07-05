@@ -169,7 +169,7 @@ Big Integer ('bigz') object of length 2:
 
 ### 50+ Digits
 
-Below, we factor a 50 digit semiprime in under 3 secs followed by a 60 digit semiprime factored in under 35 seconds. Also, we see can see summary statistics by setting `showStats = TRUE` (N.B. This is will slow down execution slightly).
+Below, we factor a 50 digit semiprime in under 3 secs followed by a 60 digit semiprime factored in under 30 seconds. Also, we see can see summary statistics by setting `showStats = TRUE` (N.B. This is will slow down execution slightly).
 
 ```r
 semiPrime164bits <- prod(nextprime(urand.bigz(2, 82, 42)))
@@ -181,7 +181,7 @@ nchar(as.character(semiPrime164bits))
 ## We see this about 0.5 seconds faster than setting showStats = TRUE
 system.time(quadraticSieve(semiPrime164bits))
    user  system elapsed 
-  2.723   0.009   2.731
+  2.612   0.005   2.615
 
 quadraticSieve(semiPrime164bits, showStats = TRUE)
 
@@ -190,7 +190,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      3s 207ms      |   100%   |     1234    |     707    |     837    |
+|      2s 929ms      |   100%   |     1346    |     719    |     826    |
 
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
@@ -209,7 +209,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      31s 81ms      |   100%   |     7709    |    1372    |    1697    |
+|      27s 821ms     |   100%   |     7782    |    1375    |    1694    |
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
@@ -231,7 +231,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    3m 43s 638ms    |   100%   |    27724    |    2931    |    3402    |
+|    3m 28s 249ms    |   100%   |    29484    |    2952    |    3382    |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -246,7 +246,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    28m 21s 327ms   |   100%   |    122127   |    5384    |    6765    |
+|    25m 40s 867ms   |   100%   |    132628   |    5453    |    6696    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
@@ -266,15 +266,15 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      21s 540ms     |   100%   |     4907    |    1201    |    1651    |
+|      19s 25ms      |   100%   |     5176    |    1211    |    1642    |
 
 
 Summary Statistics for Factoring:
-    369498233670465681342232176125551121921
+    202568699792573213335520384055117307693
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|        191ms       |   100%   |      90     |     425    |     200    |
+|        149ms       |   100%   |     109     |     383    |     233    |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
