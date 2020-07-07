@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <fstream>
 
-constexpr std::size_t L1Cache = 32768;
+constexpr std::size_t L1Cache = 32768u;
 
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
@@ -152,7 +152,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     hash64vec partFactorsMap;
     hash64mpz_t partIntvlMap;
     
-    vec2dsize_t powsOfPartials;
+    vec2dint powsOfPartials;
     hash64size_t keepingTrack;
     std::vector<std::size_t> coFactorIndexVec;
     
@@ -163,11 +163,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     mpz_t largeInt, intVal;
     mpz_init(largeInt); mpz_init(intVal);
     
-    vec2dsize_t powsOfSmooths;
+    vec2dint powsOfSmooths;
     powsOfSmooths.reserve(facSize);
     
-    std::size_t nPolys = 0;
-    std::size_t extraFacs = 0;
+    std::size_t nPolys = 0u;
+    std::size_t extraFacs = 0u;
     std::size_t mpzFacSize = facSize;
     
     auto checkPoint0 = std::chrono::steady_clock::now();
@@ -176,7 +176,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     auto showStatsTime = (checkPoint0 - trialTest);
     
-    std::size_t lastLim = 0;
+    std::size_t lastLim = 0u;
     std::size_t currLim = nSmooth + nPartial;
     std::vector<std::size_t> polySieveD(facSize * 2, 0u);
     
@@ -296,9 +296,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         newTestInt.reset();
         extraFacs += 5;
         
-        // mpz_set_ui(factors[0], 11u);
-        // mpz_set_ui(factors[1], 13u);
-
         if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
             const auto checkPoint3 = std::chrono::steady_clock::now();
 

@@ -244,8 +244,8 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
                 const std::vector<std::size_t> &SieveDist, mpz_t *const TS,
                 const std::vector<std::size_t> &facBase, mpz_t *const mpzFacBase,
                 const std::vector<double> &LnFB, mpz_t *const largeCoFactors,
-                mpz_t *const partialInterval, vec2dsize_t &powsOfSmooths,
-                vec2dsize_t &powsOfPartials, hash64vec &partFactorsMap,
+                mpz_t *const partialInterval, vec2dint &powsOfSmooths,
+                vec2dint &powsOfPartials, hash64vec &partFactorsMap,
                 hash64mpz_t &partIntvlMap, hash64size_t &keepingTrack,
                 std::vector<std::size_t> &coFactorIndexVec, std::size_t &nPartial,
                 std::size_t &nSmooth, std::size_t &coFactorInd, mpz_t intVal,
@@ -314,7 +314,7 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
                 largeLogs.push_back(i + chunk);
         
         for (auto lrglog: largeLogs) {
-            std::vector<std::size_t> primeIndexVec;
+            std::vector<int> primeIndexVec;
             const int myIntVal = intLowBound + lrglog;
             
             mpz_mul_si(temp, B, 2 * myIntVal);
@@ -324,13 +324,12 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
             mpz_add(intVal, Atemp2, temp);
             
             // Add the index referring to A^2.. (i.e. add it twice)
-            primeIndexVec.push_back(mpzFacSize);
-            primeIndexVec.push_back(mpzFacSize);
+            primeIndexVec.insert(primeIndexVec.end(), 2, static_cast<int>(mpzFacSize));
             
             // If Negative, we push zero (i.e. the index referring to -1)
             if (mpz_sgn(intVal) < 0) {
                 mpz_abs(intVal, intVal);
-                primeIndexVec.push_back(0u);
+                primeIndexVec.push_back(0);
             }
             
             for (std::size_t i = 0; i < facSize; ++i) {

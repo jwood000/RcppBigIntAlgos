@@ -8,8 +8,8 @@
 constexpr std::size_t hundredThousand = 100000;
 constexpr double Significand53 = 9007199254740991.0;
 
-using vec2dsize_t = std::vector<std::vector<std::size_t>>;
-using hash64vec = std::unordered_map<std::uint64_t, std::vector<std::size_t>>;
+using vec2dint = std::vector<std::vector<int>>;
+using hash64vec = std::unordered_map<std::uint64_t, std::vector<int>>;
 using hash64mpz_t = std::unordered_map<std::uint64_t, mpz_t>;
 using hash64size_t = std::unordered_map<std::uint64_t, std::size_t>;
 
@@ -29,8 +29,8 @@ void SinglePoly(std::vector<std::size_t> &polySieveD, mpz_t *const smoothInterva
                 const std::vector<std::size_t> &SieveDist, mpz_t *const TS,
                 const std::vector<std::size_t> &facBase, mpz_t *const mpzFacBase,
                 const std::vector<double> &LnFB, mpz_t *const largeCoFactors,
-                mpz_t *const partialInterval, vec2dsize_t &powsOfSmooths,
-                vec2dsize_t &powsOfPartials, hash64vec &partFactorsMap,
+                mpz_t *const partialInterval, vec2dint &powsOfSmooths,
+                vec2dint &powsOfPartials, hash64vec &partFactorsMap,
                 hash64mpz_t &partIntvlMap, hash64size_t &keepingTrack,
                 std::vector<std::size_t> &coFactorIndexVec, std::size_t &nPartial,
                 std::size_t &nSmooth, std::size_t &coFactorInd, mpz_t intVal,
