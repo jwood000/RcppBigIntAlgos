@@ -26,7 +26,7 @@ void solutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     std::vector<std::size_t> myCols(nCols, 0);
     std::iota(myCols.begin(), myCols.end(), 0);
     
-    reduceMatrix(nCols, nRows, nullMat, myCols);
+    reduceMatrix(nullMat, myCols, static_cast<int>(nCols), static_cast<int>(nRows));
     const std::size_t newNrow = nullMat.size() / nCols;
     
     std::vector<std::vector<std::size_t>> myList(nCols, std::vector<std::size_t>());
@@ -54,7 +54,7 @@ void solutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                     nullMat[(j * nCols) + temp.front()] = 0;
                 
                 myList[myCols[i - 1]].clear();
-                myList[myCols[i - 1]].push_back(0);
+                myList[myCols[i - 1]].push_back(0u);
             } else {
                 temp.clear();
                 bool allBiggerNewNrow = true;

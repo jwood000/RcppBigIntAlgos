@@ -75,8 +75,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     for (std::size_t i = 0; i < 10; ++i)
         mpz_init(TS[i]);
     
-    const std::vector<std::size_t> SieveDist = setSieveDist(myNum, TS,
-                                                            facBase, facSize);
+    const std::vector<std::size_t> SieveDist = setSieveDist(myNum, TS, facBase);
     
     // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
     // rawCoef <- round(unname(lm(CounterSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
@@ -147,6 +146,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(firstInt, 10) * 2);
     
+    const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
+                                 [minPrime](std::size_t f) {return f > minPrime;});
+    
+    const std::size_t strt = std::distance(facBase.cbegin(), it) + 1u;
+    
     // The map below is for almost smooth numbers, i.e. numbers
     // that are almost completely factored by our factor base
     hash64vec partFactorsMap;
@@ -210,6 +214,7 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
         const std::size_t loopLimit = facSize + extraFacs;
+        std::vector<std::size_t> myStart(facSize * 2);
         
         // Find enough smooth numbers to guarantee a non-trivial solution
         while (currLim <= loopLimit) {
@@ -231,11 +236,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             ++mpzFacSize;
              
             SinglePoly(polySieveD, smoothInterval.get(), SieveDist, TS, facBase,
-                       mpzFacBase.get(), LnFB, largeCoFactors.get(), partialInterval.get(),
-                       powsOfSmooths, powsOfPartials, partFactorsMap, partIntvlMap, keepingTrack,
-                       coFactorIndexVec, nPartial, nSmooth, coFactorInd, intVal, myNum, Atemp,
-                       Btemp, temp, A, B, C, Atemp2, lowBound, minPrime, theCut, DoubleLenB,
-                       mpzFacSize, facSize, vecMaxSize);
+                       mpzFacBase.get(), LnFB, largeCoFactors.get(), myStart,
+                       partialInterval.get(), powsOfSmooths, powsOfPartials, partFactorsMap,
+                       partIntvlMap, keepingTrack, coFactorIndexVec, nPartial, nSmooth,
+                       coFactorInd, intVal, myNum, Atemp, Btemp, temp, A, B, C, Atemp2,
+                       lowBound, theCut, DoubleLenB, mpzFacSize, vecMaxSize, strt);
             
             ++nPolys;
             currLim = nSmooth + nPartial;
@@ -256,15 +261,15 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             }
         }
 
-        const std::size_t matRow = nSmooth + nPartial;
-        const std::size_t matWidth = coFactorInd + mpzFacSize + 1;
+        const std::size_t nRows = nSmooth + nPartial;
+        const std::size_t nCols = coFactorInd + mpzFacSize + 1;
+        
+        auto newTestInt = FromCpp14::make_unique<mpz_t[]>(nRows);
+        std::vector<std::uint8_t> mat(nRows * nCols, 0u);
 
-        auto newTestInt = FromCpp14::make_unique<mpz_t[]>(matRow);
-        std::vector<std::uint8_t> newMat(matRow * matWidth, 0);
-
-        for (std::size_t r = 0, row = 0; r < nSmooth; row += matWidth, ++r) {
+        for (std::size_t r = 0, row = 0; r < nSmooth; row += nCols, ++r) {
             for (const auto p: powsOfSmooths[r])
-                ++newMat[row + p];
+                ++mat[row + p];
 
             mpz_init_set(newTestInt[r], smoothInterval[r]);
         }
@@ -276,21 +281,21 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
 
         for (std::size_t i = 0, j = mpzFacSize; i < coFactorInd; ++i, ++j)
             mpz_set(mpzFacBase[j], largeCoFactors[i]);
-
+        
         for (std::size_t i = 0, r = nSmooth,
-             row = matWidth * nSmooth; i < nPartial; ++i, ++r, row += matWidth) {
+             row = nCols * nSmooth; i < nPartial; ++i, ++r, row += nCols) {
 
             for (const auto p: powsOfPartials[i])
-                ++newMat[row + p];
-
-            newMat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
+                ++mat[row + p];
+            
+            mat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
             mpz_init_set(newTestInt[r], partialInterval[i]);
         }
-
-        solutionSearch(newMat, matRow, matWidth, myNum,
+        
+        solutionSearch(mat, nRows, nCols, myNum,
                        mpzFacBase.get(), newTestInt.get(), factors);
 
-        for (std::size_t i = 0; i < matRow; ++i)
+        for (std::size_t i = 0; i < nRows; ++i)
             mpz_clear(newTestInt[i]);
 
         newTestInt.reset();
