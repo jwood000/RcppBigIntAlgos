@@ -131,20 +131,25 @@ nchar(as.character(semiPrime140bits))
 [1] 42
 
 ## Using factorize from gmp package which implements pollard's rho algorithm
-## We did not test the 140 bit semi-prime as the 130 bit took a very long time
-
 ##**************gmp::factorize*********************
 system.time(print(factorize(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
    user  system elapsed 
-126.603   0.052 126.694
+125.117   0.139 125.113
 
 system.time(print(factorize(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
     user   system  elapsed 
-1513.055    1.455 1517.524
+1437.246    0.309 1437.505
+
+system.time(print(factorize(semiPrime140bits)))
+Big Integer ('bigz') object of length 2:
+[1] 143600566714698156857  1131320166687668315849
+    user   system  elapsed 
+2239.374    0.299 2239.641
+
 
 ##**************quadraticSieve*********************
 ## quadraticSieve is much faster and scales better
@@ -152,19 +157,19 @@ system.time(print(quadraticSieve(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
    user  system elapsed 
-  0.092   0.001   0.091
+  0.088   0.000   0.086
   
 system.time(print(quadraticSieve(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
    user  system elapsed 
-  0.148   0.000   0.148
+  0.137   0.000   0.137
 
 system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
-  0.265   0.000   0.265 
+  0.222   0.001   0.221 
 ```
 
 ### 50+ Digits
@@ -181,7 +186,7 @@ nchar(as.character(semiPrime164bits))
 ## We see this about 0.5 seconds faster than setting showStats = TRUE
 system.time(quadraticSieve(semiPrime164bits))
    user  system elapsed 
-  2.612   0.005   2.615
+  2.390   0.006   2.394
 
 quadraticSieve(semiPrime164bits, showStats = TRUE)
 
@@ -190,7 +195,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      2s 929ms      |   100%   |     1346    |     719    |     826    |
+|      2s 769ms      |   100%   |     1346    |     719    |     826    |
 
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
@@ -209,7 +214,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      27s 821ms     |   100%   |     7782    |    1375    |    1694    |
+|      25s 696ms     |   100%   |     7782    |    1375    |    1694    |
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
@@ -231,7 +236,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    3m 28s 249ms    |   100%   |    29484    |    2952    |    3382    |
+|    3m 13s 884ms    |   100%   |    29484    |    2952    |    3382    |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -246,7 +251,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    25m 40s 867ms   |   100%   |    132628   |    5453    |    6696    |
+|    23m 25s 654ms   |   100%   |    132628   |    5453    |    6696    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
@@ -266,7 +271,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      19s 25ms      |   100%   |     5176    |    1211    |    1642    |
+|      17s 911ms     |   100%   |     5176    |    1211    |    1642    |
 
 
 Summary Statistics for Factoring:
@@ -274,7 +279,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|        149ms       |   100%   |     109     |     383    |     233    |
+|        176ms       |   100%   |     109     |     383    |     233    |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
