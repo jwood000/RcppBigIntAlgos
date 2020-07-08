@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <cstdint>
 
-void reduceMatrix(std::size_t nCols, std::size_t nRows, 
-                  std::vector<std::uint8_t> &nullMat,
-                  std::vector<std::size_t> &myCols);
+void reduceMatrix(std::vector<std::uint8_t> &nullMat,
+                  std::vector<std::size_t> &myCols,
+                  int nCols, int nRows);
 
 #endif
