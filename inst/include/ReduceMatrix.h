@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <cstdint>
 
-void reduceMatrix(std::vector<std::uint8_t> &nullMat,
+constexpr int unrollSize = 8;
+
+void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                   std::vector<std::size_t> &myCols,
                   int nCols, int nRows);
 

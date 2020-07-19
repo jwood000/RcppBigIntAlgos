@@ -1,8 +1,6 @@
 #include "ReduceMatrix.h"
 
-constexpr int unrollSize = 8;
-
-void reduceMatrix(std::vector<std::uint8_t> &nullMat,
+void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                   std::vector<std::size_t> &myCols,
                   int nCols, int nRows) {
 

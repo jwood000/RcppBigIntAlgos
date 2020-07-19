@@ -13,7 +13,7 @@ constexpr auto minuteCutOff = std::chrono::minutes(60);
 constexpr std::size_t maxHours = 999 * 60;
 constexpr std::size_t maxMinutes = (maxHours * 60) + 59;
 
-void makeStrLen(std::string & myStr, std::size_t myLen) {
+void MakeStrLen(std::string & myStr, std::size_t myLen) {
     
     while (myStr.size() < myLen) {
         myStr = " " + myStr + " ";
@@ -23,7 +23,7 @@ void makeStrLen(std::string & myStr, std::size_t myLen) {
 }
 
 template <typename typeTime>
-void makeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
+void MakeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
                std::size_t nSmooth, std::size_t nPartial, std::size_t &lastLim,
                typeTime timeDiff) {
     
@@ -32,10 +32,10 @@ void makeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
     std::string strSmooth = std::to_string(nSmooth);
     std::string strPartial = std::to_string(nPartial);
     
-    makeStrLen(strPerc, 10);
-    makeStrLen(strPolys, 13);
-    makeStrLen(strSmooth, 12);
-    makeStrLen(strPartial, 12);
+    MakeStrLen(strPerc, 10);
+    MakeStrLen(strPolys, 13);
+    MakeStrLen(strSmooth, 12);
+    MakeStrLen(strPartial, 12);
     
     std::string myTime;
     
@@ -66,7 +66,7 @@ void makeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
     }
     
     myTime += std::to_string(nMilliSec) + "ms";
-    makeStrLen(myTime, 20);
+    MakeStrLen(myTime, 20);
     
     RcppThread::Rcout << "\r|" << myTime << "|" << strPerc << "|" << strPolys << "|"
                       << strSmooth << "|" << strPartial << "|";
@@ -74,7 +74,7 @@ void makeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
 }
 
 template <typename typeTime>
-void updateStatTime(std::size_t n, std::size_t facSize,
+void UpdateStatTime(std::size_t n, std::size_t facSize,
                     typeTime timeDiff, typeTime &showStatsTime) {
     if (n > 0) {
         const std::size_t percentComplete = ((100 * n) / facSize) + 1;

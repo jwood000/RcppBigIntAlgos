@@ -1,5 +1,6 @@
 #include "RSAFactorUtils.h"
 #include "GrowMPZArray.h"
+#include <limits>
 
 // Max number of iterations in the main loop
 constexpr std::size_t POLLARD_RHO_REPS = 100000u;
@@ -218,7 +219,8 @@ void GetBigPrimeFacs(mpz_t n, mpz_t *const factors,
                      std::vector<std::size_t>& extraRecursionFacs) {
     
     if (mpz_sizeinbase(n, 10) < 24) {
-        PollardRhoWithConstraint(n, 1, factors, numPs, myLens, 10000000,
+        PollardRhoWithConstraint(n, 1, factors, numPs, myLens, 
+                                 std::numeric_limits<std::size_t>::max(),
                                  powMaster, arrayMax, extraRecursionFacs);
     } else {
         QuadraticSieve(n, result, nThreads, bShowStats);
