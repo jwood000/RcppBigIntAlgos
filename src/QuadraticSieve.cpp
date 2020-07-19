@@ -1,11 +1,9 @@
 #include "SolutionSearch.h"
-#include "Cpp14MakeUnique.h"
 #include "StatsUtils.h"
 #include "GrowMPZArray.h"
 #include <unordered_map>
 #include <fstream>
-
-constexpr std::size_t L1Cache = 32768u;
+#include <set>
 
 void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
@@ -39,14 +37,14 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                                              * std::pow(dblDigCount, 3.0) + 0.0016806
                                              * std::pow(dblDigCount, 4.0) + 3637.0671);
     
-    std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
+    const std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
     
     while (LimB < myTarget) {
         LimB = std::exp((0.5 + fudge1) * sqrLogLog);
         fudge1 += 0.001;
     }
     
-    const std::vector<std::size_t> facBase = getPrimesQuadRes(myNum, LimB, fudge1,
+    const std::vector<std::size_t> facBase = GetPrimesQuadRes(myNum, LimB, fudge1,
                                                               sqrLogLog, myTarget);
     
     // rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
@@ -65,17 +63,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                                          * std::pow(dblDigCount, 4.0) - 213.1466450);
     
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
-    const std::size_t DoubleLenB = 2 * LenB + 1;
+    const int DoubleLenB = 2 * LenB + 1;
     
     const std::size_t facSize = facBase.size();
-    const std::size_t vecMaxSize = std::min((1u + facBase.back() / L1Cache) * L1Cache, DoubleLenB);
-    
-    mpz_t TS[10];
-    
-    for (std::size_t i = 0; i < 10; ++i)
-        mpz_init(TS[i]);
-    
-    const std::vector<std::size_t> SieveDist = setSieveDist(myNum, TS, facBase);
+    const int vecMaxSize = std::min(static_cast<int>((1 + facBase.back() / L1Cache) * L1Cache), DoubleLenB);
+    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum);
     
     // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
     // rawCoef <- round(unname(lm(CounterSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
@@ -118,33 +110,32 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     for (std::size_t i = 0; i < mpzFSzLIMIT; ++i)
         mpz_init(mpzFacBase[i]);
     
-    mpz_t temp;
-    mpz_init(temp);
-    mpz_mul_ui(temp, myNum, 2);
-    mpz_sqrt(temp, temp);
-    mpz_mul_ui(temp, temp, LenB);
+    mpz_t Temp;
+    mpz_init(Temp);
+    mpz_mul_ui(Temp, myNum, 2);
+    mpz_sqrt(Temp, Temp);
+    mpz_mul_ui(Temp, Temp, LenB);
     
     const double fudge2 = (digCount < 45) ? 1.410 :
                           (digCount < 50) ? 1.440 :
                           (digCount < 60) ? 1.500 : 
                           (digCount < 65) ? 1.515 : 1.530;
     
-    const double theCut = fudge2 * mpz_sizeinbase(temp, 10);
+    const int theCut = std::ceil(100.0 * fudge2 *
+                                 static_cast<double>(mpz_sizeinbase(Temp, 10)));
     
-    std::vector<double> LnFB(facSize);
-    LnFB.reserve(facSize);
+    std::vector<int> LnFB(facSize);
     
     for (std::size_t i = 0; i < facSize; ++i) {
         mpz_set_ui(mpzFacBase[i], facBase[i]);
-        LnFB[i] = std::log(static_cast<double>(facBase[i]));
+        LnFB[i] = std::floor(100.0 * std::log(static_cast<double>(facBase[i])));
     }
     
-    mpz_t sqrtInt, firstInt;
-    mpz_init(sqrtInt); mpz_init(firstInt);
-    mpz_sqrt(sqrtInt, myNum);
-    mpz_sub_ui(firstInt, sqrtInt, LenB);
+    mpz_sqrt(Temp, myNum);
+    mpz_sub_ui(Temp, Temp, LenB);
     
-    const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(firstInt, 10) * 2);
+    const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(Temp, 10) * 2);
+    mpz_clear(Temp);
     
     const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
                                  [minPrime](std::size_t f) {return f > minPrime;});
@@ -164,9 +155,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     std::size_t coFactorInd = 0u;
     std::size_t nSmooth = 0u;
     
-    mpz_t largeInt, intVal;
-    mpz_init(largeInt); mpz_init(intVal);
-    
     vec2dint powsOfSmooths;
     powsOfSmooths.reserve(facSize);
     
@@ -177,12 +165,9 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     auto checkPoint0 = std::chrono::steady_clock::now();
     auto checkPoint1 = checkPoint0;
     auto checkPoint2 = checkPoint0;
-    
     auto showStatsTime = (checkPoint0 - trialTest);
     
     std::size_t lastLim = 0u;
-    std::size_t currLim = nSmooth + nPartial;
-    std::vector<std::size_t> polySieveD(facSize * 2, 0u);
     
     if (bShowStats) {
         auto buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(myNum, 10) + 2);
@@ -197,33 +182,31 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                           << "---|------------|" << std::endl;
     }
     
-    mpz_t A, B, C, Atemp, Atemp2, Btemp, lowBound;
-    mpz_init(A); mpz_init(B); mpz_init(C);
-    mpz_init(Atemp); mpz_init(Atemp2); mpz_init(Btemp);
+    mpz_t LowBound;
+    mpz_init(LowBound);
+    mpz_set_si(LowBound, -1 * static_cast<int>(LenB));
     
-    mpz_init(lowBound);
-    mpz_set_si(lowBound, -1 * static_cast<int>(LenB));
+    mpz_t NextPrime;
+    mpz_init(NextPrime);
+    mpz_mul_2exp(NextPrime, myNum, 1);
+    mpz_sqrt(NextPrime, NextPrime);
+    mpz_div_ui(NextPrime, NextPrime, LenB);
+    mpz_sqrt(NextPrime, NextPrime);
     
-    mpz_mul_2exp(Atemp, myNum, 1);
-    mpz_sqrt(Atemp, Atemp);
-    mpz_div_ui(Atemp, Atemp, LenB);
-    mpz_sqrt(Atemp, Atemp);
-    
-    if (mpz_cmp_ui(Atemp, facBase.back()) < 0)
-        mpz_set_ui(Atemp, facBase.back());
+    if (mpz_cmp_ui(NextPrime, facBase.back()) < 0)
+        mpz_set_ui(NextPrime, facBase.back());
     
     while (mpz_cmp_ui(factors[0], 0) == 0) {
+        std::size_t currLim = nSmooth + nPartial;
         const std::size_t loopLimit = facSize + extraFacs;
         std::vector<std::size_t> myStart(facSize * 2);
         
         // Find enough smooth numbers to guarantee a non-trivial solution
         while (currLim <= loopLimit) {
-            bool LegendreTest = true;
-            
-            while (LegendreTest) {
-                mpz_nextprime(Atemp, Atemp);
+            for (bool LegendreTest = true; LegendreTest; ) {
+                mpz_nextprime(NextPrime, NextPrime);
                 
-                if (mpz_legendre(myNum, Atemp) == 1)
+                if (mpz_legendre(myNum, NextPrime) == 1)
                     LegendreTest = false;
             }
             
@@ -232,15 +215,15 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
                 Grow(mpzFacBase, mpzFacSize, mpzFSzLIMIT);
             }
             
-            mpz_set(mpzFacBase[mpzFacSize], Atemp);
+            mpz_set(mpzFacBase[mpzFacSize], NextPrime);
             ++mpzFacSize;
-             
-            SinglePoly(polySieveD, smoothInterval.get(), SieveDist, TS, facBase,
-                       mpzFacBase.get(), LnFB, largeCoFactors.get(), myStart,
-                       partialInterval.get(), powsOfSmooths, powsOfPartials, partFactorsMap,
-                       partIntvlMap, keepingTrack, coFactorIndexVec, nPartial, nSmooth,
-                       coFactorInd, intVal, myNum, Atemp, Btemp, temp, A, B, C, Atemp2,
-                       lowBound, theCut, DoubleLenB, mpzFacSize, vecMaxSize, strt);
+            
+            SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
+                       coFactorIndexVec, myStart, partFactorsMap, partIntvlMap,
+                       keepingTrack, smoothInterval.get(), largeCoFactors.get(),
+                       partialInterval.get(), NextPrime, LowBound, myNum,
+                       nPartial, nSmooth, coFactorInd, theCut, DoubleLenB,
+                       mpzFacSize, vecMaxSize, strt);
             
             ++nPolys;
             currLim = nSmooth + nPartial;
@@ -253,58 +236,111 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             }
             
             if (bShowStats && (checkPoint3 - checkPoint2) > showStatsTime) {
-                makeStats(currLim, loopLimit, nPolys, nSmooth,
+                MakeStats(currLim, loopLimit, nPolys, nSmooth,
                           nPartial, lastLim, checkPoint3 - checkPoint0);
                 
                 checkPoint2 = std::chrono::steady_clock::now();
-                updateStatTime(currLim, facSize, checkPoint3 - checkPoint0, showStatsTime);
+                UpdateStatTime(currLim, facSize, checkPoint3 - checkPoint0, showStatsTime);
             }
         }
-
-        const std::size_t nRows = nSmooth + nPartial;
-        const std::size_t nCols = coFactorInd + mpzFacSize + 1;
         
+        // Not every prime in mpzFacBase is utilized. For example, with our
+        // attempt at factoring rsa99, there were over 4 million elements
+        // in mpzFacBase, however there were only ~40000 smooths + partials.
+        // This caused an inordinate memory allocation haulting the
+        // factorization. The set, setIndex, will be used to drastically
+        // reduce the size of the factor base and related structures making
+        // the linear algebra portion much more efficient.
+        std::set<int> setIndex;
+        auto indIt = setIndex.begin();
+
+        for (std::size_t i = 0; i < nSmooth; ++i) {
+            if (powsOfSmooths[i].front() > facSize) {
+                setIndex.emplace_hint(indIt, powsOfSmooths[i].front());
+                indIt = setIndex.end();
+            }
+        }
+        
+        // Here we get the 4 largest powers as we know these relate to
+        // primes not contained in facBase.
+        for (std::size_t i = 0; i < nPartial; ++i) {
+            std::partial_sort(powsOfPartials[i].begin(), powsOfPartials[i].begin() + 4,
+                              powsOfPartials[i].end(), std::greater<int>());
+            
+            if (powsOfPartials[i].front() > facSize)
+                setIndex.insert(powsOfPartials[i].front());
+
+            if (powsOfPartials[i][2] > facSize)
+                setIndex.insert(powsOfPartials[i][2]);
+        }
+        
+        const std::size_t nRows = nSmooth + nPartial;
+        const std::size_t nonTrivSize = setIndex.size() + facSize;
+        const std::size_t nCols = nonTrivSize + coFactorInd + 1;
+        auto nonTrivialFacs = FromCpp14::make_unique<mpz_t[]>(nCols);
+
+        for (std::size_t i = 0; i < facSize; ++i)
+            mpz_init_set_ui(nonTrivialFacs[i], facBase[i]);
+
+        std::unordered_map<int, std::size_t> mapIndex;
+        mapIndex.reserve(setIndex.size());
+        
+        std::size_t setInd = facSize;
+        
+        for (auto s: setIndex) {
+            mpz_init_set(nonTrivialFacs[setInd++], mpzFacBase[s - 1]);
+            mapIndex[s] = setInd;
+        }
+
+        for (std::size_t i = 0, j = setInd; i < coFactorInd; ++i, ++j)
+            mpz_init_set(nonTrivialFacs[j], largeCoFactors[i]);
+
         auto newTestInt = FromCpp14::make_unique<mpz_t[]>(nRows);
         std::vector<std::uint8_t> mat(nRows * nCols, 0u);
 
-        for (std::size_t r = 0, row = 0; r < nSmooth; row += nCols, ++r) {
+        for (std::size_t r = 0, row = 0; r < nSmooth; ++r, row += nCols) {
+            
+            // Remap the powers corresponding to powers not contained in facBase
+            for (std::size_t j = 0; j < 2; ++j)
+                powsOfSmooths[r][j] = mapIndex[powsOfSmooths[r][j]];
+            
             for (const auto p: powsOfSmooths[r])
                 ++mat[row + p];
 
             mpz_init_set(newTestInt[r], smoothInterval[r]);
         }
-
-        if ((coFactorInd + mpzFacSize) >= mpzFSzLIMIT) {
-            mpzFSzLIMIT <<= 1;
-            Grow(mpzFacBase, mpzFacSize, mpzFSzLIMIT);
-        }
-
-        for (std::size_t i = 0, j = mpzFacSize; i < coFactorInd; ++i, ++j)
-            mpz_set(mpzFacBase[j], largeCoFactors[i]);
         
         for (std::size_t i = 0, r = nSmooth,
              row = nCols * nSmooth; i < nPartial; ++i, ++r, row += nCols) {
-
+            
+            // Remap the powers corresponding to powers not contained in facBase
+            for (std::size_t j = 0; j < 4; ++j)
+                powsOfPartials[i][j] = mapIndex[powsOfPartials[i][j]];
+            
             for (const auto p: powsOfPartials[i])
                 ++mat[row + p];
-            
-            mat[row + mpzFacSize + 1 + coFactorIndexVec[i]] = 2u;
+
+            mat[row + nonTrivSize + coFactorIndexVec[i] + 1] = 2u;
             mpz_init_set(newTestInt[r], partialInterval[i]);
         }
         
-        solutionSearch(mat, nRows, nCols, myNum,
-                       mpzFacBase.get(), newTestInt.get(), factors);
+        SolutionSearch(mat, nRows, nCols, myNum, nonTrivialFacs.get(),
+                       newTestInt.get(), factors, nThreads);
 
         for (std::size_t i = 0; i < nRows; ++i)
             mpz_clear(newTestInt[i]);
-
+        
+        for (std::size_t i = 0; i < nCols; ++i)
+            mpz_clear(nonTrivialFacs[i]);
+        
+        nonTrivialFacs.reset();
         newTestInt.reset();
-        extraFacs += 5;
+        extraFacs += 5u;
         
         if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
             const auto checkPoint3 = std::chrono::steady_clock::now();
 
-            makeStats(loopLimit, loopLimit, nPolys, nSmooth,
+            MakeStats(loopLimit, loopLimit, nPolys, nSmooth,
                       nPartial, lastLim, checkPoint3 - checkPoint0);
 
             RcppThread::Rcout << "\n" << std::endl;
@@ -333,13 +369,6 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
     keepingTrack.clear();
     coFactorIndexVec.clear();
     
-    mpz_clear(temp); mpz_clear(intVal); mpz_clear(sqrtInt);
-    mpz_clear(largeInt); mpz_clear(firstInt);
-    
-    mpz_clear(A); mpz_clear(B); mpz_clear(C);
-    mpz_clear(lowBound); mpz_clear(Atemp);
-    mpz_clear(Atemp2); mpz_clear(Btemp);
-    
-    for (std::size_t i = 0; i < 10; ++i)
-        mpz_clear(TS[i]);
+    mpz_clear(NextPrime);
+    mpz_clear(LowBound);
 }
