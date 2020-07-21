@@ -13,14 +13,14 @@ std::vector<std::size_t> SetSieveDist(const std::vector<std::size_t> &facBase, m
     mpz_t p;
     mpz_init(p);
     
-    for (std::size_t i = 1, row = 2; i < facSize; ++i, row += 2) {
+    for (std::size_t i = 1; i < facSize; ++i) {
         mpz_set_ui(p, facBase[i]);
         TonelliShanksC(myNum, p, TS_1);
         
-        SieveDist[row] = mpz_get_ui(TS_1);
+        SieveDist[i * 2] = mpz_get_ui(TS_1);
         
         mpz_sub(TS_2, p, TS_1);
-        SieveDist[row + 1] = mpz_get_ui(TS_2);
+        SieveDist[i * 2 + 1] = mpz_get_ui(TS_2);
     }
     
     mpz_clear(TS_1); mpz_clear(TS_2);
@@ -127,18 +127,17 @@ void SieveListsInit(const std::vector<std::size_t> &FBase, const std::vector<int
     mpz_init(Temp); mpz_init(AUtil);
     const std::size_t vecMaxSize = myLogs.size();
     
-    for (std::size_t i = strt, row = strt * 2,
-         facSize = FBase.size(); i < facSize; ++i, row += 2) {
+    for (std::size_t i = strt, facSize = FBase.size(); i < facSize; ++i) {
         
         mpz_set_ui(Temp, FBase[i]);
         mpz_invert(AUtil, VarA, Temp);
         
-        mpz_ui_sub(Temp, SieveDist[row], VarB);
+        mpz_ui_sub(Temp, SieveDist[i * 2], VarB);
         mpz_mul(Temp, Temp, AUtil);
         mpz_mod_ui(Temp, Temp, FBase[i]);
         std::int64_t myMin = mpz_get_si(Temp);
         
-        mpz_ui_sub(Temp, SieveDist[row + 1], VarB);
+        mpz_ui_sub(Temp, SieveDist[i * 2 + 1], VarB);
         mpz_mul(Temp, Temp, AUtil);
         mpz_mod_ui(Temp, Temp, FBase[i]);
         std::int64_t myMax = mpz_get_si(Temp);
@@ -173,8 +172,8 @@ void SieveListsInit(const std::vector<std::size_t> &FBase, const std::vector<int
         for (std::size_t j = myStart1; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[row] = (FBase[i] * ((vecMaxSize - myStart0 + FBase[i] - 1u) / FBase[i]) + myStart0) % vecMaxSize;
-        myStart[row + 1] = (FBase[i] * ((vecMaxSize - myStart1 + FBase[i] - 1u) / FBase[i]) + myStart1) % vecMaxSize;
+        myStart[i * 2] = (FBase[i] * ((vecMaxSize - myStart0 + FBase[i] - 1u) / FBase[i]) + myStart0) % vecMaxSize;
+        myStart[i * 2 + 1] = (FBase[i] * ((vecMaxSize - myStart1 + FBase[i] - 1u) / FBase[i]) + myStart1) % vecMaxSize;
     }
     
     mpz_clear(Temp); mpz_clear(AUtil);
@@ -187,15 +186,15 @@ void SieveLists(const std::vector<std::size_t> &FBase, const std::vector<int> &L
     std::fill(myLogs.begin(), myLogs.end(), 0);
     const std::size_t vecMaxSize = myLogs.size();
     
-    for (std::size_t i = strt, row = strt * 2, facSize = FBase.size(); i < facSize; ++i, row += 2) {
-        for (std::size_t j = myStart[row]; j < vecMaxSize; j += FBase[i])
+    for (std::size_t i = strt, facSize = FBase.size(); i < facSize; ++i) {
+        for (std::size_t j = myStart[i * 2]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        for (std::size_t j = myStart[row + 1]; j < vecMaxSize; j += FBase[i])
+        for (std::size_t j = myStart[i * 2 + 1]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[row] = (FBase[i] * ((vecMaxSize - myStart[row] + FBase[i] - 1u) / FBase[i]) + myStart[row]) % vecMaxSize;
-        myStart[row + 1] = (FBase[i] * ((vecMaxSize - myStart[row + 1] + FBase[i] - 1u) / FBase[i]) + myStart[row + 1]) % vecMaxSize;
+        myStart[i * 2] = (FBase[i] * ((vecMaxSize - myStart[i * 2] + FBase[i] - 1u) / FBase[i]) + myStart[i * 2]) % vecMaxSize;
+        myStart[i * 2 + 1] = (FBase[i] * ((vecMaxSize - myStart[i * 2 + 1] + FBase[i] - 1u) / FBase[i]) + myStart[i * 2 + 1]) % vecMaxSize;
     }
 }
 
@@ -206,11 +205,11 @@ void SieveListsFinal(const std::vector<std::size_t> &FBase, const std::vector<in
     std::fill(myLogs.begin(), myLogs.end(), 0);
     const std::size_t vecMaxSize = myLogs.size();
     
-    for (std::size_t i = strt, row = strt * 2, facSize = FBase.size(); i < facSize; ++i, row += 2) {
-        for (std::size_t j = myStart[row]; j < vecMaxSize; j += FBase[i])
+    for (std::size_t i = strt, facSize = FBase.size(); i < facSize; ++i) {
+        for (std::size_t j = myStart[i * 2]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        for (std::size_t j = myStart[row + 1]; j < vecMaxSize; j += FBase[i])
+        for (std::size_t j = myStart[i * 2 + 1]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
     }
 }
