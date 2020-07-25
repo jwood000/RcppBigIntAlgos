@@ -1,7 +1,7 @@
 #ifndef TONELLISHANKS_GMP_R
 #define TONELLISHANKS_GMP_R
 
-#include <gmp.h>
+#include <gmpxx.h>
 
 /**
  * Obtain quadratic residues of a mod p

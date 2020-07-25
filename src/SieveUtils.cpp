@@ -7,24 +7,18 @@ std::vector<std::size_t> SetSieveDist(const std::vector<std::size_t> &facBase, m
     std::vector<std::size_t> SieveDist(facSize * 2, 0u);
     SieveDist[0] = SieveDist[1] = 1;
     
-    mpz_t TS_1, TS_2;
-    mpz_init(TS_1); mpz_init(TS_2);
-    
-    mpz_t p;
-    mpz_init(p);
+    mpz_class p, TS_1, TS_2;
     
     for (std::size_t i = 1; i < facSize; ++i) {
-        mpz_set_ui(p, facBase[i]);
-        TonelliShanksC(myNum, p, TS_1);
+        p = facBase[i];
+        TonelliShanksC(myNum, p.get_mpz_t(), TS_1.get_mpz_t());
         
-        SieveDist[i * 2] = mpz_get_ui(TS_1);
+        SieveDist[i * 2] = TS_1.get_ui();
         
-        mpz_sub(TS_2, p, TS_1);
-        SieveDist[i * 2 + 1] = mpz_get_ui(TS_2);
+        TS_2 = p - TS_1;
+        SieveDist[i * 2 + 1] = TS_2.get_ui();
     }
     
-    mpz_clear(TS_1); mpz_clear(TS_2);
-    mpz_clear(p);
     return SieveDist;
 }
 
@@ -81,7 +75,7 @@ std::vector<std::size_t> GetPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
             mpz_set_si(temp, j);
             mpz_sub_ui(temp, jmpz, 1);
             mpz_div_2exp(temp, temp, 1);
-            mpz_powm(test,myN,temp,jmpz);
+            mpz_powm(test, myN, temp, jmpz);
             
             if (mpz_cmp_ui(test, 1) == 0)
                 myps.push_back(j);
@@ -219,45 +213,45 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
                 std::vector<std::size_t> &coFactorIndexVec,
                 std::vector<std::size_t> &myStart, hash64vec &partFactorsMap,
-                hash64mpz_t &partIntvlMap, hash64size_t &keepingTrack,
-                mpz_t *const smoothInterval, mpz_t *const largeCoFactors,
-                mpz_t *const partialInterval, mpz_t NextPrime, mpz_t LowBound,
-                mpz_t myNum, std::size_t &nPartial, std::size_t &nSmooth,
-                std::size_t &coFactorInd, int theCut, int DoubleLenB,
-                std::size_t mpzFacSize, int vecMaxSize, std::size_t strt) {
+                hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
+                std::vector<mpz_class> &smoothInterval, std::vector<mpz_class> &largeCoFactors,
+                std::vector<mpz_class> &partialInterval, mpz_class NextPrime,
+                mpz_class LowBound, mpz_class myNum, std::size_t &nPartial,
+                std::size_t &nSmooth, std::size_t &coFactorInd, int theCut,
+                int DoubleLenB, std::size_t mpzFacSize, int vecMaxSize,
+                std::size_t strt) {
     
-    mpz_t VarA, VarB, VarC, AUtil, Temp, IntVal;
-    mpz_init(VarA); mpz_init(VarB); mpz_init(VarC);
-    mpz_init(AUtil); mpz_init(Temp); mpz_init(IntVal);
+    mpz_class VarA, VarB, VarC, AUtil, Temp, IntVal;
     
-    TonelliShanksC(myNum, NextPrime, VarC);
-    mpz_mul_2exp(Temp, VarC, 1);
-    mpz_invert(Temp, Temp, NextPrime);
-    mpz_pow_ui(VarB, VarC, 2u);
+    TonelliShanksC(myNum.get_mpz_t(), NextPrime.get_mpz_t(), VarC.get_mpz_t());
     
-    mpz_sub(VarB, myNum, VarB);
-    mpz_mul(VarB, VarB, Temp);
-    mpz_add(VarB, VarB, VarC);
+    mpz_mul_2exp(Temp.get_mpz_t(), VarC.get_mpz_t(), 1);
+    mpz_invert(Temp.get_mpz_t(), Temp.get_mpz_t(), NextPrime.get_mpz_t());
+    mpz_pow_ui(VarB.get_mpz_t(), VarC.get_mpz_t(), 2u);
     
-    mpz_pow_ui(VarA, NextPrime, 2u);
-    mpz_mod(VarB, VarB, VarA);
+    VarB = myNum - VarB;
+    VarB *= Temp;
+    VarB += VarC;
     
-    mpz_pow_ui(VarC, VarB, 2u);
-    mpz_sub(VarC, VarC, myNum);
-    mpz_divexact(VarC, VarC, VarA);
+    mpz_pow_ui(VarA.get_mpz_t(), NextPrime.get_mpz_t(), 2u);
+    VarB %= VarA;
     
-    const int intLowBound = mpz_get_si(LowBound);
+    mpz_pow_ui(VarC.get_mpz_t(), VarB.get_mpz_t(), 2u);
+    VarC -= myNum;
+    VarC /= VarA;
     
-    mpz_mul_si(Temp, VarB, 2 * intLowBound);
-    mpz_add(Temp, Temp, VarC);
-    mpz_mul(AUtil, VarA, LowBound);
-    mpz_mul(AUtil, AUtil, LowBound);
-    mpz_add(IntVal, AUtil, Temp);
+    const int intLowBound = LowBound.get_si();
+    
+    Temp = VarB * 2 * intLowBound;
+    Temp += VarC;
+    AUtil = VarA * LowBound;
+    AUtil *= LowBound;
+    IntVal = AUtil + Temp;
     
     std::vector<int> myLogs(vecMaxSize);
     
-    SieveListsInit(facBase, LnFB, SieveDist, myLogs,
-                   myStart, IntVal, VarA, VarB, LowBound, strt);
+    SieveListsInit(facBase, LnFB, SieveDist, myLogs, myStart, IntVal.get_mpz_t(),
+                   VarA.get_mpz_t(), VarB.get_mpz_t(), LowBound.get_mpz_t(), strt);
     
     for (int chunk = 0; chunk < DoubleLenB; chunk += vecMaxSize) {
         std::vector<int> largeLogs;
@@ -269,38 +263,38 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
         for (auto lrgLog: largeLogs) {
             std::vector<int> primeIndexVec;
             const int myIntVal = intLowBound + lrgLog;
-
-            mpz_mul_si(Temp, VarB, 2 * myIntVal);
-            mpz_add(Temp, Temp, VarC);
-            mpz_mul_si(AUtil, VarA, myIntVal);
-            mpz_mul_si(AUtil, AUtil, myIntVal);
-            mpz_add(IntVal, AUtil, Temp);
+            
+            Temp = VarB * 2 * myIntVal;
+            Temp += VarC;
+            AUtil = VarA * myIntVal;
+            AUtil *= myIntVal;
+            IntVal = AUtil + Temp;
 
             // Add the index referring to A^2.. (i.e. add it twice)
             primeIndexVec.insert(primeIndexVec.end(), 2, static_cast<int>(mpzFacSize));
 
             // If Negative, we push zero (i.e. the index referring to -1)
-            if (mpz_sgn(IntVal) < 0) {
-                mpz_abs(IntVal, IntVal);
+            if (mpz_sgn(IntVal.get_mpz_t()) < 0) {
+                mpz_abs(IntVal.get_mpz_t(), IntVal.get_mpz_t());
                 primeIndexVec.push_back(0);
             }
 
             for (int j = 0, facSize = facBase.size(); j < facSize; ++j) {
-                while (mpz_divisible_ui_p(IntVal, facBase[j])) {
-                    mpz_divexact_ui(IntVal, IntVal, facBase[j]);
+                while (mpz_divisible_ui_p(IntVal.get_mpz_t(), facBase[j])) {
+                    IntVal /= facBase[j];
                     primeIndexVec.push_back(j + 1);
                 }
             }
 
-            mpz_mul_si(Temp, VarA, myIntVal);
-
-            if (mpz_cmp_ui(IntVal, 1u) == 0) {
+            Temp = VarA * myIntVal;
+            
+            if (cmp(IntVal, 1u) == 0) {
                 // Found a smooth number
-                mpz_add(smoothInterval[nSmooth], Temp, VarB);
+                smoothInterval.push_back(Temp + VarB);
                 powsOfSmooths.push_back(primeIndexVec);
                 ++nSmooth;
-            } else if (mpz_cmp_d(IntVal, Significand53) < 0) {
-                const uint64_t myKey = static_cast<uint64_t>(mpz_get_d(IntVal));
+            } else if (mpz_cmp_d(IntVal.get_mpz_t(), Significand53) < 0) {
+                const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
                 const auto pFacIt = partFactorsMap.find(myKey);
 
                 if (pFacIt != partFactorsMap.end()) {
@@ -310,7 +304,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                         coFactorIndexVec.push_back(trackIt->second);
                     } else {
                         keepingTrack[myKey] = coFactorInd;
-                        mpz_set(largeCoFactors[coFactorInd], IntVal);
+                        largeCoFactors.push_back(IntVal);
                         coFactorIndexVec.push_back(coFactorInd);
                         ++coFactorInd;
                     }
@@ -321,17 +315,15 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     powsOfPartials.push_back(primeIndexVec);
                     const auto intervalIt = partIntvlMap.find(myKey);
 
-                    mpz_add(Temp, Temp, VarB);
-                    mpz_mul(partialInterval[nPartial],
-                            Temp, intervalIt->second);
+                    Temp += VarB;
+                    partialInterval.push_back(Temp * intervalIt->second);
 
                     partFactorsMap.erase(pFacIt);
                     partIntvlMap.erase(intervalIt);
                     ++nPartial;
                 } else {
                     partFactorsMap[myKey] = primeIndexVec;
-                    mpz_init(partIntvlMap[myKey]);
-                    mpz_add(partIntvlMap[myKey], Temp, VarB);
+                    partIntvlMap[myKey] = Temp + VarB;
                 }
             }
         }
@@ -343,7 +335,4 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
             SieveListsFinal(facBase, LnFB, myStart, myLogs, strt);
         }
     }
-    
-    mpz_clear(VarA); mpz_clear(VarB); mpz_clear(VarC);
-    mpz_clear(AUtil); mpz_clear(Temp); mpz_clear(IntVal);
 }
