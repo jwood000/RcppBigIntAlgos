@@ -267,18 +267,15 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
             std::partial_sort(powsOfPartials[i].begin(), powsOfPartials[i].begin() + 4,
                               powsOfPartials[i].end(), std::greater<int>());
             
-            if (powsOfPartials[i].front() > facSize)
-                setIndex.insert(powsOfPartials[i].front());
-
-            if (powsOfPartials[i][2] > facSize)
-                setIndex.insert(powsOfPartials[i][2]);
+            for (std::size_t j = 0; j < 4; ++j)
+                setIndex.insert(powsOfPartials[i][j]);
         }
         
         const std::size_t nRows = nSmooth + nPartial;
         const std::size_t nonTrivSize = setIndex.size() + facSize;
         const std::size_t nCols = nonTrivSize + coFactorInd + 1;
         auto nonTrivialFacs = FromCpp14::make_unique<mpz_t[]>(nCols);
-
+        
         for (std::size_t i = 0; i < facSize; ++i)
             mpz_init_set_ui(nonTrivialFacs[i], facBase[i]);
 
@@ -299,13 +296,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         std::vector<std::uint8_t> mat(nRows * nCols, 0u);
 
         for (std::size_t r = 0, row = 0; r < nSmooth; ++r, row += nCols) {
-            
-            // Remap the powers corresponding to powers not contained in facBase
             for (std::size_t j = 0; j < 2; ++j)
-                powsOfSmooths[r][j] = mapIndex[powsOfSmooths[r][j]];
+                ++mat[row + mapIndex[powsOfSmooths[r][j]]];
             
-            for (const auto p: powsOfSmooths[r])
-                ++mat[row + p];
+            for (std::size_t j = 2; j < powsOfSmooths[r].size(); ++j)
+                ++mat[row + powsOfSmooths[r][j]];
 
             mpz_init_set(newTestInt[r], smoothInterval[r]);
         }
@@ -313,12 +308,11 @@ void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
         for (std::size_t i = 0, r = nSmooth,
              row = nCols * nSmooth; i < nPartial; ++i, ++r, row += nCols) {
             
-            // Remap the powers corresponding to powers not contained in facBase
             for (std::size_t j = 0; j < 4; ++j)
-                powsOfPartials[i][j] = mapIndex[powsOfPartials[i][j]];
+                ++mat[row + mapIndex[powsOfPartials[i][j]]];
             
-            for (const auto p: powsOfPartials[i])
-                ++mat[row + p];
+            for (std::size_t j = 4; j < powsOfPartials[i].size(); ++j)
+                ++mat[row + powsOfPartials[i][j]];
 
             mat[row + nonTrivSize + coFactorIndexVec[i] + 1] = 2u;
             mpz_init_set(newTestInt[r], partialInterval[i]);
