@@ -33,13 +33,15 @@ private:
 public:
     
     // SaPThresh: Smooth + Partial Threshold
+    Polynomial(std::size_t _mpzContainerSize,
+               std::size_t _facSize, bool _bShowStats, mpz_class myNum);
+    
     Polynomial(std::size_t _mpzContainerSize, std::size_t _facSize,
-               std::size_t _SaPThresh, std::size_t _polyLimit,
-               bool _bShowStats, mpz_class myNum);
+               std::size_t _polyLimit, bool _bShowStats);
     
     void SievePolys(const std::vector<std::size_t> &SieveDist,
                     const std::vector<std::size_t> &facBase, const std::vector<int> &LnFB,
-                    const std::vector<mpz_class> &NextPrime,
+                    const std::vector<mpz_class> &mpzFacBase,
                     mpz_class LowBound, mpz_class myNum, int theCut, int DoubleLenB,
                     int vecMaxSize, std::size_t strt);
     
@@ -54,6 +56,8 @@ public:
                      const std::vector<std::size_t> &facBase, mpz_t *const factors,
                      mpz_t mpzNum, std::size_t nThreads,
                      std::chrono::time_point<std::chrono::steady_clock> checkPoint0);
+    
+    void SetMpzFacSize(std::size_t _mpzFacSize) {mpzFacSize = _mpzFacSize;}
 };
 
 #endif

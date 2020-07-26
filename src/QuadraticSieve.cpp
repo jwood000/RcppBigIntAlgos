@@ -1,4 +1,5 @@
 #include "Polynomial.h"
+#include <RcppThread.h>
 
 void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
@@ -125,15 +126,68 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     if (cmp(NextPrime, facBase.back()) < 0)
         NextPrime = facBase.back();
     
-    Polynomial myPoly(mpzContainerSize, facSize, facSize, 10, bShowStats, myNum);
+    if (nThreads > 1) {
+        std::size_t setPolys = 29500;
         
-    while (mpz_cmp_ui(factors[0], 0) == 0) {
-        myPoly.FactorFinish(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
-                            LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
-                            strt, checkPoint0);
+        std::vector<Polynomial> vecPoly(nThreads,
+                                        Polynomial(mpzContainerSize / nThreads,
+                                                   facSize, setPolys / nThreads, bShowStats));
         
-        myPoly.GetSolution(mpzFacBase, facBase, factors,
-                           myNum.get_mpz_t(), nThreads, checkPoint0);
-        NextPrime = mpzFacBase.back();
+        for (std::size_t i = 0; i < setPolys; ++i) {
+            for (bool LegendreTest = true; LegendreTest; ) {
+                mpz_nextprime(NextPrime.get_mpz_t(), NextPrime.get_mpz_t());
+                
+                if (mpz_legendre(myNum.get_mpz_t(), NextPrime.get_mpz_t()) == 1)
+                    LegendreTest = false;
+            }
+            
+            mpzFacBase.push_back(NextPrime);
+        }
+        
+        // RcppThread::ThreadPool pool(nThreads);
+        std::size_t step = setPolys / nThreads;
+        std::vector<std::thread> myThreads;
+        
+        for (std::size_t i = 0, mySize = facSize; i < nThreads; ++i, mySize += step) {
+            vecPoly[i].SetMpzFacSize(mySize);
+
+            myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i], std::cref(SieveDist),
+                                   std::cref(facBase), std::cref(LnFB), std::cref(mpzFacBase),
+                                   LowBound, myNum, theCut, DoubleLenB, vecMaxSize, strt);
+        }
+        
+        for (auto &thr: myThreads)
+            thr.join();
+        
+        mpz_set_ui(factors[0], 11u);
+        mpz_set_ui(factors[1], 13u);
+        
+        // SievePolys(const std::vector<std::size_t> &SieveDist,
+        //            const std::vector<std::size_t> &facBase, const std::vector<int> &LnFB,
+        //            const std::vector<mpz_class> &mpzFacBase,
+        //            mpz_class LowBound, mpz_class myNum, int theCut, int DoubleLenB,
+        //            int vecMaxSize, std::size_t strt)
+        
+        // while (mpz_cmp_ui(factors[0], 0) == 0) {
+        //     myPoly.FactorFinish(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+        //                         LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
+        //                         strt, checkPoint0);
+        //     
+        //     myPoly.GetSolution(mpzFacBase, facBase, factors,
+        //                        myNum.get_mpz_t(), nThreads, checkPoint0);
+        //     NextPrime = mpzFacBase.back();
+        // }
+    } else {
+        Polynomial myPoly(mpzContainerSize, facSize, bShowStats, myNum);
+        
+        while (mpz_cmp_ui(factors[0], 0) == 0) {
+            myPoly.FactorFinish(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+                                LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
+                                strt, checkPoint0);
+            
+            myPoly.GetSolution(mpzFacBase, facBase, factors,
+                               myNum.get_mpz_t(), nThreads, checkPoint0);
+            NextPrime = mpzFacBase.back();
+        }
     }
 }

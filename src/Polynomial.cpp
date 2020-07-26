@@ -6,14 +6,13 @@
 
 #include <Rcpp.h>
 
-Polynomial::Polynomial(std::size_t _mpzContainerSize, std::size_t _facSize,
-                       std::size_t _SaPThresh, std::size_t _polyLimit,
-                       bool _bShowStats, mpz_class myNum) : 
-            mpzFacSize(_facSize), SaPThresh(_SaPThresh),
-            polyLimit(_polyLimit), bShowStats(_bShowStats) {
+Polynomial::Polynomial(std::size_t _mpzContainerSize,
+                       std::size_t _facSize, bool _bShowStats, mpz_class myNum) : 
+            mpzFacSize(_facSize), SaPThresh(_facSize),
+            polyLimit(0), bShowStats(_bShowStats) {
     
-    powsOfSmooths.reserve(_SaPThresh);
-    powsOfPartials.reserve(_SaPThresh);
+    powsOfSmooths.reserve(_facSize);
+    powsOfPartials.reserve(_facSize);
     myStart.assign(_facSize * 2, 0u);
 
     smoothInterval.reserve(_mpzContainerSize);
@@ -35,19 +34,37 @@ Polynomial::Polynomial(std::size_t _mpzContainerSize, std::size_t _facSize,
     }
 }
 
+Polynomial::Polynomial(std::size_t _mpzContainerSize, std::size_t _facSize,
+                       std::size_t _polyLimit, bool _bShowStats) : 
+    SaPThresh(_facSize), polyLimit(_polyLimit), bShowStats(_bShowStats) {
+    
+    powsOfSmooths.reserve(_facSize);
+    powsOfPartials.reserve(_facSize);
+    myStart.assign(_facSize * 2, 0u);
+    
+    smoothInterval.reserve(_mpzContainerSize);
+    largeCoFactors.reserve(_mpzContainerSize);
+    partialInterval.reserve(_mpzContainerSize);
+    
+    nPolys = 0;
+    nPartial = 0;
+    nSmooth = 0;
+    coFactorInd = 0;
+}
+
 void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
                             const std::vector<std::size_t> &facBase, const std::vector<int> &LnFB,
-                            const std::vector<mpz_class> &NextPrime,
+                            const std::vector<mpz_class> &mpzFacBase,
                             mpz_class LowBound, mpz_class myNum, int theCut, int DoubleLenB,
                             int vecMaxSize, std::size_t strt) {
 
-    for (; nPolys <= polyLimit; ++nPolys) {
+    for (std::size_t poly = 0; poly < polyLimit; ++poly) {
         ++mpzFacSize;
 
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    coFactorIndexVec, myStart, partFactorsMap, partIntvlMap,
                    keepingTrack, smoothInterval, largeCoFactors,
-                   partialInterval, NextPrime[nPolys], LowBound, myNum,
+                   partialInterval, mpzFacBase[mpzFacSize - 1], LowBound, myNum,
                    nPartial, nSmooth, coFactorInd, theCut, DoubleLenB,
                    mpzFacSize, vecMaxSize, strt);
     }
@@ -59,10 +76,6 @@ void Polynomial::FactorFinish(const std::vector<std::size_t> &SieveDist,
                               mpz_class LowBound, mpz_class myNum,
                               int theCut, int DoubleLenB, int vecMaxSize, std::size_t strt,
                               std::chrono::time_point<std::chrono::steady_clock> checkPoint0) {
-    
-    if (SaPThresh - facBase.size() > 45) {
-        Rcpp::print(Rcpp::wrap("dawg"));
-    }
     
     std::size_t currLim = nSmooth + nPartial;
     std::size_t lastLim = currLim;
@@ -176,14 +189,12 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
     std::vector<std::uint8_t> mat(nRows * nCols, 0u);
 
     for (std::size_t r = 0, row = 0; r < nSmooth; ++r, row += nCols) {
-
-        // Remap the powers corresponding to powers not contained in facBase
         for (std::size_t j = 0; j < 2; ++j)
-            powsOfSmooths[r][j] = mapIndex[powsOfSmooths[r][j]];
-
-        for (const auto p: powsOfSmooths[r])
-            ++mat[row + p];
-
+            ++mat[row + mapIndex[powsOfSmooths[r][j]]];
+        
+        for (auto it = powsOfSmooths[r].begin() + 2; it != powsOfSmooths[r].end(); ++it)
+            ++mat[row + *it];
+        
         mpz_init_set(newTestInt[r], smoothInterval[r].get_mpz_t());
     }
 
@@ -192,10 +203,10 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
 
         // Remap the powers corresponding to powers not contained in facBase
         for (std::size_t j = 0; j < 4; ++j)
-            powsOfPartials[i][j] = mapIndex[powsOfPartials[i][j]];
-
-        for (const auto p: powsOfPartials[i])
-            ++mat[row + p];
+            ++mat[row + mapIndex[powsOfPartials[i][j]]];
+        
+        for (auto it = powsOfPartials[i].begin() + 4; it != powsOfPartials[i].end(); ++it)
+            ++mat[row + *it];
 
         mat[row + nonTrivSize + coFactorIndexVec[i] + 1] = 2u;
         mpz_init_set(newTestInt[r], partialInterval[i].get_mpz_t());
