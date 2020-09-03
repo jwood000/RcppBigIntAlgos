@@ -35,7 +35,7 @@ std::vector<std::uint8_t> MyIntToBit(std::size_t x, std::size_t dig) {
 }
 
 std::vector<std::size_t> GetPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
-                                          double sqrLogLog, std::size_t myTarget) {
+                                  double sqrLogLog, std::size_t myTarget) {
     
     const std::size_t uN = LimB;
     std::vector<char> primes(uN + 1, 1);
@@ -73,11 +73,11 @@ std::vector<std::size_t> GetPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
         if (primes[j]) {
             mpz_set_si(jmpz, j);
             mpz_set_si(temp, j);
-            mpz_sub_ui(temp, jmpz, 1);
+            mpz_sub_ui(temp, jmpz, 1u);
             mpz_div_2exp(temp, temp, 1);
             mpz_powm(test, myN, temp, jmpz);
             
-            if (mpz_cmp_ui(test, 1) == 0)
+            if (mpz_cmp_ui(test, 1u) == 0)
                 myps.push_back(j);
         }
     }
@@ -114,87 +114,80 @@ std::vector<std::size_t> GetPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
 
 void SieveListsInit(const std::vector<std::size_t> &FBase, const std::vector<int> &LnFB,
                     const std::vector<std::size_t> &SieveDist, std::vector<int> &myLogs,
-                    std::vector<std::size_t> &myStart, mpz_t firstSqrDiff, mpz_t VarA,
+                    std::vector<int> &myStart, mpz_t firstSqrDiff, mpz_t VarA,
                     mpz_t VarB, mpz_t LowBound, std::size_t strt) {
     
-    mpz_t Temp, AUtil;
-    mpz_init(Temp); mpz_init(AUtil);
-    const std::size_t vecMaxSize = myLogs.size();
+    mpz_class Temp, AUtil;
+    const int vecMaxSize = myLogs.size();
     
-    for (std::size_t i = strt, facSize = FBase.size(); i < facSize; ++i) {
+    for (std::size_t i = strt, row = strt * 2, facSize = FBase.size(); i < facSize; ++i, row += 2) {
         
-        mpz_set_ui(Temp, FBase[i]);
-        mpz_invert(AUtil, VarA, Temp);
+        Temp = FBase[i];
+        mpz_invert(AUtil.get_mpz_t(), VarA, Temp.get_mpz_t());
         
-        mpz_ui_sub(Temp, SieveDist[i * 2], VarB);
-        mpz_mul(Temp, Temp, AUtil);
-        mpz_mod_ui(Temp, Temp, FBase[i]);
-        std::int64_t myMin = mpz_get_si(Temp);
+        mpz_ui_sub(Temp.get_mpz_t(), SieveDist[row], VarB);
+        Temp *= AUtil;
+        Temp %= FBase[i];
+        int myMin = Temp.get_si();
         
-        mpz_ui_sub(Temp, SieveDist[i * 2 + 1], VarB);
-        mpz_mul(Temp, Temp, AUtil);
-        mpz_mod_ui(Temp, Temp, FBase[i]);
-        std::int64_t myMax = mpz_get_si(Temp);
+        mpz_ui_sub(Temp.get_mpz_t(), SieveDist[row + 1], VarB);
+        Temp *= AUtil;
+        Temp %= FBase[i];
+        int myMax = Temp.get_si();
         
-        mpz_mod_ui(Temp, LowBound, FBase[i]);
-        const std::int64_t q = mpz_get_si(Temp);
+        mpz_mod_ui(Temp.get_mpz_t(), LowBound, FBase[i]);
+        const int q = Temp.get_si();
         
-        mpz_mod_ui(Temp, firstSqrDiff, FBase[i]);
-        std::int64_t myStart0 = mpz_get_si(Temp);
-        std::int64_t myStart1 = 0;
+        mpz_mod_ui(Temp.get_mpz_t(), firstSqrDiff, FBase[i]);
+        int myStart0 = Temp.get_si();
+        int myStart1 = 0;
         
         if (myMin > myMax)
             std::swap(myMin, myMax);
         
         if (myStart0 == 0) {
-            myStart1 = (q == myMin) ? (myMax - myMin) : FBase[i] - (myMax - myMin);
+            myStart1 = (q == myMin) ? (myMax - myMin) : static_cast<int>(FBase[i]) - (myMax - myMin);
         } else {
-            const std::int64_t signedFB = FBase[i];
-             
             myStart0 = (myMin > q) ? myMin - q :
-                       (mpz_sgn(LowBound) < 0) ? -1 * (q - signedFB - myMin) :
-                       signedFB - ((myMax + q) % signedFB);
+                       (mpz_sgn(LowBound) < 0) ? static_cast<int>(FBase[i]) + myMin - q :
+                       static_cast<int>(FBase[i]) - static_cast<int>((myMax + q) % static_cast<int>(FBase[i]));
             
             myStart1 = (myMax > q) ? myMax - q :
-                       (mpz_sgn(LowBound) < 0) ? -1 * (q - signedFB - myMax) :
-                       signedFB - ((myMin + q) % signedFB);
+                       (mpz_sgn(LowBound) < 0) ? static_cast<int>(FBase[i]) + myMax - q :
+                       static_cast<int>(FBase[i]) - static_cast<int>((myMin + q) % static_cast<int>(FBase[i]));
         }
         
-        for (std::size_t j = myStart0; j < vecMaxSize; j += FBase[i])
+        for (int j = myStart0; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        for (std::size_t j = myStart1; j < vecMaxSize; j += FBase[i])
+        for (int j = myStart1; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[i * 2] = (FBase[i] * ((vecMaxSize - myStart0 + FBase[i] - 1u) / FBase[i]) + myStart0) % vecMaxSize;
-        myStart[i * 2 + 1] = (FBase[i] * ((vecMaxSize - myStart1 + FBase[i] - 1u) / FBase[i]) + myStart1) % vecMaxSize;
+        myStart[row] = ((myStart0 - vecMaxSize) % static_cast<int>(FBase[i])) + static_cast<int>(FBase[i]);
+        myStart[row + 1] = ((myStart1 - vecMaxSize) % static_cast<int>(FBase[i])) + static_cast<int>(FBase[i]);
     }
-    
-    mpz_clear(Temp); mpz_clear(AUtil);
 }
 
 void SieveLists(const std::vector<std::size_t> &FBase, const std::vector<int> &LnFB,
-                std::vector<std::size_t> &myStart, std::vector<int> &myLogs,
-                std::size_t strt) {
+                std::vector<int> &myStart, std::vector<int> &myLogs, std::size_t strt) {
     
     std::fill(myLogs.begin(), myLogs.end(), 0);
-    const std::size_t vecMaxSize = myLogs.size();
+    const int vecMaxSize = myLogs.size();
     
-    for (std::size_t i = strt, facSize = FBase.size(); i < facSize; ++i) {
-        for (std::size_t j = myStart[i * 2]; j < vecMaxSize; j += FBase[i])
+    for (std::size_t i = strt, row = strt * 2, facSize = FBase.size(); i < facSize; ++i, row += 2) {
+        for (int j = myStart[row]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        for (std::size_t j = myStart[i * 2 + 1]; j < vecMaxSize; j += FBase[i])
+        for (int j = myStart[row + 1]; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[i * 2] = (FBase[i] * ((vecMaxSize - myStart[i * 2] + FBase[i] - 1u) / FBase[i]) + myStart[i * 2]) % vecMaxSize;
-        myStart[i * 2 + 1] = (FBase[i] * ((vecMaxSize - myStart[i * 2 + 1] + FBase[i] - 1u) / FBase[i]) + myStart[i * 2 + 1]) % vecMaxSize;
+        myStart[row] = ((myStart[row] - vecMaxSize) % static_cast<int>(FBase[i])) + static_cast<int>(FBase[i]);
+        myStart[row + 1] = ((myStart[row + 1] - vecMaxSize) % static_cast<int>(FBase[i])) + static_cast<int>(FBase[i]);
     }
 }
 
 void SieveListsFinal(const std::vector<std::size_t> &FBase, const std::vector<int> &LnFB,
-                     const std::vector<std::size_t> &myStart, std::vector<int> &myLogs,
-                     std::size_t strt) {
+                     const std::vector<int> &myStart, std::vector<int> &myLogs, std::size_t strt) {
     
     std::fill(myLogs.begin(), myLogs.end(), 0);
     const std::size_t vecMaxSize = myLogs.size();
@@ -211,21 +204,18 @@ void SieveListsFinal(const std::vector<std::size_t> &FBase, const std::vector<in
 void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 const std::vector<std::size_t> &facBase, const std::vector<int> &LnFB,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
-                std::vector<std::size_t> &coFactorIndexVec,
-                std::vector<std::size_t> &myStart, hash64vec &partFactorsMap,
-                hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
+                std::vector<std::size_t> &coFactorIndexVec, std::vector<int> &myStart,
+                hash64vec &partFactorsMap, hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
                 std::vector<mpz_class> &smoothInterval, std::vector<mpz_class> &largeCoFactors,
                 std::vector<mpz_class> &partialInterval, mpz_class NextPrime,
                 mpz_class LowBound, mpz_class myNum, std::size_t &nPartial,
                 std::size_t &nSmooth, std::size_t &coFactorInd, int theCut,
-                int DoubleLenB, std::size_t mpzFacSize, int vecMaxSize,
-                std::size_t strt) {
+                int DoubleLenB, std::size_t mpzFacSize, int vecMaxSize, std::size_t strt) {
     
     mpz_class VarA, VarB, VarC, AUtil, Temp, IntVal;
-    
     TonelliShanksC(myNum.get_mpz_t(), NextPrime.get_mpz_t(), VarC.get_mpz_t());
     
-    mpz_mul_2exp(Temp.get_mpz_t(), VarC.get_mpz_t(), 1);
+    Temp = VarC * 2u;
     mpz_invert(Temp.get_mpz_t(), Temp.get_mpz_t(), NextPrime.get_mpz_t());
     mpz_pow_ui(VarB.get_mpz_t(), VarC.get_mpz_t(), 2u);
     

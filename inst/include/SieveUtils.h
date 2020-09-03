@@ -28,14 +28,12 @@ std::vector<std::size_t> GetPrimesQuadRes(mpz_t myN, double LimB, double fudge1,
 void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 const std::vector<std::size_t> &facBase, const std::vector<int> &LnFB,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
-                std::vector<std::size_t> &coFactorIndexVec,
-                std::vector<std::size_t> &myStart, hash64vec &partFactorsMap,
-                hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
+                std::vector<std::size_t> &coFactorIndexVec, std::vector<int> &myStart,
+                hash64vec &partFactorsMap, hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
                 std::vector<mpz_class> &smoothInterval, std::vector<mpz_class> &largeCoFactors,
                 std::vector<mpz_class> &partialInterval, mpz_class NextPrime,
                 mpz_class LowBound, mpz_class myNum, std::size_t &nPartial,
                 std::size_t &nSmooth, std::size_t &coFactorInd, int theCut,
-                int DoubleLenB, std::size_t mpzFacSize, int vecMaxSize,
-                std::size_t strt);
+                int DoubleLenB, std::size_t mpzFacSize, int vecMaxSize, std::size_t strt);
 
 #endif
