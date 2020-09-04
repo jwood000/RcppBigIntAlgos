@@ -1,13 +1,17 @@
 #include "Polynomial.h"
 #include <RcppThread.h>
 
+constexpr std::size_t ParBitCutOff = 140u;
+
 void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
                     std::size_t nThreads, bool bShowStats) {
     
-    mpz_class myNum(mpzNum);
     const auto checkPoint0 = std::chrono::steady_clock::now();
+    mpz_class myNum(mpzNum);
+    
     const std::size_t digCount = mpz_sizeinbase(myNum.get_mpz_t(), 10);
     const std::size_t bits = mpz_sizeinbase(myNum.get_mpz_t(), 2);
+    const bool IsParallel = (nThreads == 1 || bits < ParBitCutOff) ? false : true;
     
     const double lognum = bits / std::log2(std::exp(1.0));
     const double sqrLogLog = std::sqrt(lognum * std::log(lognum));
@@ -15,7 +19,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     
     // These values were obtained from "The Multiple Polynomial
     // Quadratic Sieve" by Robert D. Silverman
-    // DigSize <- c(24, 30, 36, 42, 48, 54, 60, 66)
+    // DigSize <- c(24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84)
     // FBSize <- c(100, 200, 400, 900, 1200, 2000, 3000, 4500)
     // MSize <- c(5,20,35,100,125,250,350,500)
     // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
@@ -23,41 +27,41 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     // rawCoef <- round(unname(lm(FBSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
     // rawCoef
-    //    intercept          x^1          x^2          x^3          x^4
-    // 3637.0670996 -391.8275012   15.1541456   -0.2475566    0.0016806
+    //     intercept           x^1           x^2           x^3           x^4
+    // -1197.0000000   125.9297462    -4.7601496     0.0794196    -0.0001794
     
     double fudge1 = -0.4;
     double LimB = std::exp((0.5 + fudge1) * sqrLogLog);
     
-    const double dblMyTarget = std::ceil(-391.8275012 * dblDigCount + 15.1541456
-                                             * std::pow(dblDigCount, 2.0) - 0.2475566
-                                             * std::pow(dblDigCount, 3.0) + 0.0016806
-                                             * std::pow(dblDigCount, 4.0) + 3637.0671);
+    const double dblMyTarget = std::ceil(125.9297462 * dblDigCount - 4.7601496
+                                             * std::pow(dblDigCount, 2.0) + 0.0794196
+                                             * std::pow(dblDigCount, 3.0) - 0.0001794
+                                             * std::pow(dblDigCount, 4.0) - 1197);
     
-    const std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
+    std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
     
     while (LimB < myTarget) {
         LimB = std::exp((0.5 + fudge1) * sqrLogLog);
         fudge1 += 0.001;
     }
     
-    const std::vector<std::size_t> facBase = GetPrimesQuadRes(myNum.get_mpz_t(), LimB,
-                                                              fudge1, sqrLogLog, myTarget);
+    const std::vector<int> facBase = GetPrimesQuadRes(myNum.get_mpz_t(), LimB,
+                                                      fudge1, sqrLogLog, myTarget);
     
     // rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
     // rawCoef
     //    intercept           x^1           x^2           x^3           x^4
-    // -213.1466450    23.3947361    -0.9494686     0.0165574    -0.0000767
+    // -237.5850816    26.7743460    -1.1188164     0.0200060    -0.0000899
     //
     // Note that the smallest that dblDigCount can be in order for dblLenB to be
     // valid is 22. This is no problem as we factor numbers less than 23 digits
     // with Pollard's Rho algorithm.
     
-    const double dblLenB = std::ceil(23.394736 * dblDigCount - 0.9494686
-                                         * std::pow(dblDigCount, 2.0) + 0.0165574
-                                         * std::pow(dblDigCount, 3.0) - 0.0000767
-                                         * std::pow(dblDigCount, 4.0) - 213.1466450);
+    const double dblLenB = std::ceil(26.7743460 * dblDigCount - 1.1188164
+                                         * std::pow(dblDigCount, 2.0) + 0.0200060
+                                         * std::pow(dblDigCount, 3.0) - 0.0000899
+                                         * std::pow(dblDigCount, 4.0) - 237.5850816);
     
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     const int DoubleLenB = 2 * LenB + 1;
@@ -67,7 +71,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum.get_mpz_t());
     
     // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
-    // rawCoef <- round(unname(lm(CounterSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
+    // rawCoef <- round(unname(lm(CounterSize ~ poly(DigSize[seq_along(CounterSize)], 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
     // rawCoef
     //  intercept        x^1        x^2        x^3        x^4 
@@ -92,8 +96,8 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     
     const double fudge2 = (digCount < 45) ? 1.410 :
                           (digCount < 50) ? 1.440 :
-                          (digCount < 60) ? 1.500 : 
-                          (digCount < 65) ? 1.515 : 1.530;
+                          (digCount < 60) ? 1.510 : 
+                          (digCount < 65) ? 1.515 : 1.540;
     
     const int theCut = std::ceil(100.0 * fudge2 *
                                  static_cast<double>(mpz_sizeinbase(Temp.get_mpz_t(), 10)));
@@ -107,10 +111,10 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     
     Temp = sqrt(myNum);
     Temp -= LenB;
-    const std::size_t minPrime = static_cast<std::size_t>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
+    const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
     
     const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
-                                 [minPrime](std::size_t f) {return f > minPrime;});
+                                 [minPrime](int f) {return f > minPrime;});
     
     const std::size_t strt = std::distance(facBase.cbegin(), it) + 1u;
     
@@ -126,68 +130,30 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     if (cmp(NextPrime, facBase.back()) < 0)
         NextPrime = facBase.back();
     
-    if (nThreads > 1) {
-        std::size_t setPolys = 29500;
+    Polynomial myPoly(mpzContainerSize, facSize, bShowStats, myNum);
+    
+    if (IsParallel) {
+        myPoly.FactorParallel(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+                              LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
+                              strt, checkPoint0, nThreads);
         
-        std::vector<Polynomial> vecPoly(nThreads,
-                                        Polynomial(mpzContainerSize / nThreads,
-                                                   facSize, setPolys / nThreads, bShowStats));
+        myPoly.GetSolution(mpzFacBase, facBase, factors,
+                           myNum.get_mpz_t(), nThreads, checkPoint0);
+        NextPrime = mpzFacBase.back();
         
-        for (std::size_t i = 0; i < setPolys; ++i) {
-            for (bool LegendreTest = true; LegendreTest; ) {
-                mpz_nextprime(NextPrime.get_mpz_t(), NextPrime.get_mpz_t());
-                
-                if (mpz_legendre(myNum.get_mpz_t(), NextPrime.get_mpz_t()) == 1)
-                    LegendreTest = false;
-            }
-            
-            mpzFacBase.push_back(NextPrime);
-        }
+        mpz_set_ui(factors[0], 11);
+        mpz_set_ui(factors[1], 13);
+    }
+    // RcppThread::Rcout << facBase.back() << "\n";
+    // mpz_set_ui(factors[0], 11);
+    // mpz_set_ui(factors[1], 13);
+    while (mpz_cmp_ui(factors[0], 0) == 0) {
+        myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+                            LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
+                            strt, checkPoint0);
         
-        // RcppThread::ThreadPool pool(nThreads);
-        std::size_t step = setPolys / nThreads;
-        std::vector<std::thread> myThreads;
-        
-        for (std::size_t i = 0, mySize = facSize; i < nThreads; ++i, mySize += step) {
-            vecPoly[i].SetMpzFacSize(mySize);
-
-            myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i], std::cref(SieveDist),
-                                   std::cref(facBase), std::cref(LnFB), std::cref(mpzFacBase),
-                                   LowBound, myNum, theCut, DoubleLenB, vecMaxSize, strt);
-        }
-        
-        for (auto &thr: myThreads)
-            thr.join();
-        
-        mpz_set_ui(factors[0], 11u);
-        mpz_set_ui(factors[1], 13u);
-        
-        // SievePolys(const std::vector<std::size_t> &SieveDist,
-        //            const std::vector<std::size_t> &facBase, const std::vector<int> &LnFB,
-        //            const std::vector<mpz_class> &mpzFacBase,
-        //            mpz_class LowBound, mpz_class myNum, int theCut, int DoubleLenB,
-        //            int vecMaxSize, std::size_t strt)
-        
-        // while (mpz_cmp_ui(factors[0], 0) == 0) {
-        //     myPoly.FactorFinish(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
-        //                         LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
-        //                         strt, checkPoint0);
-        //     
-        //     myPoly.GetSolution(mpzFacBase, facBase, factors,
-        //                        myNum.get_mpz_t(), nThreads, checkPoint0);
-        //     NextPrime = mpzFacBase.back();
-        // }
-    } else {
-        Polynomial myPoly(mpzContainerSize, facSize, bShowStats, myNum);
-        
-        while (mpz_cmp_ui(factors[0], 0) == 0) {
-            myPoly.FactorFinish(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
-                                LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
-                                strt, checkPoint0);
-            
-            myPoly.GetSolution(mpzFacBase, facBase, factors,
-                               myNum.get_mpz_t(), nThreads, checkPoint0);
-            NextPrime = mpzFacBase.back();
-        }
+        myPoly.GetSolution(mpzFacBase, facBase, factors,
+                           myNum.get_mpz_t(), nThreads, checkPoint0);
+        NextPrime = mpzFacBase.back();
     }
 }
