@@ -168,21 +168,6 @@ void SieveListsInit(const std::vector<int> &FBase, const std::vector<int> &LnFB,
     }
 }
 
-void SieveLists(const std::vector<int> &FBase, const std::vector<int> &LnFB,
-                const std::vector<int> &myStart, std::vector<int> &myLogs, std::size_t strt) {
-    
-    std::fill(myLogs.begin(), myLogs.end(), 0);
-    const std::size_t vecMaxSize = myLogs.size();
-    
-    for (std::size_t i = strt, facSize = FBase.size(); i < facSize; ++i) {
-        for (std::size_t j = myStart[i * 2]; j < vecMaxSize; j += FBase[i])
-            myLogs[j] += LnFB[i];
-        
-        for (std::size_t j = myStart[i * 2 + 1]; j < vecMaxSize; j += FBase[i])
-            myLogs[j] += LnFB[i];
-    }
-}
-
 void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 const std::vector<int> &facBase, const std::vector<int> &LnFB,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
@@ -302,15 +287,29 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
         }
         
         if (chunk + 2 * vecMaxSize < DoubleLenB) {
-            SieveLists(facBase, LnFB, myStart, myLogs, strt);
+            std::fill(myLogs.begin(), myLogs.end(), 0);
             
             for (std::size_t i = strt, facSize = facBase.size(); i < facSize; ++i) {
+                for (std::size_t j = myStart[i * 2]; j < vecMaxSize; j += facBase[i])
+                    myLogs[j] += LnFB[i];
+                
+                for (std::size_t j = myStart[i * 2 + 1]; j < vecMaxSize; j += facBase[i])
+                    myLogs[j] += LnFB[i];
+                
                 myStart[i * 2] = ((myStart[i * 2] - vecMaxSize) % facBase[i]) + facBase[i];
                 myStart[i * 2 + 1] = ((myStart[i * 2 + 1] - vecMaxSize) % facBase[i]) + facBase[i];
             }
         } else if (chunk + vecMaxSize < DoubleLenB) {
             myLogs.resize(DoubleLenB % vecMaxSize);
-            SieveLists(facBase, LnFB, myStart, myLogs, strt);
+            std::fill(myLogs.begin(), myLogs.end(), 0);
+            
+            for (std::size_t i = strt, facSize = facBase.size(), logSize = myLogs.size(); i < facSize; ++i) {
+                for (std::size_t j = myStart[i * 2]; j < logSize; j += facBase[i])
+                    myLogs[j] += LnFB[i];
+                
+                for (std::size_t j = myStart[i * 2 + 1]; j < logSize; j += facBase[i])
+                    myLogs[j] += LnFB[i];
+            }
         }
     }
 }
