@@ -34,7 +34,8 @@ void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
 bool GetSolution(const std::vector<std::uint8_t> &freeMat,
                  const std::vector<std::uint8_t> &mat,
                  const std::vector<std::size_t> &freeVariables,
-                 mpz_t *const testInterval, mpz_t *const mpzFacBase,
+                 const std::vector<mpz_class> &mpzFacBase,
+                 const std::vector<mpz_class> &testInterval,
                  mpz_t *const factors, mpz_t myNum, std::size_t nCols, 
                  std::size_t matNCols, std::size_t ind, 
                  std::size_t lenFree, std::size_t threadInd) {
@@ -88,12 +89,12 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
             mpz_set_ui(yMpz, 1);
             
             for (const auto aV: ansVec) {
-                mpz_mul(xMpz, xMpz, testInterval[aV]);
+                mpz_mul(xMpz, xMpz, testInterval[aV].get_mpz_t());
                 mpz_mod(xMpz, xMpz, myNum);
             }
             
             for (std::size_t j = 0; j < yExponents.size(); ++j) {
-                mpz_pow_ui(mpzTemp1, mpzFacBase[j], yExponents[j]);
+                mpz_pow_ui(mpzTemp1, mpzFacBase[j].get_mpz_t(), yExponents[j]);
                 mpz_mul(yMpz, yMpz, mpzTemp1);
                 mpz_mod(yMpz, yMpz, myNum);
             }
@@ -129,8 +130,8 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
 }
 
 void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
-                    std::size_t matNCols, mpz_t myNum, mpz_t *const mpzFacBase,
-                    mpz_t *const testInterval, mpz_t *const factors,
+                    std::size_t matNCols, mpz_t myNum, const std::vector<mpz_class> &mpzFacBase,
+                    const std::vector<mpz_class> &testInterval, mpz_t *const factors,
                     std::size_t nThreads) {
     
     const std::size_t matSize = mat.size();
@@ -201,7 +202,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
 
                 for (std::size_t j = 0; j < nThreads; ++j, ++i) {
                     myFutures[j] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat), std::cref(mat),
-                                                   std::cref(freeVariables), testInterval, mpzFacBase,
+                                                   std::cref(freeVariables), mpzFacBase, testInterval,
                                                    vecFactors.get(), myNum, nCols, matNCols, i, lenFree, j);
                 }
 
@@ -229,9 +230,9 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
             bool bSuccess = false;
 
             for (std::size_t i = 1; i < myLim && !bSuccess; ++i) {
-                bSuccess = GetSolution(freeMat, mat, freeVariables,
-                                       testInterval, mpzFacBase, factors,
-                                       myNum, nCols, matNCols, i, lenFree, 0);
+                bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
+                                       testInterval, factors, myNum, nCols,
+                                       matNCols, i, lenFree, 0);
             }
         }
     }

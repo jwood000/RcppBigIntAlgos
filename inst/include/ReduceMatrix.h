@@ -6,6 +6,7 @@
 #include <cstdint>
 
 constexpr int unrollSize = 8;
+constexpr std::uint8_t u8one = 1u;
 
 void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                   std::vector<std::size_t> &myCols,
