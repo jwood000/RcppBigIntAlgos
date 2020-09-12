@@ -7,11 +7,12 @@ Prime Factorization with the Quadratic Sieve
 Get the prime factorization of a number, \eqn{n}, using the \href{https://en.wikipedia.org/wiki/Quadratic_sieve}{Quadratic Sieve}.
 }
 \usage{
-quadraticSieve(n, showStats = FALSE)
+quadraticSieve(n, showStats = FALSE, nThreads = NULL)
 }
 \arguments{
   \item{n}{An integer, numeric, string value, or an element of class bigz.}
   \item{showStats}{Logical flag. If \code{TRUE}, summary statistics will be displayed.}
+  \item{nThreads}{Specific number of threads to be used. The default is \code{NULL}.}
 }
 \details{
 First, \href{https://en.wikipedia.org/wiki/Trial_division}{trial division} is carried out to remove small prime numbers, then a modified version of \href{https://en.wikipedia.org/wiki/Pollard\%27s_rho_algorithm}{Pollard's rho algorithm} that is constrained is called to quickly remove further prime numbers. Next, we check to make sure that we are not passing a perfect power to the main quadratic sieve algorithm. After removing any perfect powers, we finally call the quadratic sieve with multiple polynomials in a recursive fashion until we have completely factored our number.

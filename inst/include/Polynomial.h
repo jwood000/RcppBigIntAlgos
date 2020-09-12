@@ -19,7 +19,7 @@ private:
     hash64size_t keepingTrack;
     
     std::vector<mpz_class> smoothInterval;
-    std::vector<mpz_class> largeCoFactors;
+    std::vector<double> largeCoFactors;
     std::vector<mpz_class> partialInterval;
     
     std::size_t nPolys;
@@ -36,7 +36,7 @@ private:
                      std::vector<std::size_t> &coFactorIndexVecBig,
                      hash64vec &partFactorsMapBig, hash64mpz &partIntvlMapBig,
                      hash64size_t &keepingTrackBig, std::vector<mpz_class> &smoothIntervalBig,
-                     std::vector<mpz_class> &largeCoFactorsBig, 
+                     std::vector<double> &largeCoFactorsBig, 
                      std::vector<mpz_class> &partialIntervalBig);
     
     void SetMpzFacSize(int _mpzFacSize) {mpzFacSize = _mpzFacSize;}

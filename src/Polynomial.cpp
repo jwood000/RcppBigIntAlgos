@@ -7,12 +7,14 @@
 constexpr std::size_t InitialNumPolys = 50u;
 constexpr auto minOneMin = std::chrono::seconds(60);
 constexpr double dblMsOneMin = std::chrono::duration_cast<std::chrono::milliseconds>(minOneMin).count();
+constexpr std::size_t bigFacsTWO = 2u;
+constexpr std::size_t bigFacsFOUR = 4u;
 
 void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartialsBig,
                              std::vector<std::size_t> &coFactorIndexVecBig,
                              hash64vec &partFactorsMapBig, hash64mpz &partIntvlMapBig,
                              hash64size_t &keepingTrackBig, std::vector<mpz_class> &smoothIntervalBig,
-                             std::vector<mpz_class> &largeCoFactorsBig, 
+                             std::vector<double> &largeCoFactorsBig, 
                              std::vector<mpz_class> &partialIntervalBig) {
     
     RcppThread::Rcout << powsOfSmooths.size() << "\n";
@@ -32,14 +34,14 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
                              std::make_move_iterator(smoothInterval.end())
     );
     
-    largeCoFactorsBig.insert(largeCoFactorsBig.end(),
-                             std::make_move_iterator(largeCoFactors.begin()),
-                             std::make_move_iterator(largeCoFactors.end())
-    );
-    
     partialIntervalBig.insert(partialIntervalBig.end(),
                               std::make_move_iterator(partialInterval.begin()),
                               std::make_move_iterator(partialInterval.end())
+    );
+    
+    largeCoFactorsBig.insert(largeCoFactorsBig.end(),
+                             std::make_move_iterator(largeCoFactors.begin()),
+                             std::make_move_iterator(largeCoFactors.end())
     );
     
     coFactorIndexVecBig.insert(coFactorIndexVecBig.end(),
@@ -399,7 +401,7 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
                              const std::vector<int> &facBase, mpz_t *const factors,
                              mpz_t mpzNum, std::size_t nThreads,
                              typeTimePoint checkPoint0) {
-    
+    auto t1 = std::chrono::steady_clock::now();
     // Not every prime in mpzFacBase is utilized. For example, with our
     // attempt at factoring rsa99, there were over 4 million elements
     // in mpzFacBase, however there were only ~40000 smooths + partials.
@@ -448,7 +450,7 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
         nonTrivialFacs[setInd++] = mpzFacBase[s - 1];
         mapIndex[s] = setInd;
     }
-
+    
     for (std::size_t i = 0, j = setInd; i < coFactorInd; ++i, ++j)
         nonTrivialFacs[j] = largeCoFactors[i];
 
@@ -456,10 +458,10 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
     std::vector<std::uint8_t> mat(nRows * nCols, 0u);
 
     for (std::size_t r = 0, row = 0; r < nSmooth; ++r, row += nCols) {
-        for (std::size_t j = 0; j < 2; ++j)
+        for (std::size_t j = 0; j < bigFacsTWO; ++j)
             ++mat[row + mapIndex[powsOfSmooths[r][j]]];
         
-        for (auto it = powsOfSmooths[r].begin() + 2; it != powsOfSmooths[r].end(); ++it)
+        for (auto it = powsOfSmooths[r].begin() + bigFacsTWO; it != powsOfSmooths[r].end(); ++it)
             ++mat[row + *it];
         
         newTestInt[r] = smoothInterval[r];
@@ -469,19 +471,23 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
          row = nCols * nSmooth; i < nPartial; ++i, ++r, row += nCols) {
 
         // Remap the powers corresponding to powers not contained in facBase
-        for (std::size_t j = 0; j < 4; ++j)
+        for (std::size_t j = 0; j < bigFacsFOUR; ++j)
             ++mat[row + mapIndex[powsOfPartials[i][j]]];
         
-        for (auto it = powsOfPartials[i].begin() + 4; it != powsOfPartials[i].end(); ++it)
+        for (auto it = powsOfPartials[i].begin() + bigFacsFOUR; it != powsOfPartials[i].end(); ++it)
             ++mat[row + *it];
-
-        mat[row + nonTrivSize + coFactorIndexVec[i] + 1] = 2u;
+        
+        // We must add one to account for negative values
+        mat[row + nonTrivSize + coFactorIndexVec[i] + 1] += bigFacsTWO;
         newTestInt[r] = partialInterval[i];
     }
-
+    
+    auto t2 = std::chrono::steady_clock::now();
+    
     SolutionSearch(mat, nRows, nCols, mpzNum, nonTrivialFacs,
                    newTestInt, factors, nThreads);
-
+    
+    auto t3 = std::chrono::steady_clock::now();
     if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
         const auto checkPoint2 = std::chrono::steady_clock::now();
 
@@ -490,4 +496,7 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
 
         RcppThread::Rcout << "\n" << std::endl;
     }
+    
+    // RcppThread::Rcout << "Setup Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "\n";
+    // RcppThread::Rcout << "Solution Search Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << "\n";
 }

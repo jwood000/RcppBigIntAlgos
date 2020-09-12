@@ -23,11 +23,10 @@ void MakeStrLen(std::string & myStr, std::size_t myLen) {
 }
 
 template <typename typeTime>
-void MakeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
-               std::size_t nSmooth, std::size_t nPartial, std::size_t &lastLim,
-               typeTime timeDiff) {
+void MakeStats(std::size_t loopLimit, std::size_t nPolys,
+               std::size_t nSmooth, std::size_t nPartial, typeTime timeDiff) {
     
-    std::string strPerc = std::to_string(100 * currLim / loopLimit) + "%";
+    std::string strPerc = std::to_string(100 * (nSmooth + nPartial) / loopLimit) + "%";
     std::string strPolys = std::to_string(nPolys);
     std::string strSmooth = std::to_string(nSmooth);
     std::string strPartial = std::to_string(nPartial);
@@ -70,7 +69,6 @@ void MakeStats(std::size_t currLim, std::size_t loopLimit, std::size_t nPolys,
     
     RcppThread::Rcout << "\r|" << myTime << "|" << strPerc << "|" << strPolys << "|"
                       << strSmooth << "|" << strPartial << "|";
-    lastLim = currLim;
 }
 
 template <typename typeTime>

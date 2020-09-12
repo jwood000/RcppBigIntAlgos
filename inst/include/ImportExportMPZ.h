@@ -2,7 +2,7 @@
 #define IMPORTEXPORTMPZ_GMP_R
 
 #include <Rcpp.h>
-#include <gmp.h>
+#include <gmpxx.h>
 
 constexpr std::size_t intSize = sizeof(int);
 constexpr std::size_t numb = 8 * intSize;
