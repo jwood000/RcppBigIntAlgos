@@ -173,7 +173,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
                 std::vector<std::size_t> &coFactorIndexVec, std::vector<int> &myStart,
                 hash64vec &partFactorsMap, hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
-                std::vector<mpz_class> &smoothInterval, std::vector<mpz_class> &largeCoFactors,
+                std::vector<mpz_class> &smoothInterval, std::vector<double> &largeCoFactors,
                 std::vector<mpz_class> &partialInterval, mpz_class NextPrime,
                 mpz_class LowBound, mpz_class myNum, std::size_t &nPartial,
                 std::size_t &nSmooth, std::size_t &coFactorInd, int theCut,
@@ -251,7 +251,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 smoothInterval.push_back(Temp + VarB);
                 powsOfSmooths.push_back(primeIndexVec);
                 ++nSmooth;
-            } else if (mpz_cmp_d(IntVal.get_mpz_t(), Significand53) < 0) {
+            } else if (cmp(IntVal, Significand53) < 0) {
                 const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
                 const auto pFacIt = partFactorsMap.find(myKey);
 
@@ -262,7 +262,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                         coFactorIndexVec.push_back(trackIt->second);
                     } else {
                         keepingTrack[myKey] = coFactorInd;
-                        largeCoFactors.push_back(IntVal);
+                        largeCoFactors.push_back(IntVal.get_d());
                         coFactorIndexVec.push_back(coFactorInd);
                         ++coFactorInd;
                     }
