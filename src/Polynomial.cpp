@@ -117,7 +117,7 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
 }
 
 Polynomial::Polynomial(std::size_t _mpzContainerSize,
-                       std::size_t _facSize, bool _bShowStats, mpz_class myNum) : 
+                       std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
             mpzFacSize(_facSize), SaPThresh(_facSize),
             facSize(_facSize), bShowStats(_bShowStats) {
     
@@ -154,8 +154,8 @@ Polynomial::Polynomial(std::size_t _facSize) :
     coFactorInd = 0;
 }
 
-void GetNPrimes(std::vector<mpz_class> &mpzFacBase, mpz_class NextPrime,
-                mpz_class myNum, std::size_t numPrimesNeeded) {
+void GetNPrimes(std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                const mpz_class &myNum, std::size_t numPrimesNeeded) {
     
     for (std::size_t i = 0; i < numPrimesNeeded; ++i) {
         for (bool LegendreTest = true; LegendreTest; ) {
@@ -170,11 +170,10 @@ void GetNPrimes(std::vector<mpz_class> &mpzFacBase, mpz_class NextPrime,
 }
 
 void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
-                            const std::vector<int> &facBase,
-                            const std::vector<int> &LnFB, 
+                            const std::vector<int> &facBase, const std::vector<int> &LnFB, 
                             const std::vector<mpz_class> &mpzFacBase,
-                            mpz_class LowBound, mpz_class myNum, int theCut,
-                            int DoubleLenB, int vecMaxSize,
+                            const mpz_class &LowBound, const mpz_class &myNum,
+                            int theCut, int DoubleLenB, int vecMaxSize,
                             std::size_t strt, std::size_t polyLimit) {
     
     RcppThread::Rcout << GetSmoothSize() << "\n";
@@ -194,10 +193,9 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
 }
 
 void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
-                                 const std::vector<int> &facBase, 
-                                 const std::vector<int> &LnFB,
-                                 std::vector<mpz_class> &mpzFacBase, mpz_class NextPrime,
-                                 mpz_class LowBound, mpz_class myNum, int theCut,
+                                 const std::vector<int> &facBase, const std::vector<int> &LnFB,
+                                 std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                                 const mpz_class &LowBound, const mpz_class &myNum, int theCut,
                                  int DoubleLenB, int vecMaxSize, std::size_t strt,
                                  typeTimePoint checkPoint0) {
     
@@ -259,7 +257,7 @@ inline std::size_t SetNumPolys(std::size_t currLim, std::size_t SaPThresh, std::
     
     const double myRatio = numerator / dblPolyTime;
     
-    const int calcNumPolys = ((SaPThresh - currLim) < (2 * SaPOnLast)) ?
+    const int calcNumPolys = (static_cast<int>(SaPThresh - currLim) < (2 * SaPOnLast)) ?
         static_cast<double>(polysPerSec) * static_cast<double>(SaPThresh - currLim) /
             static_cast<double>(SaPOnLast) : myRatio * static_cast<double>(polysPerSec);
     
@@ -268,8 +266,8 @@ inline std::size_t SetNumPolys(std::size_t currLim, std::size_t SaPThresh, std::
 
 void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
                                 const std::vector<int> &facBase, const std::vector<int> &LnFB,
-                                std::vector<mpz_class> &mpzFacBase, mpz_class NextPrime,
-                                mpz_class LowBound, mpz_class myNum, int theCut,
+                                std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                                const mpz_class &LowBound, const mpz_class &myNum, int theCut,
                                 int DoubleLenB, int vecMaxSize, std::size_t strt,
                                 typeTimePoint checkPoint0, std::size_t nThreads) {
     
@@ -347,10 +345,11 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
     // }
 }
 
-void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist, const std::vector<int> &facBase,
-                              const std::vector<int> &LnFB, std::vector<mpz_class> &mpzFacBase,
-                              mpz_class NextPrime, mpz_class LowBound, mpz_class myNum,
-                              int theCut, int DoubleLenB, int vecMaxSize, std::size_t strt,
+void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
+                              const std::vector<int> &facBase, const std::vector<int> &LnFB,
+                              std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                              const mpz_class &LowBound, const mpz_class &myNum, int theCut,
+                              int DoubleLenB, int vecMaxSize, std::size_t strt,
                               typeTimePoint checkPoint0) {
     
     auto checkPoint1 = std::chrono::steady_clock::now();
@@ -398,10 +397,10 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist, const s
 }
 
 void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
-                             const std::vector<int> &facBase, mpz_t *const factors,
-                             mpz_t mpzNum, std::size_t nThreads,
+                             const std::vector<int> &facBase, std::vector<mpz_class> &factors,
+                             const mpz_class &mpzNum, std::size_t nThreads,
                              typeTimePoint checkPoint0) {
-    auto t1 = std::chrono::steady_clock::now();
+    
     // Not every prime in mpzFacBase is utilized. For example, with our
     // attempt at factoring rsa99, there were over 4 million elements
     // in mpzFacBase, however there were only ~40000 smooths + partials.
@@ -413,7 +412,7 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
     auto indIt = setIndex.begin();
 
     for (std::size_t i = 0; i < nSmooth; ++i) {
-        if (powsOfSmooths[i].front() > facSize) {
+        if (powsOfSmooths[i].front() > static_cast<int>(facSize)) {
             setIndex.emplace_hint(indIt, powsOfSmooths[i].front());
             indIt = setIndex.end();
         }
@@ -425,10 +424,10 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
         std::partial_sort(powsOfPartials[i].begin(), powsOfPartials[i].begin() + 4,
                           powsOfPartials[i].end(), std::greater<int>());
 
-        if (powsOfPartials[i].front() > facSize)
+        if (powsOfPartials[i].front() > static_cast<int>(facSize))
             setIndex.insert(powsOfPartials[i].front());
 
-        if (powsOfPartials[i][2] > facSize)
+        if (powsOfPartials[i][2] > static_cast<int>(facSize))
             setIndex.insert(powsOfPartials[i][2]);
     }
 
@@ -482,13 +481,10 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
         newTestInt[r] = partialInterval[i];
     }
     
-    auto t2 = std::chrono::steady_clock::now();
-    
     SolutionSearch(mat, nRows, nCols, mpzNum, nonTrivialFacs,
                    newTestInt, factors, nThreads);
-    
-    auto t3 = std::chrono::steady_clock::now();
-    if (bShowStats && mpz_cmp_ui(factors[0], 0)) {
+
+    if (bShowStats && cmp(factors[0], 0)) {
         const auto checkPoint2 = std::chrono::steady_clock::now();
 
         MakeStats(nSmooth + nPartial, nPolys, nSmooth,
@@ -496,7 +492,4 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
 
         RcppThread::Rcout << "\n" << std::endl;
     }
-    
-    // RcppThread::Rcout << "Setup Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "\n";
-    // RcppThread::Rcout << "Solution Search Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << "\n";
 }

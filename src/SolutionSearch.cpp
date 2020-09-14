@@ -1,5 +1,4 @@
 #include "SolutionSearch.h"
-#include "Cpp14MakeUnique.h"
 #include <RcppThread.h>
 #include <random>
 
@@ -18,7 +17,7 @@ void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
                 temp.push_back(j);
 
         if (!temp.empty()) {
-            if (temp.front() >= newNrow) {
+            if (temp.front() >= static_cast<int>(newNrow)) {
                 for (const auto t: temp)
                     for (std::size_t j = 0; j < freeMatSize; j += nCols)
                         if (freeMat[myCols[t] + j])
@@ -37,8 +36,8 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
                  const std::vector<std::size_t> &freeVariables,
                  const std::vector<mpz_class> &mpzFacBase,
                  const std::vector<mpz_class> &testInterval,
-                 mpz_t *const factors, mpz_class myNum, std::size_t nCols, 
-                 std::size_t matNCols, std::size_t ind, 
+                 std::vector<mpz_class> &factors, const mpz_class &myNum,
+                 std::size_t nCols, std::size_t matNCols, std::size_t ind, 
                  std::size_t lenFree, std::size_t threadInd) {
     
     std::vector<std::size_t> ansVec;
@@ -80,7 +79,8 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
             }
             
             for (std::size_t j = 0; j < yExponents.size(); ++j) {
-                mpz_pow_ui(mpzTemp1.get_mpz_t(), mpzFacBase[j].get_mpz_t(), yExponents[j]);
+                mpz_pow_ui(mpzTemp1.get_mpz_t(),
+                           mpzFacBase[j].get_mpz_t(), yExponents[j]);
                 yMpz *= mpzTemp1;
                 yMpz %= myNum;
             }
@@ -96,11 +96,11 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
             
             if (cmp(mpzMin, 1) > 0) {
                 if (cmp(mpzTemp1, mpzTemp2) < 0) {
-                    mpz_set(factors[threadInd * 2], mpzTemp1.get_mpz_t());
-                    mpz_set(factors[threadInd * 2 + 1], mpzTemp2.get_mpz_t());
+                    factors[threadInd * 2] = mpzTemp1;
+                    factors[threadInd * 2 + 1] = mpzTemp2;
                 } else {
-                    mpz_set(factors[threadInd * 2 + 1], mpzTemp1.get_mpz_t());
-                    mpz_set(factors[threadInd * 2], mpzTemp2.get_mpz_t());
+                    factors[threadInd * 2 + 1] = mpzTemp1;
+                    factors[threadInd * 2] = mpzTemp2;
                 }
                 
                 bSuccess = true;
@@ -112,9 +112,10 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
 }
 
 void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
-                    std::size_t matNCols, mpz_t myNum, const std::vector<mpz_class> &mpzFacBase,
-                    const std::vector<mpz_class> &testInterval, mpz_t *const factors,
-                    std::size_t nThreads) {
+                    std::size_t matNCols, const mpz_class &myNum,
+                    const std::vector<mpz_class> &mpzFacBase,
+                    const std::vector<mpz_class> &testInterval,
+                    std::vector<mpz_class> &factors, std::size_t nThreads) {
     
     const std::size_t matSize = mat.size();
     const std::size_t nCols = matNRows;
@@ -172,20 +173,32 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         
         const std::size_t myLim = (cmp(mpzTemp1, oneThousand) > 0)
                                     ? oneThousand : mpzTemp1.get_ui();
+        
+        bool bSuccess = false;
+        
+        std::mt19937 mersenne_engine(42);
+        std::uniform_int_distribution<std::size_t> dist{1, myLim};
+        
+        auto gen = [&dist, &mersenne_engine](){
+            return dist(mersenne_engine);
+        };
+        
+        std::vector<std::size_t> sample(myLim - 1);
+        std::generate(sample.begin(), sample.end(), gen);
 
         if (nThreads > 1) {
-            auto vecFactors = FromCpp14::make_unique<mpz_t[]>(nThreads * 2);
+            std::vector<mpz_class> vecFactors(nThreads * 2);
             std::vector<std::future<bool>> myFutures(nThreads);
             std::vector<bool> vecSuccess(nThreads);
-            bool bSuccess = false;
 
-            for (std::size_t i = 1; i < myLim && !bSuccess;) {
+            for (std::size_t i = 1; i < sample.size() && !bSuccess;) {
                 RcppThread::ThreadPool pool(nThreads);
 
                 for (std::size_t j = 0; j < nThreads; ++j, ++i) {
                     myFutures[j] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat), std::cref(mat),
-                                                   std::cref(freeVariables), mpzFacBase, testInterval,
-                                                   vecFactors.get(), cppNum, nCols, matNCols, i, lenFree, j);
+                                                   std::cref(freeVariables), std::cref(mpzFacBase),
+                                                   std::cref(testInterval), std::ref(vecFactors),
+                                                   std::cref(cppNum), nCols, matNCols, sample[i], lenFree, j);
                 }
 
                 pool.join();
@@ -198,32 +211,12 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
 
             for (std::size_t j = 0; j < nThreads; ++j) {
                 if (vecSuccess[j]) {
-                    mpz_set(factors[0], vecFactors[j * 2]);
-                    mpz_set(factors[1], vecFactors[j * 2 + 1]);
+                    factors[0] = vecFactors[j * 2];
+                    factors[1] = vecFactors[j * 2 + 1];
                     break;
                 }
             }
-
-            for (std::size_t j = 0; j < (nThreads * 2); ++j)
-                mpz_clear(vecFactors[j]);
-
-            vecFactors.reset();
         } else {
-            bool bSuccess = false;
-            
-            // First create an instance of an engine.
-            std::random_device rnd_device;
-            // Specify the engine and distribution.
-            std::mt19937 mersenne_engine {rnd_device()};  // Generates random integers
-            std::uniform_int_distribution<std::size_t> dist{1, myLim};
-            
-            auto gen = [&dist, &mersenne_engine](){
-                return dist(mersenne_engine);
-            };
-            
-            std::vector<std::size_t> sample(myLim - 1);
-            std::generate(sample.begin(), sample.end(), gen);
-            
             for (std::size_t i = 0; i < sample.size() && !bSuccess; ++i) {
                 bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
                                        testInterval, factors, cppNum, nCols,

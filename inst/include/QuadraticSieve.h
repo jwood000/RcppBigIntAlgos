@@ -2,7 +2,7 @@
 #define QUADRATICSIEVE_GMP_R
 
 #include <Rcpp.h>
-#include <gmp.h>
+#include "GmpxxCopy.h"
 
 /* Factoring with Multiple Polynomial Quadratic Sieve.
  
@@ -33,7 +33,7 @@
  * in the algorithm based off of the literature regarding the QS
  */
 
-void QuadraticSieve(mpz_t myNum, mpz_t *const factors,
+void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                     std::size_t nThreads, bool bShowStats);
 
 #endif

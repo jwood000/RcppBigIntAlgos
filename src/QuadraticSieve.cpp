@@ -3,12 +3,10 @@
 
 constexpr std::size_t ParBitCutOff = 140u;
 
-void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
+void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                     std::size_t nThreads, bool bShowStats) {
     
     const auto checkPoint0 = std::chrono::steady_clock::now();
-    mpz_class myNum(mpzNum);
-    
     const std::size_t digCount = mpz_sizeinbase(myNum.get_mpz_t(), 10);
     const std::size_t bits = mpz_sizeinbase(myNum.get_mpz_t(), 2);
     const bool IsParallel = (nThreads == 1 || bits < ParBitCutOff) ? false : true;
@@ -45,8 +43,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
         fudge1 += 0.001;
     }
     
-    const std::vector<int> facBase = GetPrimesQuadRes(myNum.get_mpz_t(), LimB,
-                                                      fudge1, sqrLogLog, myTarget);
+    const std::vector<int> facBase = GetPrimesQuadRes(myNum, LimB, fudge1, sqrLogLog, myTarget);
     
     // rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
     // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
@@ -68,7 +65,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     
     const std::size_t facSize = facBase.size();
     const int vecMaxSize = std::min(static_cast<int>((1 + facBase.back() / L1Cache) * L1Cache), DoubleLenB);
-    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum.get_mpz_t());
+    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum);
     
     // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
     // rawCoef <- round(unname(lm(CounterSize ~ poly(DigSize[seq_along(CounterSize)], 4, raw = TRUE))$coefficients), 7)
@@ -92,7 +89,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     mpz_class Temp;
     Temp = myNum * 2;
     Temp = sqrt(Temp);
-    Temp *= LenB;
+    Temp *= static_cast<unsigned long int>(LenB);
     
     const double fudge2 = (digCount < 45) ? 1.410 :
                           (digCount < 50) ? 1.440 :
@@ -110,7 +107,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     }
     
     Temp = sqrt(myNum);
-    Temp -= LenB;
+    Temp -= static_cast<unsigned long int>(LenB);
     const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
     
     const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
@@ -124,7 +121,7 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
     mpz_class NextPrime;
     mpz_mul_2exp(NextPrime.get_mpz_t(), myNum.get_mpz_t(), 1);
     NextPrime = sqrt(NextPrime);
-    NextPrime /= LenB;
+    NextPrime /= static_cast<unsigned long int>(LenB);
     NextPrime = sqrt(NextPrime);
     
     if (cmp(NextPrime, facBase.back()) < 0)
@@ -138,22 +135,22 @@ void QuadraticSieve(mpz_t mpzNum, mpz_t *const factors,
                               strt, checkPoint0, nThreads);
         
         myPoly.GetSolution(mpzFacBase, facBase, factors,
-                           myNum.get_mpz_t(), nThreads, checkPoint0);
+                           myNum, nThreads, checkPoint0);
         NextPrime = mpzFacBase.back();
         
-        mpz_set_ui(factors[0], 11);
-        mpz_set_ui(factors[1], 13);
+        factors[0] = 11;
+        factors[1] = 13;
     }
     // RcppThread::Rcout << facBase.back() << "\n";
     // mpz_set_ui(factors[0], 11);
     // mpz_set_ui(factors[1], 13);
-    while (mpz_cmp_ui(factors[0], 0) == 0) {
+    while (cmp(factors[0], 0) == 0) {
         myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
                             LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
                             strt, checkPoint0);
         
         myPoly.GetSolution(mpzFacBase, facBase, factors,
-                           myNum.get_mpz_t(), nThreads, checkPoint0);
+                           myNum, nThreads, checkPoint0);
         NextPrime = mpzFacBase.back();
     }
 }

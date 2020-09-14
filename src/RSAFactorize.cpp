@@ -30,34 +30,42 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
             vSize = LENGTH(Rn);
     }
     
-    mpz_t myVec[1];
-    mpz_init(myVec[0]);
-    
     if (vSize > 1)
         Rcpp::stop("Can only factor one number at a time");
     
-    // This is from the importExportMPZ header
-    CreateMPZArray(Rn, myVec, 1);
-    mpz_t nmpz;
-    mpz_init_set(nmpz, myVec[0]);
-    mpz_clear(myVec[0]);
+    mpz_class nMpz;
+    convertMpzClass(Rn, nMpz);
     
-    if (mpz_sgn(nmpz) == 0)
+    if (sgn(nMpz) == 0)
         Rcpp::stop("Cannot factorize 0");
     
-    const std::size_t IsNegative = (mpz_sgn(nmpz) < 0) ? 1 : 0;
+    const std::size_t IsNegative = (sgn(nMpz) < 0) ? 1 : 0;
     
     if (IsNegative)
-        mpz_abs(nmpz, nmpz);
-
-    std::size_t arrayMax = mpzChunkBig;
+        nMpz = abs(nMpz);
+    
+    if (cmp(nMpz, 1) == 0) {
+        if (IsNegative) {
+            mpz_class mpzNegOne = -1;
+            Rcpp::RawVector myNegOne(intSize * 4);
+            
+            char* r = (char*) (RAW(myNegOne));
+            ((int*) (r))[0] = 1;
+            
+            myRaw(&r[intSize], mpzNegOne.get_mpz_t(), intSize * 3);
+            myNegOne.attr("class") = Rcpp::CharacterVector::create("bigz");
+            return myNegOne;
+        } else {
+            Rcpp::RawVector noPrimeFacs(intSize);
+            char* r = (char*) (RAW(noPrimeFacs));
+            ((int*) (r))[0] = 0;
+            noPrimeFacs.attr("class") = Rcpp::CharacterVector::create("bigz");
+            return noPrimeFacs;
+        }
+    }
+    
     std::vector<std::size_t> lengths;
-    std::size_t numUni = 0;
-    
-    auto factors = FromCpp14::make_unique<mpz_t[]>(mpzChunkBig);
-    
-    for (std::size_t i = 0; i < mpzChunkBig; ++i)
-        mpz_init(factors[i]);
+    std::vector<mpz_class> factors;
     
     int nThreads = 1;
     const bool bShowStats = convertLogical(RShowStats, "bShowStats");
@@ -65,31 +73,28 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
     if (!Rf_isNull(RNumThreads))
         convertInt(RNumThreads, nThreads, "nThreads");
     
-    QuadSieveHelper(nmpz, factors, arrayMax,
-                    numUni, lengths, nThreads, bShowStats);
+    QuadSieveHelper(nMpz, factors, lengths, nThreads, bShowStats);
     
     // Sort the prime factors as well as order the
     // lengths vector by the order of the factors array
-    QuickSort(factors.get(), 0, numUni - 1, lengths);
+    QuickSort(factors, 0, factors.size() - 1, lengths);
     
     const std::size_t totalNum = std::accumulate(lengths.cbegin(),
                                                  lengths.cend(), 0u) + IsNegative;
     std::size_t size = intSize;
     std::vector<std::size_t> mySizes(totalNum);
     
-    mpz_t negOne;
-    mpz_init(negOne);
-    mpz_set_si(negOne, -1);
+    mpz_class negOne = -1;
     
     if (IsNegative) {
-        const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(negOne, 2) + numb - 1) / numb);
+        const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(negOne.get_mpz_t(), 2) + numb - 1) / numb);
         size += tempSize;
         mySizes[0] = tempSize;
     }
     
-    for (std::size_t i = 0, count = IsNegative; i < numUni; ++i) { // adding each bigint's needed size
+    for (std::size_t i = 0, count = IsNegative; i < factors.size(); ++i) { // adding each bigint's needed size
         for (std::size_t j = 0; j < lengths[i]; ++j, ++count) {
-            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(factors[i], 2) + numb - 1) / numb);
+            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(factors[i].get_mpz_t(), 2) + numb - 1) / numb);
             size += tempSize;
             mySizes[count] = tempSize;
         }
@@ -103,17 +108,12 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
     std::size_t pos = intSize;
     
     if (IsNegative)
-        pos += myRaw(&r[pos], negOne, mySizes.front());
+        pos += myRaw(&r[pos], negOne.get_mpz_t(), mySizes.front());
     
-    for (std::size_t i = 0, count = IsNegative; i < numUni; ++i)
+    for (std::size_t i = 0, count = IsNegative; i < factors.size(); ++i)
         for (std::size_t j = 0; j < lengths[i]; ++j, ++count)
-            pos += myRaw(&r[pos], factors[i], mySizes[count]);
+            pos += myRaw(&r[pos], factors[i].get_mpz_t(), mySizes[count]);
     
-    for (std::size_t i = 0; i < arrayMax; ++i)
-        mpz_clear(factors[i]);
-    
-    mpz_clear(negOne);
-    factors.reset();
     ans.attr("class") = Rcpp::CharacterVector::create("bigz");
     return ans;
 }

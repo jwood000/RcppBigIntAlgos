@@ -15,21 +15,14 @@ SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
             vSize = LENGTH(Rv);
     }
     
-    auto myVec = FromCpp14::make_unique<mpz_t[]>(vSize);
-    auto primeFacs = FromCpp14::make_unique<mpz_t[]>(mpzChunkBig);
-    
-    for (std::size_t i = 0; i < vSize; ++i)
-        mpz_init(myVec[i]);
-    
-    CreateMPZArray(Rv, myVec.get(), vSize);
-    
-    for (std::size_t i = 0; i < mpzChunkBig; ++i)
-        mpz_init(primeFacs[i]);
-    
     if (vSize > 0) {
         if (vSize == 1) {
-            return FactorNum(myVec[0], primeFacs);
+            mpz_class myNum;
+            convertMpzClass(Rv, myNum);
+            return FactorNum(myNum);
         } else {
+            std::vector<mpz_class> myVec(vSize);
+            CreateMPZVector(Rv, myVec, vSize);
             Rcpp::List res(vSize);
             bool isNamed = false;
             
@@ -47,36 +40,24 @@ SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
             }
             
             if (isNamed) {
-                constexpr int base10 = 10;
                 Rcpp::CharacterVector myNames(vSize);
 
-                for (std::size_t i = 0; i < vSize; ++i) {
-                    auto buffer = FromCpp14::make_unique<char[]>(mpz_sizeinbase(myVec[i], base10) + 2);
-                    mpz_get_str(buffer.get(), base10, myVec[i]);
-                    myNames[i] = Rf_mkChar(buffer.get());
-                }
+                for (std::size_t i = 0; i < vSize; ++i)
+                    myNames[i] = myVec[i].get_str();
                 
                 for (std::size_t i = 0; i < vSize; ++i)
-                    res[i] = FactorNum(myVec[i], primeFacs);
+                    res[i] = FactorNum(myVec[i]);
                 
                 res.attr("names") = myNames;
             } else {
                 for (std::size_t i = 0; i < vSize; ++i)
-                    res[i] = FactorNum(myVec[i], primeFacs);
+                    res[i] = FactorNum(myVec[i]);
             }
-
+            
             return res;
         }
     }
     
-    for (std::size_t i = 0; i < mpzChunkBig; ++i)
-        mpz_clear(primeFacs[i]);
-    
-    for (std::size_t i = 0; i < vSize; ++i)
-        mpz_clear(myVec[i]);
-    
-    myVec.reset();
-    primeFacs.reset();
     Rcpp::IntegerVector resTrivial(1);
     return resTrivial;
 }

@@ -1,7 +1,7 @@
 #ifndef TONELLISHANKS_GMP_R
 #define TONELLISHANKS_GMP_R
 
-#include <gmpxx.h>
+#include "GmpxxCopy.h"
 
 /**
  * Obtain quadratic residues of a mod p
@@ -13,6 +13,6 @@
  * i.e. the Legendre symbol of a with respect to p must be 1
  */
 
-void TonelliShanksC(mpz_t myNum, mpz_t p, mpz_t TS_1);
+void TonelliShanksC(const mpz_class &myNum, const mpz_class &p, mpz_class &TS_1);
 
 #endif

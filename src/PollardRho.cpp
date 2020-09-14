@@ -20,173 +20,135 @@ this program.  If not, see http://www.gnu.org/licenses/.  */
 
 #include "PollardRho.h"
 
-int TrialDivision(mpz_t t, mpz_t *const factors, std::size_t& numPs,
-                  std::vector<std::size_t>& myLens, 
-                  std::size_t arrayMax) {
-    mpz_t q;
-    std::size_t p;
+void TrialDivision(mpz_class &t, std::vector<mpz_class> &factors,
+                   std::vector<std::size_t>& myLens) {
     
-    mpz_init(q);
-    p = mpz_scan1(t, 0);
-    mpz_div_2exp(t, t, p);
+    unsigned long int p = mpz_scan1(t.get_mpz_t(), 0);
+    mpz_div_2exp(t.get_mpz_t(), t.get_mpz_t(), p);
     
     if (p) {
-        mpz_set_ui(factors[numPs], 2);
+        factors.push_back(2);
         myLens.push_back(p);
-        ++numPs;
     }
     
     p = 3;
     
     for (std::size_t i = 1; i < primesDiffPR.size();) {
-        if (!mpz_divisible_ui_p(t, p)) {
+        if (!mpz_divisible_ui_p(t.get_mpz_t(), p)) {
             p += primesDiffPR[i++];
             
-            if (mpz_cmp_ui(t, p * p) < 0)
+            if (cmp(t, p * p) < 0)
                 break;
         } else {
-            mpz_divexact_ui(t, t, p);
-            mpz_set_ui(factors[numPs], p);
+            t /= p;
+            factors.push_back(p);
             myLens.push_back(1);
             
-            while (mpz_divisible_ui_p(t, p)) {
-                mpz_divexact_ui(t, t, p);
-                ++myLens[numPs];
+            while (mpz_divisible_ui_p(t.get_mpz_t(), p)) {
+                t /= p;
+                ++myLens.back();
             }
-            
-            ++numPs;
-            
-            if (numPs == arrayMax)
-                return 1;
             
             p += primesDiffPR[i++];
             
-            if (mpz_cmp_ui(t, p * p) < 0)
+            if (cmp(t, p * p) < 0)
                 break;
         }
     }
-    
-    mpz_clear(q);
-    return 0;
 }
 
-void PollardRho(mpz_t n, std::size_t a, mpz_t *const factors,
-                std::size_t& numPs, std::vector<std::size_t>& myLens) {
+void PollardRho(mpz_class &n, unsigned long int a,
+                std::vector<mpz_class> &factors,
+                std::vector<std::size_t>& myLens) {
     
-    mpz_t x, z, y, P;
-    mpz_t t, t2;
-    std::size_t  k, l, i;
+    mpz_class x, z, y, p, t;
+    x = y = z = 2;
+    p = 1;
     
-    mpz_init(t);
-    mpz_init(t2);
-    mpz_init_set_si(y, 2);
-    mpz_init_set_si(x, 2);
-    mpz_init_set_si(z, 2);
-    mpz_init_set_ui(P, 1);
-    k = 1;
-    l = 1;
+    std::size_t k = 1u;
+    std::size_t q = 1u;
 
-    while (mpz_cmp_ui(n, 1) != 0) {
+    while (cmp(n, 1) != 0) {
         for (;;) {
             do {
-                mpz_mul(t, x, x);
-                mpz_mod(x, t, n);
-                mpz_add_ui(x, x, a);
+                x *= x;
+                x %= n;
+                x += a;
                 
-                mpz_sub(t, z, x);
-                mpz_mul(t2, P, t);
-                mpz_mod(P, t2, n);
+                t = z - x;
+                mpz_mod(t.get_mpz_t(), t.get_mpz_t(), n.get_mpz_t());
+                p *= t;
+                p %= n;
                 
                 if (k % 32 == 1) {
-                    mpz_gcd(t, P, n);
-                    if (mpz_cmp_ui(t, 1) != 0)
+                    t = gcd(p, n);
+                    
+                    if (cmp(t, 1) != 0)
                         goto factor_found;
-                    mpz_set(y, x);
+                    
+                    y = x;
                 }
-	        }
-	        while (--k != 0);
+	        } while (--k != 0);
 
-            mpz_set(z, x);
-            k = l;
-            l = 2 * l;
-            for (i = 0; i < k; ++i) {
-                mpz_mul(t, x, x);
-                mpz_mod(x, t, n);
-                mpz_add_ui(x, x, a);
+            z = x;
+            k = q;
+            q <<= 1;
+            
+            for (std::size_t i = 0; i < k; ++i) {
+                x *= x;
+                x %= n;
+                x += a;
             }
-            mpz_set(y, x);
+            
+            y = x;
         }
 
         factor_found:
         do {
-            mpz_mul(t, y, y);
-            mpz_mod(y, t, n);
-            mpz_add_ui(y, y, a);
-            
-            mpz_sub(t, z, y);
-            mpz_gcd(t, t, n);
-        }
-        while (mpz_cmp_ui(t, 1) == 0);
+            y *= y;
+            y %= n;
+            y += a;
+            t = gcd(z - y, n);
+        } while (cmp(t, 1) == 0);
 
-        mpz_divexact(n, n, t);	/* divide by t, before t is overwritten */
+        n /= t;	/* divide by t, before t is overwritten */
 
-        if (mpz_probab_prime_p(t, MR_REPS) == 0) {
-            PollardRho(t, a + 1, factors, numPs, myLens);
+        if (mpz_probab_prime_p(t.get_mpz_t(), MR_REPS) == 0) {
+            PollardRho(t, a + 1, factors, myLens);
         } else {
-            mpz_set(factors[numPs], t);
+            factors.push_back(t);
             myLens.push_back(1);
 
-            while (mpz_divisible_p(n, t)) {
-                mpz_divexact(n, n, t);
-                ++myLens[numPs];
-            }
-
-            ++numPs;
-            
-            if (numPs == mpzChunkBig) {
-                Rcpp::stop("Too many prime factors. Result will contain "
-                               "over one quadrillion (10^15) factors!!");
+            while (mpz_divisible_p(n.get_mpz_t(), t.get_mpz_t())) {
+                n /= t;
+                ++myLens.back();
             }
         }
-
-        if (mpz_probab_prime_p(n, MR_REPS) != 0) {
-            mpz_set(factors[numPs], n);
+        
+        if (mpz_probab_prime_p(n.get_mpz_t(), MR_REPS) != 0) {
+            factors.push_back(n);
             myLens.push_back(1);
-            ++numPs;
             break;
 	    }
 
-        mpz_mod(x, x, n);
-        mpz_mod(z, z, n);
-        mpz_mod(y, y, n);
+        x %= n;
+        z %= n;
+        y %= n;
     }
-
-    mpz_clear(P);
-    mpz_clear(t2);
-    mpz_clear(t);
-    mpz_clear(z);
-    mpz_clear(x);
-    mpz_clear(y);
 }
 
-void GetPrimeFactors(mpz_t t, mpz_t *const factors, std::size_t &numPs,
+void GetPrimeFactors(mpz_class &t, std::vector<mpz_class> &factors,
                      std::vector<std::size_t> &myLens) {
     
-    if (mpz_sgn(t) != 0) {
-        std::size_t increaseSize = TrialDivision(t, factors, numPs, myLens, mpzChunkBig);
+    if (sgn(t) != 0) {
+        TrialDivision(t, factors, myLens);
         
-        if (increaseSize) {
-            Rcpp::stop("Too many prime factors. Result will contain "
-                           "over one quadrillion (10^15) factors!!");
-        }
-        
-        if (mpz_cmp_ui(t, 1) != 0) {
-    	    if (mpz_probab_prime_p(t, MR_REPS) != 0) {
-                mpz_set(factors[numPs], t);
+        if (cmp(t, 1) != 0) {
+    	    if (mpz_probab_prime_p(t.get_mpz_t(), MR_REPS) != 0) {
+    	        factors.push_back(t);
     	        myLens.push_back(1);
-    	        ++numPs;
     	    } else{
-    	        PollardRho(t, 1, factors, numPs, myLens);
+    	        PollardRho(t, 1, factors, myLens);
             }
         }
     }

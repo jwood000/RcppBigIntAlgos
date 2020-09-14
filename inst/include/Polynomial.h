@@ -1,6 +1,7 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
+#include "Cpp14MakeUnique.h"
 #include "SieveUtils.h"
 #include <chrono>
 
@@ -44,10 +45,11 @@ private:
     std::size_t GetSmoothSize() const {return smoothInterval.size();};
     
     void SievePolys(const std::vector<std::size_t> &SieveDist,
-                    const std::vector<int> &facBase, const std::vector<int> &LnFB,
+                    const std::vector<int> &facBase, const std::vector<int> &LnFB, 
                     const std::vector<mpz_class> &mpzFacBase,
-                    mpz_class LowBound, mpz_class myNum, int theCut, int DoubleLenB,
-                    int vecMaxSize, std::size_t strt, std::size_t polyLimit);
+                    const mpz_class &LowBound, const mpz_class &myNum,
+                    int theCut, int DoubleLenB, int vecMaxSize,
+                    std::size_t strt, std::size_t polyLimit);
     
 public:
     
@@ -67,34 +69,32 @@ public:
     
     // SaPThresh: Smooth + Partial Threshold
     Polynomial(std::size_t _mpzContainerSize,
-               std::size_t _facSize, bool _bShowStats, mpz_class myNum);
+               std::size_t _facSize, bool _bShowStats, const mpz_class &myNum);
     
     void InitialParSieve(const std::vector<std::size_t> &SieveDist,
-                         const std::vector<int> &facBase, 
-                         const std::vector<int> &LnFB,
-                         std::vector<mpz_class> &mpzFacBase, mpz_class NextPrime,
-                         mpz_class LowBound, mpz_class myNum, int theCut,
+                         const std::vector<int> &facBase, const std::vector<int> &LnFB,
+                         std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                         const mpz_class &LowBound, const mpz_class &myNum, int theCut,
                          int DoubleLenB, int vecMaxSize, std::size_t strt,
                          typeTimePoint checkPoint0);
     
     void FactorParallel(const std::vector<std::size_t> &SieveDist,
-                        const std::vector<int> &facBase,
-                        const std::vector<int> &LnFB,
-                        std::vector<mpz_class> &mpzFacBase, mpz_class NextPrime,
-                        mpz_class LowBound, mpz_class myNum, int theCut,
+                        const std::vector<int> &facBase, const std::vector<int> &LnFB,
+                        std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                        const mpz_class &LowBound, const mpz_class &myNum, int theCut,
                         int DoubleLenB, int vecMaxSize, std::size_t strt,
                         typeTimePoint checkPoint0, std::size_t nThreads);
     
     void FactorSerial(const std::vector<std::size_t> &SieveDist,
-                      const std::vector<int> &facBase,
-                      const std::vector<int> &LnFB, std::vector<mpz_class> &mpzFacBase,
-                      mpz_class NextPrime, mpz_class LowBound, mpz_class myNum,
-                      int theCut, int DoubleLenB, int vecMaxSize, std::size_t strt,
+                      const std::vector<int> &facBase, const std::vector<int> &LnFB,
+                      std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
+                      const mpz_class &LowBound, const mpz_class &myNum, int theCut,
+                      int DoubleLenB, int vecMaxSize, std::size_t strt,
                       typeTimePoint checkPoint0);
     
     void GetSolution(const std::vector<mpz_class> &mpzFacBase, 
-                     const std::vector<int> &facBase, mpz_t *const factors,
-                     mpz_t mpzNum, std::size_t nThreads,
+                     const std::vector<int> &facBase, std::vector<mpz_class> &factors,
+                     const mpz_class &mpzNum, std::size_t nThreads,
                      typeTimePoint checkPoint0);
 };
 

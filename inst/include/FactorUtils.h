@@ -3,9 +3,7 @@
 
 #include "PollardRho.h"
 #include "ImportExportMPZ.h"
-#include "Cpp14MakeUnique.h"
-#include <memory>
 
-SEXP FactorNum(mpz_t val, std::unique_ptr<mpz_t[]> &primeFacs);
+SEXP FactorNum(mpz_class &val);
 
 #endif
