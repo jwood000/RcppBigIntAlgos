@@ -214,7 +214,7 @@ Summary Statistics for Factoring:
 
 |        Time        | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      18s 200ms     |   100%   |     4267    |    1848    |    2221    |
+|      17s 868ms     |   100%   |     4267    |    1848    |    2221    |
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
@@ -290,7 +290,7 @@ Big Integer ('bigz') object of length 3:
 It can also be used as a general prime factoring function:
 
 ```r
-quadraticSieve(urand.bigz(1,50,1))
+quadraticSieve(urand.bigz(1, 50, 1))
 Seed initialisation
 Big Integer ('bigz') object of length 5:
 [1] 5       31      307     2441    4702723
