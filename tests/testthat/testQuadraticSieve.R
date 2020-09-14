@@ -38,6 +38,12 @@ test_that("quadraticSieve generates correct numbers", {
                   401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463,
                   467, 479, 487, 491, 499)
     
+    ## ******************* Gmpxx Note **********************
+    ## We are now using gmpxx, thus we are able to take advantage
+    ## of std::vector<mpz_class> which means we no longer have to
+    ## worry with the complex resizing issues we had before. We
+    ## now only include these examples for posterity
+    
     ## We are ensuring that the resizing of the factors array is correct
     expect_equal(quadraticSieve(prod.bigz(prime500)),
                  factorize(prod.bigz(prime500)))
@@ -53,6 +59,7 @@ test_that("quadraticSieve generates correct numbers", {
                    5693, 5701, 5711, 5717, 5737, 5741, 5743, 5749, 5779, 5783,
                    5791)
     
+    ## See Gmpxx Note above
     ## Again, we are ensuring that the resizing of the factors array is
     ## correct (It can occur in multiple places in quadraticSieve)
     a <- quadraticSieve(prod.bigz(c(prime500, prime5K58)))
