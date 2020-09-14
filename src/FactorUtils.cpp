@@ -25,6 +25,7 @@
 #include "FactorUtils.h"
 #include "RSAFactorUtils.h"
 #include "Cpp14MakeUnique.h"
+#include <chrono>
 
 std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,
                              std::size_t numSecs, std::size_t secSize) {
@@ -129,6 +130,8 @@ std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,
 
 SEXP FactorNum(mpz_class &val) {
     
+    auto t1 = std::chrono::steady_clock::now();
+    
     if (cmp(val, 1) == 0) {
         mpz_class mpzOne = 1;
         Rcpp::RawVector myFacs(intSize * 4);
@@ -163,6 +166,8 @@ SEXP FactorNum(mpz_class &val) {
         
         QuickSort(primeFacs, 0, lengths.size() - 1, lengths);
         
+        auto t2 = std::chrono::steady_clock::now();
+        
         std::vector<int> myIndex(lengths[0] + 1);
         std::size_t numFacs = 1;
         
@@ -195,6 +200,8 @@ SEXP FactorNum(mpz_class &val) {
             myIndex = myMergeSort(myMPZ.get(), myIndex, lengths[j] + 1, facSize);
         }
         
+        auto t3 = std::chrono::steady_clock::now();
+        
         std::size_t size = intSize;
         std::vector<std::size_t> mySizes(numFacs);
         
@@ -217,6 +224,19 @@ SEXP FactorNum(mpz_class &val) {
                 posPos += myRaw(&rPos[posPos], myMPZ[myIndex[i]], mySizes[myIndex[i]]);
             
             ansPos.attr("class") = Rcpp::CharacterVector::create("bigz");
+            
+            
+            for (std::size_t i = 0; i < numFacs; ++i)
+                mpz_clear(myMPZ[i]);
+            
+            myMPZ.reset();
+            
+            auto t4 = std::chrono::steady_clock::now();
+            
+            Rcpp::Rcout << "part1 " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "\n";
+            Rcpp::Rcout << "part2 " << std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << "\n";
+            Rcpp::Rcout << "part3 " << std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count() << "\n";
+            
             return(ansPos);
         } else {
             size *= 2; // double size as every element will have a negative counterpart
@@ -242,10 +262,5 @@ SEXP FactorNum(mpz_class &val) {
             ansNeg.attr("class") = Rcpp::CharacterVector::create("bigz");
             return(ansNeg);
         }
-        
-        for (std::size_t i = 0; i < numFacs; ++i)
-            mpz_clear(myMPZ[i]);
-        
-        myMPZ.reset();
     }
 }
