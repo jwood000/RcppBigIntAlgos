@@ -64,7 +64,7 @@ It is very efficient as well. It is equipped with a modified merge sort algorith
 hugeNumber <- pow.bigz(2, 100) * pow.bigz(3, 100) * pow.bigz(5, 100)
 system.time(overOneMillion <- divisorsBig(hugeNumber))
    user  system elapsed 
-  0.557   0.063   0.622
+  0.364   0.029   0.390
   
 length(overOneMillion)
 [1] 1030301
