@@ -24,19 +24,17 @@
 
 #include "FactorUtils.h"
 #include "RSAFactorUtils.h"
+#include "Cpp14MakeUnique.h"
 
-std::vector<std::size_t> myMergeSort(const std::vector<mpz_class> &arr, 
-                                     const std::vector<std::size_t> &indPass,
-                                     std::size_t numSecs, 
-                                     std::size_t secSize) {
+std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,
+                             std::size_t numSecs, std::size_t secSize) {
     
-    std::size_t x, y;
     std::size_t count = 0;
     const std::size_t totalSize  = numSecs * secSize;
     
     std::size_t tempSize = totalSize;
-    std::vector<std::size_t> leftOver;
-    std::vector<std::size_t> myInd(totalSize);
+    std::vector<int> leftOver;
+    std::vector<int> myInd(totalSize);
     
     for (std::size_t i = 0; i < secSize; ++i)
         myInd[i] = indPass[i];
@@ -52,28 +50,24 @@ std::vector<std::size_t> myMergeSort(const std::vector<mpz_class> &arr,
             tempSize -= secSize;
         }
         
-        std::vector<std::size_t> endPoints(numSecs, secSize);
+        std::vector<int> endPoints(numSecs);
         
-        for (std::size_t i = 1; i < numSecs; ++i) {
-            x = endPoints[i - 1] + secSize;
-            endPoints[i] = x;
-        }
+        for (std::size_t i = 0; i < numSecs; ++i)
+            endPoints[i] = secSize * (i + 1);
         
         secSize *= 2;
         std::size_t k = numSecs / 2;
         
-        std::size_t lim = (k < 2) ? k : 2;
-        std::size_t left = x = 0;
+        int lim = (k < 2) ? k : 2;
+        std::vector<int> tempInd(secSize);
         
-        std::vector<std::size_t> tempInd(secSize);
-        
-        for (std::size_t i = 0; i < lim; ++i) {
+        for (int x = 0, i = 0, left = 0; i < lim; ++i) {
             count = 0;
-            y = endPoints[2 * i];
+            int y = endPoints[2 * i];
             std::fill(tempInd.begin(), tempInd.end(), 0);
                      
             while (x < endPoints[2 * i] && y < endPoints[2 * i + 1]) {
-                if (cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
+                if (mpz_cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
                     tempInd[count] = myInd[x];
                     ++x;
                 } else {
@@ -92,8 +86,8 @@ std::vector<std::size_t> myMergeSort(const std::vector<mpz_class> &arr,
         
         if (k > 2) {
             for (std::size_t i = 2; i < k; ++i) {
-                x = endPoints[2 * i - 1];
-                y = x - secSize;
+                const int x = endPoints[2 * i - 1];
+                const int y = x - secSize;
                 
                 for (std::size_t j = 0; j < count; ++j)
                     myInd[x + j] = tempInd[j] + y;
@@ -107,12 +101,12 @@ std::vector<std::size_t> myMergeSort(const std::vector<mpz_class> &arr,
 
     if (LOSize > 0) {
         for (int j = LOSize - 1; j >= 0; --j) {
-            x = count = 0;
-            y = tempSize;
-            std::vector<std::size_t> tempInd(leftOver[j]);
+            int x = count = 0;
+            int y = tempSize;
+            std::vector<int> tempInd(leftOver[j]);
 
             while (x < tempSize && y < leftOver[j]) {
-                if (cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
+                if (mpz_cmp(arr[myInd[x]], arr[myInd[y]]) < 0) {
                     tempInd[count] = myInd[x];
                     ++x;
                 } else {
@@ -169,41 +163,43 @@ SEXP FactorNum(mpz_class &val) {
         
         QuickSort(primeFacs, 0, lengths.size() - 1, lengths);
         
-        std::vector<std::size_t> myIndex(lengths[0] + 1);
-        std::size_t facSize = 1;
+        std::vector<int> myIndex(lengths[0] + 1);
         std::size_t numFacs = 1;
         
         for (std::size_t i = 0; i < lengths.size(); ++i)
             numFacs *= (lengths[i] + 1);
         
-        std::vector<mpz_class> myMPZ(numFacs);
-        mpz_class temp, myPow;
+        auto myMPZ = FromCpp14::make_unique<mpz_t[]>(numFacs);
+        
+        for (std::size_t i = 0; i < numFacs; ++i)
+            mpz_init(myMPZ[i]);
+        
+        mpz_t myPow;
+        mpz_init(myPow);
         
         for (std::size_t i = 0; i <= lengths[0]; ++i) {
-            mpz_pow_ui(temp.get_mpz_t(), primeFacs[0].get_mpz_t(), i);
-            myMPZ[i] = temp;
+            mpz_pow_ui(myMPZ[i], primeFacs[0].get_mpz_t(), i);
             myIndex[i] = i;
         }
         
-        for (std::size_t j = 1; j < lengths.size(); ++j) {
+        for (std::size_t j = 1, facSize = 1; j < lengths.size(); ++j) {
             facSize *= (lengths[j - 1] + 1);
             
             for (std::size_t i = 1; i <= lengths[j]; ++i) {
-                const std::size_t ind = i*facSize;
-                mpz_pow_ui(myPow.get_mpz_t(), primeFacs[j].get_mpz_t(), i);
+                mpz_pow_ui(myPow, primeFacs[j].get_mpz_t(), i);
                 
-                for (std::size_t k = 0; k < facSize; ++k)
-                    myMPZ[ind + k] = myPow * myMPZ[myIndex[k]];
+                for (std::size_t k = 0, ind = i * facSize; k < facSize; ++k)
+                    mpz_mul(myMPZ[ind + k], myPow, myMPZ[myIndex[k]]);
             }
             
-            myIndex = myMergeSort(myMPZ, myIndex, lengths[j] + 1, facSize);
+            myIndex = myMergeSort(myMPZ.get(), myIndex, lengths[j] + 1, facSize);
         }
         
         std::size_t size = intSize;
         std::vector<std::size_t> mySizes(numFacs);
         
         for (std::size_t i = 0; i < numFacs; ++i) { // adding each bigint's needed size
-            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(myMPZ[i].get_mpz_t(), 2) + numb - 1) / numb);
+            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(myMPZ[i], 2) + numb - 1) / numb);
             size += tempSize;
             mySizes[i] = tempSize;
         }
@@ -218,7 +214,7 @@ SEXP FactorNum(mpz_class &val) {
             std::size_t posPos = intSize;
             
             for (std::size_t i = 0; i < numFacs; ++i)
-                posPos += myRaw(&rPos[posPos], myMPZ[myIndex[i]].get_mpz_t(), mySizes[myIndex[i]]);
+                posPos += myRaw(&rPos[posPos], myMPZ[myIndex[i]], mySizes[myIndex[i]]);
             
             ansPos.attr("class") = Rcpp::CharacterVector::create("bigz");
             return(ansPos);
@@ -232,18 +228,24 @@ SEXP FactorNum(mpz_class &val) {
             
             // current position in rNeg[] (starting after vector-size-header)
             std::size_t posNeg = intSize;
+            mpz_class temp;
             
             // First write out negative numbers in reverse "myIndex" order
             for (int i = numFacs - 1; i >= 0; --i) {
-                mpz_neg(temp.get_mpz_t(), myMPZ[myIndex[i]].get_mpz_t());
+                mpz_neg(temp.get_mpz_t(), myMPZ[myIndex[i]]);
                 posNeg += myRaw(&rNeg[posNeg], temp.get_mpz_t(), mySizes[myIndex[i]]);
             }
             
             for (std::size_t i = 0; i < numFacs; ++i)
-                posNeg += myRaw(&rNeg[posNeg], myMPZ[myIndex[i]].get_mpz_t(), mySizes[myIndex[i]]);
+                posNeg += myRaw(&rNeg[posNeg], myMPZ[myIndex[i]], mySizes[myIndex[i]]);
             
             ansNeg.attr("class") = Rcpp::CharacterVector::create("bigz");
             return(ansNeg);
         }
+        
+        for (std::size_t i = 0; i < numFacs; ++i)
+            mpz_clear(myMPZ[i]);
+        
+        myMPZ.reset();
     }
 }
