@@ -24,7 +24,6 @@
 
 #include "FactorUtils.h"
 #include "RSAFactorUtils.h"
-#include <chrono>
 
 std::vector<std::size_t> myMergeSort(mpz_t *const arr, 
                                      std::vector<std::size_t> indPass,
@@ -136,8 +135,6 @@ std::vector<std::size_t> myMergeSort(mpz_t *const arr,
 
 SEXP FactorNum(mpz_t val, std::unique_ptr<mpz_t[]> &primeFacs) {
     
-    auto t1 = std::chrono::steady_clock::now();
-    
     if (mpz_cmp_ui(val, 1) == 0) {
         mpz_t mpzOne;
         mpz_init_set_si(mpzOne, 1);
@@ -187,8 +184,6 @@ SEXP FactorNum(mpz_t val, std::unique_ptr<mpz_t[]> &primeFacs) {
         
         QuickSort(primeFacs.get(), 0, numUni - 1, lengths);
         
-        auto t2 = std::chrono::steady_clock::now();
-        
         std::vector<std::size_t> myIndex(lengths[0] + 1);
         std::size_t facSize = 1, numFacs = 1;
         
@@ -228,8 +223,6 @@ SEXP FactorNum(mpz_t val, std::unique_ptr<mpz_t[]> &primeFacs) {
             }
         }
         
-        auto t3 = std::chrono::steady_clock::now();
-        
         std::size_t size = intSize;
         std::vector<std::size_t> mySizes(numFacs);
         
@@ -252,13 +245,6 @@ SEXP FactorNum(mpz_t val, std::unique_ptr<mpz_t[]> &primeFacs) {
                 posPos += myRaw(&rPos[posPos], myMPZ[myIndex[i]], mySizes[myIndex[i]]);
             
             ansPos.attr("class") = Rcpp::CharacterVector::create("bigz");
-            
-            auto t4 = std::chrono::steady_clock::now();
-            
-            Rcpp::Rcout << "part1 " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "\n";
-            Rcpp::Rcout << "part2 " << std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << "\n";
-            Rcpp::Rcout << "part3 " << std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count() << "\n";
-            
             return(ansPos);
         } else {
             size *= 2; // double size as every element will have a negative counterpart
