@@ -228,12 +228,13 @@ SEXP FactorNum(mpz_class &val) {
             
             // current position in rNeg[] (starting after vector-size-header)
             std::size_t posNeg = intSize;
-            mpz_class temp;
+            mpz_t myNegative;
+            mpz_init(myNegative);
             
             // First write out negative numbers in reverse "myIndex" order
             for (int i = numFacs - 1; i >= 0; --i) {
-                mpz_neg(temp.get_mpz_t(), myMPZ[myIndex[i]]);
-                posNeg += myRaw(&rNeg[posNeg], temp.get_mpz_t(), mySizes[myIndex[i]]);
+                mpz_neg(myNegative, myMPZ[myIndex[i]]);
+                posNeg += myRaw(&rNeg[posNeg], myNegative, mySizes[myIndex[i]]);
             }
             
             for (std::size_t i = 0; i < numFacs; ++i)

@@ -13,8 +13,18 @@ addons:
     packages:
       - libgmp3-dev
       
+before_install:
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get update -q; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install g++-4.9 -y; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 100; fi
+
 r_packages:
+  - Rcpp
+  - testthat
+  - RcppThread
   - covr
+  - devtools
       
 after_success:
   - Rscript -e "covr::codecov()"
