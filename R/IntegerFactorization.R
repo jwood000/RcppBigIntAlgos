@@ -2,8 +2,8 @@ divisorsBig <- function(v, namedList = FALSE) {
     GetDivisorsC(v, namedList, NULL, pkgEnv$nThreads)
 }
 
-quadraticSieve <- function(n, showStats = FALSE) {
-    QuadraticSieveContainer(n, showStats, NULL, pkgEnv$nThreads)
+quadraticSieve <- function(n, showStats = FALSE, nThreads = NULL) {
+    QuadraticSieveContainer(n, showStats, nThreads, pkgEnv$nThreads)
 }
 
 stdThreadMax <- function() {

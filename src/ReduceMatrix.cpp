@@ -9,7 +9,7 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
     
     for (int j = 0; j < nCols; ++j) {
         std::vector<int> rows;
-
+        
         for (int i = rowInd; i < matSize; i += nCols)
             if (nullMat[i + j])
                 rows.push_back(i);
@@ -19,31 +19,17 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
             const int firstRow = rows.front();
 
             if (firstRow != rowInd)
-                for (int k = 0; k < nCols; ++k)
+                for (int k = j; k < nCols; ++k)
                     if (nullMat[firstRow + k] != nullMat[rowInd + k])
                         std::swap(nullMat[firstRow + k], nullMat[rowInd + k]);
             
-            for (int k = 0; k < nCols; ++k)
+            for (int k = j; k < nCols; ++k)
                 if (nullMat[rowInd + k])
                     cols.push_back(k);
             
-            const int lastUnroll = cols.size() - (cols.size() % unrollSize);
-            
-            for (int i = 1, rowSize = rows.size(), colSize = cols.size(); i < rowSize; ++i) {
-                for (int k = 0; k < lastUnroll; k += unrollSize) {
-                    nullMat[rows[i] + cols[k]] = nullMat[rows[i] + cols[k]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 1]] = nullMat[rows[i] + cols[k + 1]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 2]] = nullMat[rows[i] + cols[k + 2]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 3]] = nullMat[rows[i] + cols[k + 3]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 4]] = nullMat[rows[i] + cols[k + 4]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 5]] = nullMat[rows[i] + cols[k + 5]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 6]] = nullMat[rows[i] + cols[k + 6]] ^ 1u;
-                    nullMat[rows[i] + cols[k + 7]] = nullMat[rows[i] + cols[k + 7]] ^ 1u;
-                }
-                
-                for (int k = lastUnroll; k < colSize; ++k)
-                    nullMat[rows[i] + cols[k]] = nullMat[rows[i] + cols[k]] ^ 1u;
-            }
+            for (std::size_t i = 1, r = rows[i], rowSize = rows.size(); i < rowSize; r = rows[++i])
+                for (auto k: cols)
+                    nullMat[r + k] ^= u8one;
             
             rowInd += nCols;
         }
@@ -72,7 +58,7 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
             }
 
             if (nullMat[i + k] != 1) {
-                for (int j = 0; j < nCols; ++j) {
+                for (int j = k; j < nCols; ++j) {
                     if (nullMat[i + j]) {
                         for (int m = 0; m < rowInd; m += nCols)
                             if (nullMat[m + k] != nullMat[m + j])

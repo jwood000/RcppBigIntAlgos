@@ -1,6 +1,6 @@
 #include "SolutionSearch.h"
-#include "Cpp14MakeUnique.h"
 #include <RcppThread.h>
+#include <random>
 
 void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
                     const std::vector<std::size_t> &myCols,
@@ -17,7 +17,7 @@ void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
                 temp.push_back(j);
 
         if (!temp.empty()) {
-            if (temp.front() >= newNrow) {
+            if (temp.front() >= static_cast<int>(newNrow)) {
                 for (const auto t: temp)
                     for (std::size_t j = 0; j < freeMatSize; j += nCols)
                         if (freeMat[myCols[t] + j])
@@ -25,7 +25,7 @@ void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
             } else {
                 for (const auto t: temp)
                     for (std::size_t j = 0; j < freeMatSize; j += nCols)
-                        freeMat[myCols[i] + j] = freeMat[myCols[i] + j] ^ freeMat[myCols[t] + j];
+                        freeMat[myCols[i] + j] ^= freeMat[myCols[t] + j];
             }
         }
     }
@@ -34,37 +34,22 @@ void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
 bool GetSolution(const std::vector<std::uint8_t> &freeMat,
                  const std::vector<std::uint8_t> &mat,
                  const std::vector<std::size_t> &freeVariables,
-                 mpz_t *const testInterval, mpz_t *const mpzFacBase,
-                 mpz_t *const factors, mpz_t myNum, std::size_t nCols, 
-                 std::size_t matNCols, std::size_t ind, 
+                 const std::vector<mpz_class> &mpzFacBase,
+                 const std::vector<mpz_class> &testInterval,
+                 std::vector<mpz_class> &factors, const mpz_class &myNum,
+                 std::size_t nCols, std::size_t matNCols, std::size_t ind, 
                  std::size_t lenFree, std::size_t threadInd) {
-    
-    mpz_t mpzTemp1, mpzTemp2, mpzMin, xMpz, yMpz;
-    mpz_init(mpzTemp1); mpz_init(mpzTemp2);
-    mpz_init(yMpz); mpz_init(mpzMin); mpz_init(xMpz);
     
     std::vector<std::size_t> ansVec;
     std::vector<std::uint8_t> posVec(nCols, 0u);
-    std::vector<std::uint8_t> posAns = MyIntToBit(ind, lenFree);
+    const std::vector<std::uint8_t> posAns = MyIntToBit(ind, lenFree);
     
     bool bSuccess = false;
-    const int lastUnroll = nCols - (nCols % unrollSize);
     
-    for (int i = 0; i < static_cast<int>(freeVariables.size()); ++i) {
-        for (int k = 0, j = i * nCols; k < lastUnroll; k += unrollSize, j += unrollSize) {
-            if (freeMat[j]) {posVec[k] = posVec[k] ^ posAns[i];}
-            if (freeMat[j + 1]) {posVec[k + 1] = posVec[k + 1] ^ posAns[i];}
-            if (freeMat[j + 2]) {posVec[k + 2] = posVec[k + 2] ^ posAns[i];}
-            if (freeMat[j + 3]) {posVec[k + 3] = posVec[k + 3] ^ posAns[i];}
-            if (freeMat[j + 4]) {posVec[k + 4] = posVec[k + 4] ^ posAns[i];}
-            if (freeMat[j + 5]) {posVec[k + 5] = posVec[k + 5] ^ posAns[i];}
-            if (freeMat[j + 6]) {posVec[k + 6] = posVec[k + 6] ^ posAns[i];}
-            if (freeMat[j + 7]) {posVec[k + 7] = posVec[k + 7] ^ posAns[i];}
-        }
-        
-        for (int k = lastUnroll, j = i * nCols + lastUnroll; k < static_cast<int>(nCols); ++k, ++j)
-            if (freeMat[j]) {posVec[k] = posVec[k] ^ posAns[i];}
-    }
+    for (std::size_t i = 0; i < freeVariables.size(); ++i)
+        for (std::size_t k = 0, j = i * nCols; k < nCols; ++k, ++j)
+            if (freeMat[j])
+                posVec[k] ^= posAns[i];
     
     for (std::size_t k = 0; k < nCols; ++k)
         if (posVec[k])
@@ -83,39 +68,39 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
         }
         
         if (myCheck == 0) {
+            mpz_class mpzTemp1, mpzTemp2, mpzMin, xMpz, yMpz;
             yExponents.erase(yExponents.begin());
-            mpz_set_ui(xMpz, 1);
-            mpz_set_ui(yMpz, 1);
+            xMpz = 1;
+            yMpz = 1;
             
             for (const auto aV: ansVec) {
-                mpz_mul(xMpz, xMpz, testInterval[aV]);
-                mpz_mod(xMpz, xMpz, myNum);
+                xMpz *= testInterval[aV];
+                xMpz %= myNum;
             }
             
             for (std::size_t j = 0; j < yExponents.size(); ++j) {
-                mpz_pow_ui(mpzTemp1, mpzFacBase[j], yExponents[j]);
-                mpz_mul(yMpz, yMpz, mpzTemp1);
-                mpz_mod(yMpz, yMpz, myNum);
+                mpz_pow_ui(mpzTemp1.get_mpz_t(),
+                           mpzFacBase[j].get_mpz_t(), yExponents[j]);
+                yMpz *= mpzTemp1;
+                yMpz %= myNum;
             }
             
-            mpz_sub(mpzTemp1, xMpz, yMpz);
-            mpz_gcd(mpzTemp1, mpzTemp1, myNum);
-            mpz_add(mpzTemp2, xMpz, yMpz);
-            mpz_gcd(mpzTemp2, mpzTemp2, myNum);
+            mpzTemp1 = gcd(xMpz - yMpz, myNum);
+            mpzTemp2 = gcd(xMpz + yMpz, myNum);
             
-            if (mpz_cmp(mpzTemp1, mpzTemp2) < 0) {
-                mpz_set(mpzMin, mpzTemp1);
+            if (cmp(mpzTemp1, mpzTemp2) < 0) {
+                mpzMin = mpzTemp1;
             } else {
-                mpz_set(mpzMin, mpzTemp2);
+                mpzMin = mpzTemp2;
             }
             
-            if (mpz_cmp_ui(mpzMin, 1) > 0) {
-                if (mpz_cmp(mpzTemp1, mpzTemp2) < 0) {
-                    mpz_set(factors[threadInd * 2], mpzTemp1);
-                    mpz_set(factors[threadInd * 2 + 1], mpzTemp2);
+            if (cmp(mpzMin, 1) > 0) {
+                if (cmp(mpzTemp1, mpzTemp2) < 0) {
+                    factors[threadInd * 2] = mpzTemp1;
+                    factors[threadInd * 2 + 1] = mpzTemp2;
                 } else {
-                    mpz_set(factors[threadInd * 2 + 1], mpzTemp1);
-                    mpz_set(factors[threadInd * 2], mpzTemp2);
+                    factors[threadInd * 2 + 1] = mpzTemp1;
+                    factors[threadInd * 2] = mpzTemp2;
                 }
                 
                 bSuccess = true;
@@ -123,15 +108,14 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
         }
     }
     
-    mpz_clear(mpzTemp1); mpz_clear(mpzTemp2);
-    mpz_clear(mpzMin); mpz_clear(xMpz); mpz_clear(yMpz);
     return bSuccess;
 }
 
 void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
-                    std::size_t matNCols, mpz_t myNum, mpz_t *const mpzFacBase,
-                    mpz_t *const testInterval, mpz_t *const factors,
-                    std::size_t nThreads) {
+                    std::size_t matNCols, const mpz_class &myNum,
+                    const std::vector<mpz_class> &mpzFacBase,
+                    const std::vector<mpz_class> &testInterval,
+                    std::vector<mpz_class> &factors, std::size_t nThreads) {
     
     const std::size_t matSize = mat.size();
     const std::size_t nCols = matNRows;
@@ -182,27 +166,39 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
             freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
         
         ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
-        mpz_t mpzTemp1;
-        mpz_init(mpzTemp1);
+        mpz_class mpzTemp1, cppNum(myNum);;
 
-        mpz_ui_pow_ui(mpzTemp1, 2, lenFree);
-        mpz_sub_ui(mpzTemp1, mpzTemp1, 1);
-        const std::size_t myLim = (mpz_cmp_ui(mpzTemp1, oneThousand) > 0)
-                                    ? oneThousand : mpz_get_ui(mpzTemp1);
+        mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
+        --mpzTemp1;
+        
+        const std::size_t myLim = (cmp(mpzTemp1, oneThousand) > 0)
+                                    ? oneThousand : mpzTemp1.get_ui();
+        
+        bool bSuccess = false;
+        
+        std::mt19937 mersenne_engine(42);
+        std::uniform_int_distribution<std::size_t> dist{1, myLim};
+        
+        auto gen = [&dist, &mersenne_engine](){
+            return dist(mersenne_engine);
+        };
+        
+        std::vector<std::size_t> sample(myLim - 1);
+        std::generate(sample.begin(), sample.end(), gen);
 
         if (nThreads > 1) {
-            auto vecFactors = FromCpp14::make_unique<mpz_t[]>(nThreads * 2);
+            std::vector<mpz_class> vecFactors(nThreads * 2);
             std::vector<std::future<bool>> myFutures(nThreads);
             std::vector<bool> vecSuccess(nThreads);
-            bool bSuccess = false;
 
-            for (std::size_t i = 1; i < myLim && !bSuccess;) {
+            for (std::size_t i = 1; i < sample.size() && !bSuccess;) {
                 RcppThread::ThreadPool pool(nThreads);
 
                 for (std::size_t j = 0; j < nThreads; ++j, ++i) {
                     myFutures[j] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat), std::cref(mat),
-                                                   std::cref(freeVariables), testInterval, mpzFacBase,
-                                                   vecFactors.get(), myNum, nCols, matNCols, i, lenFree, j);
+                                                   std::cref(freeVariables), std::cref(mpzFacBase),
+                                                   std::cref(testInterval), std::ref(vecFactors),
+                                                   std::cref(cppNum), nCols, matNCols, sample[i], lenFree, j);
                 }
 
                 pool.join();
@@ -215,23 +211,16 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
 
             for (std::size_t j = 0; j < nThreads; ++j) {
                 if (vecSuccess[j]) {
-                    mpz_set(factors[0], vecFactors[j * 2]);
-                    mpz_set(factors[1], vecFactors[j * 2 + 1]);
+                    factors[0] = vecFactors[j * 2];
+                    factors[1] = vecFactors[j * 2 + 1];
                     break;
                 }
             }
-
-            for (std::size_t j = 0; j < (nThreads * 2); ++j)
-                mpz_clear(vecFactors[j]);
-
-            vecFactors.reset();
         } else {
-            bool bSuccess = false;
-
-            for (std::size_t i = 1; i < myLim && !bSuccess; ++i) {
-                bSuccess = GetSolution(freeMat, mat, freeVariables,
-                                       testInterval, mpzFacBase, factors,
-                                       myNum, nCols, matNCols, i, lenFree, 0);
+            for (std::size_t i = 0; i < sample.size() && !bSuccess; ++i) {
+                bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
+                                       testInterval, factors, cppNum, nCols,
+                                       matNCols, sample[i], lenFree, 0);
             }
         }
     }

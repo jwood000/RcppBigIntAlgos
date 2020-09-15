@@ -21,8 +21,6 @@ constexpr std::size_t FirstOmittedPrime = 4001u;
 /* Number of Miller-Rabin tests to run when not proving primality. */
 constexpr std::size_t MR_REPS = 25u;
 
-constexpr std::size_t mpzChunkBig = 50;
-
 static const std::array<int,  549> primesDiffPR = {{
     1, 2, 2, 4, 2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4, 2,
     4, 2, 4, 14, 4, 6, 2, 10, 2, 6, 6, 4, 6, 6, 2, 10, 2, 4, 2, 12, 12, 4, 2, 4, 6,
