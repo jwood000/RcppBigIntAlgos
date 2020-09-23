@@ -5,19 +5,17 @@
 #include <set>
 
 constexpr std::size_t InitialNumPolys = 50u;
-constexpr auto minOneMin = std::chrono::seconds(60);
-constexpr double dblMsOneMin = std::chrono::duration_cast<std::chrono::milliseconds>(minOneMin).count();
 constexpr std::size_t bigFacsTWO = 2u;
 constexpr std::size_t bigFacsFOUR = 4u;
 
+constexpr auto sOneMin = std::chrono::seconds(60);
+constexpr double dblMsOneMin = std::chrono::duration_cast<std::chrono::milliseconds>(sOneMin).count();
+
 void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartialsBig,
-                             std::vector<std::size_t> &coFactorIndexVecBig,
                              hash64vec &partFactorsMapBig, hash64mpz &partIntvlMapBig,
-                             hash64size_t &keepingTrackBig, std::vector<mpz_class> &smoothIntervalBig,
-                             std::vector<double> &largeCoFactorsBig, 
+                             std::vector<mpz_class> &smoothIntervalBig,
+                             std::vector<uint64_t> &largeCoFactorsBig, 
                              std::vector<mpz_class> &partialIntervalBig) {
-    
-    RcppThread::Rcout << powsOfSmooths.size() << "\n";
     
     powsOfSmoothsBig.insert(powsOfSmoothsBig.end(),
                             std::make_move_iterator(powsOfSmooths.begin()),
@@ -44,76 +42,33 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
                              std::make_move_iterator(largeCoFactors.end())
     );
     
-    coFactorIndexVecBig.insert(coFactorIndexVecBig.end(),
-                               coFactorIndexVec.begin(), coFactorIndexVec.end());
+    std::vector<uint64_t> deleteLater;
     
-    // hash64vec &partFactorsMapBig, hash64mpz &partIntvlMapBig,
-    // hash64int &keepingTrackBig
-    // const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
-    // const auto pFacIt = partFactorsMap.find(myKey);
-    // 
-    // if (pFacIt != partFactorsMap.end()) {
-    //     const auto trackIt = keepingTrack.find(myKey);
-    // 
-    //     if (trackIt != keepingTrack.end()) {
-    //         coFactorIndexVec.push_back(trackIt->second);
-    //     } else {
-    //         keepingTrack[myKey] = coFactorInd;
-    //         largeCoFactors.push_back(IntVal);
-    //         coFactorIndexVec.push_back(coFactorInd);
-    //         ++coFactorInd;
-    //     }
-    // 
-    //     primeIndexVec.insert(primeIndexVec.begin(),
-    //                          pFacIt->second.cbegin(), pFacIt->second.cend());
-    // 
-    //     powsOfPartials.push_back(primeIndexVec);
-    //     const auto intervalIt = partIntvlMap.find(myKey);
-    // 
-    //     Temp += VarB;
-    //     partialInterval.push_back(Temp * intervalIt->second);
-    // 
-    //     partFactorsMap.erase(pFacIt);
-    //     partIntvlMap.erase(intervalIt);
-    //     ++nPartial;
-    // } else {
-    //     partFactorsMap[myKey] = primeIndexVec;
-    //     partIntvlMap[myKey] = Temp + VarB;
-    // }
-    // 
-    // for (const auto &pFac: partFactorsMap) {
-    //     const auto pFacIt = partFactorsMapBig.find(pFac.first);
-    //     
-    //     if (pFacIt != partFactorsMap.end()) {
-    //         const auto trackIt = keepingTrack.find(pFac.first);
-    //         
-    //         if (trackIt != keepingTrack.end()) {
-    //             coFactorIndexVec.push_back(trackIt->second);
-    //         } else {
-    //             keepingTrack[pFac.first] = coFactorInd;
-    //             largeCoFactors.push_back(IntVal);
-    //             coFactorIndexVec.push_back(coFactorInd);
-    //             ++coFactorInd;
-    //         }
-    //         
-    //         primeIndexVec.insert(primeIndexVec.begin(),
-    //                              pFacIt->second.cbegin(), pFacIt->second.cend());
-    //         
-    //         powsOfPartials.push_back(primeIndexVec);
-    //         const auto intervalIt = partIntvlMap.find(pFac.first);
-    //         
-    //         Temp += VarB;
-    //         partialInterval.push_back(Temp * intervalIt->second);
-    //         
-    //         partFactorsMap.erase(pFacIt);
-    //         partIntvlMap.erase(intervalIt);
-    //         ++nPartial;
-    //     } else {
-    //         partFactorsMap[pFac.first] = primeIndexVec;
-    //         partIntvlMap[pFac.first] = Temp + VarB;
-    //     }
-    // }
+    // First identify intersection
+    for (const auto &pFac: partFactorsMap) {
+        const uint64_t myKey = pFac.first;
+        const auto pFacBigIt = partFactorsMapBig.find(myKey);
+
+        if (pFacBigIt != partFactorsMapBig.end()) {
+            largeCoFactorsBig.push_back(myKey);
+            pFacBigIt->second.insert(pFacBigIt->second.end(),
+                                     pFac.second.cbegin(), pFac.second.cend());
+            
+            powsOfPartialsBig.push_back(pFacBigIt->second);
+            partialIntervalBig.push_back(partIntvlMap[myKey] * partIntvlMapBig[myKey]);
+            deleteLater.push_back(myKey);
+        }
+    }
     
+    for (auto myKey: deleteLater) {
+        partFactorsMap.erase(myKey);
+        partFactorsMapBig.erase(myKey);
+        partIntvlMap.erase(myKey);
+        partIntvlMapBig.erase(myKey);
+    }
+    
+    partFactorsMapBig.insert(partFactorsMap.begin(), partFactorsMap.end());
+    partIntvlMapBig.insert(partIntvlMap.begin(), partIntvlMap.end());
 }
 
 Polynomial::Polynomial(std::size_t _mpzContainerSize,
@@ -132,7 +87,6 @@ Polynomial::Polynomial(std::size_t _mpzContainerSize,
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
-    coFactorInd = 0;
     
     if (bShowStats) {
         RcppThread::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
@@ -151,7 +105,6 @@ Polynomial::Polynomial(std::size_t _facSize) :
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
-    coFactorInd = 0;
 }
 
 void GetNPrimes(std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
@@ -176,20 +129,15 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
                             int theCut, int DoubleLenB, int vecMaxSize,
                             std::size_t strt, std::size_t polyLimit) {
     
-    RcppThread::Rcout << GetSmoothSize() << "\n";
-    
     for (std::size_t poly = 0; poly < polyLimit; ++poly) {
         ++mpzFacSize;
 
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
-                   coFactorIndexVec, myStart, partFactorsMap, partIntvlMap,
-                   keepingTrack, smoothInterval, largeCoFactors,
-                   partialInterval, mpzFacBase[mpzFacSize - 1], LowBound, myNum,
-                   nPartial, nSmooth, coFactorInd, theCut, DoubleLenB,
+                   myStart, partFactorsMap, partIntvlMap, smoothInterval,
+                   largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
+                   LowBound, myNum, nPartial, nSmooth, theCut, DoubleLenB,
                    mpzFacSize, vecMaxSize, strt);
     }
-    
-    RcppThread::Rcout << GetSmoothSize() << "\n";
 }
 
 void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
@@ -238,29 +186,38 @@ inline std::size_t SetNumThreads(std::size_t currLim, std::size_t SaPThresh, std
 }
 
 template <typename typeTimeDiff>
-inline std::size_t SetNumPolys(std::size_t currLim, std::size_t SaPThresh, std::size_t nThreads,
-                               int nPolys, int polysPerSec, int SaPOnLast,
-                               typeTimeDiff totalTime, typeTimeDiff polyTime) {
+inline std::size_t SetNumPolys(std::size_t currLim, std::size_t prevLim,
+                               std::size_t SaPThresh, double maxThreads,
+                               double actualThreads, double nPolys,
+                               typeTimeDiff polyTime, bool &GoSingle) {
     
-    const int percentComplete = ((100 * currLim) / SaPThresh) + 1;
-    const auto nPercentTime = nThreads * totalTime / percentComplete;
+    const double percentComplete = ((100 * currLim) / SaPThresh) + 1;
+    const double percentSection = ((100 * (currLim - prevLim)) / SaPThresh) + 1;
+    const double percentRemaining = 100 - percentComplete;
     
-    const double dblPolyTime = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(polyTime).count();
+    const auto calcTimeNext = (polyTime * maxThreads) / actualThreads;
+    const double dblCalcTime = std::chrono::duration_cast<std::chrono::milliseconds>(calcTimeNext).count();
     
-    const double dblOnePerc = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(nPercentTime).count();
+    double myRatio = 1.0;
     
-    const double numerator = (nPercentTime > minOneMin) ? dblMsOneMin :
-                             (nPercentTime < std::chrono::seconds(1)) ?
-                             (5 * dblOnePerc) : dblOnePerc;
+    if (percentRemaining < (2 * percentSection)) {
+        myRatio = percentRemaining / (2 * percentSection);
+        GoSingle = true;
+    } else if (calcTimeNext > std::chrono::seconds(60)) {
+        myRatio = dblMsOneMin / dblCalcTime;
+    } else if (calcTimeNext < std::chrono::seconds(
+            static_cast<int>(maxThreads / 2))) {
+        
+        const double dblTimeGoal = 1000 * maxThreads;
+        myRatio = dblTimeGoal / dblCalcTime;
+        
+        if (percentRemaining < (myRatio * percentSection)) {
+            myRatio = percentRemaining / (2 * percentSection);
+        }
+    }
     
-    const double myRatio = numerator / dblPolyTime;
-    
-    const int calcNumPolys = (static_cast<int>(SaPThresh - currLim) < (2 * SaPOnLast)) ?
-        static_cast<double>(polysPerSec) * static_cast<double>(SaPThresh - currLim) /
-            static_cast<double>(SaPOnLast) : myRatio * static_cast<double>(polysPerSec);
-    
+    std::size_t calcNumPolys = std::max(static_cast<std::size_t>(myRatio * nPolys), 
+                                        InitialNumPolys);
     return calcNumPolys;
 }
 
@@ -275,32 +232,32 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
     auto checkPoint2 = checkPoint1;
     auto showStatsTime = (checkPoint1 - checkPoint0);
     
-    RcppThread::Rcout << "Start\n";
-    
     this->InitialParSieve(SieveDist, facBase, LnFB, mpzFacBase,
                           NextPrime, LowBound, myNum, theCut,
                           DoubleLenB, vecMaxSize, strt, checkPoint0);
     
-    RcppThread::Rcout << "Finished initial sieve: " << nSmooth << " " << nPartial << " " << nPolys << "\n";
-    
     nThreads = SetNumThreads(nSmooth + nPartial, SaPThresh, nThreads);
-    std::size_t polysPerThread = SetNumPolys(nSmooth + nPartial, SaPThresh, 1,
-                                             nPolys, InitialNumPolys, 0, showStatsTime,
-                                             showStatsTime);
-    polysPerThread = 96215 / nThreads;
-    RcppThread::Rcout << smoothInterval.size() << " " << partialInterval.size() << "\n";
-    RcppThread::Rcout << polysPerThread << " " << nThreads << "\n";
+    std::size_t prevThread = 1;
     
-    // This variable keeps track of how many smooths + partials
-    // were found in one iteration.
-    std::size_t SaPOnLast = nSmooth + nPartial;
+    std::size_t PrevSaP = 0;
+    std::size_t polysPerThread = InitialNumPolys;
+    GoSingle = false;
     
-    // while ((nSmooth + nPartial) <= SaPThresh) {
+    while ((nSmooth + nPartial) <= SaPThresh) {
         std::vector<std::unique_ptr<Polynomial>> vecPoly;
         std::vector<std::thread> myThreads;
         
         const std::size_t startStep = mpzFacBase.size();
-        GetNPrimes(mpzFacBase, mpzFacBase.back(), myNum, polysPerThread * nThreads);
+        NextPrime = mpzFacBase.back();
+        
+        polysPerThread = SetNumPolys(nSmooth + nPartial, PrevSaP, SaPThresh,
+                                     nThreads, prevThread, polysPerThread,
+                                     showStatsTime, GoSingle);
+        PrevSaP = nSmooth + nPartial;
+        prevThread = nThreads;
+        
+        GetNPrimes(mpzFacBase, NextPrime, myNum, polysPerThread * nThreads);
+        mpzFacSize = mpzFacBase.size();
         
         for (std::size_t i = 0, step = startStep; i < nThreads; ++i, step += polysPerThread) {
             vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize));
@@ -315,34 +272,35 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
         for (auto &thr: myThreads)
             thr.join();
         
-        RcppThread::Rcout << vecPoly.size() << " " << powsOfSmooths.size() << "\n";
-        
         for (std::size_t i = 0; i < nThreads; ++i) {
-            vecPoly[i]->MergeMaster(powsOfSmooths, powsOfPartials, coFactorIndexVec,
-                                    partFactorsMap, partIntvlMap, keepingTrack,
-                                    smoothInterval, largeCoFactors, partialInterval);
+            vecPoly[i]->MergeMaster(powsOfSmooths, powsOfPartials, partFactorsMap,
+                                    partIntvlMap, smoothInterval,
+                                    largeCoFactors, partialInterval);
         }
         
-        RcppThread::Rcout << smoothInterval.size() << " " << partialInterval.size() << "\n";
+        nSmooth = smoothInterval.size();
+        nPartial = partialInterval.size();
+        nPolys += (nThreads * polysPerThread);
         
-        // 
-        // const auto checkPoint3 = std::chrono::steady_clock::now();
-        // 
-        // if ((checkPoint3 - checkPoint1) > checkInterTime) {
-        //     // Check for user interrupt and udpate timepoint
-        //     RcppThread::checkUserInterrupt();
-        //     checkPoint1 = std::chrono::steady_clock::now();
-        // }
-        // 
-        // if (bShowStats && (checkPoint3 - checkPoint2) > showStatsTime) {
-        //     MakeStats(SaPThresh, nPolys, nSmooth,
-        //               nPartial, checkPoint3 - checkPoint0);
-        //     
-        //     checkPoint2 = std::chrono::steady_clock::now();
-        //     UpdateStatTime(nSmooth + nPartial, facSize,
-        //                    checkPoint3 - checkPoint0, showStatsTime);
-        // }
-    // }
+        const auto checkPoint3 = std::chrono::steady_clock::now();
+
+        if ((checkPoint3 - checkPoint1) > checkInterTime) {
+            // Check for user interrupt and udpate timepoint
+            RcppThread::checkUserInterrupt();
+            checkPoint1 = std::chrono::steady_clock::now();
+        }
+
+        if (bShowStats && (checkPoint3 - checkPoint2) > showStatsTime) {
+            MakeStats(SaPThresh, nPolys, nSmooth,
+                      nPartial, checkPoint3 - checkPoint0);
+
+            checkPoint2 = std::chrono::steady_clock::now();
+            UpdateStatTime(nSmooth + nPartial, facSize,
+                           checkPoint3 - checkPoint0, showStatsTime);
+        }
+    }
+    
+    SaPThresh += 10;
 }
 
 void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
@@ -355,7 +313,7 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
     auto checkPoint1 = std::chrono::steady_clock::now();
     auto checkPoint2 = checkPoint1;
     auto showStatsTime = (checkPoint1 - checkPoint0);
-
+    
     while ((nSmooth + nPartial) <= SaPThresh) {
         for (bool LegendreTest = true; LegendreTest; ) {
             mpz_nextprime(NextPrime.get_mpz_t(), NextPrime.get_mpz_t());
@@ -365,13 +323,13 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         }
 
         mpzFacBase.push_back(NextPrime);
+        RcppThread::Rcout << mpzFacSize << " " << static_cast<uint64_t>(mpzFacBase[mpzFacSize].get_d()) << "\n";
         ++mpzFacSize;
 
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
-                   coFactorIndexVec, myStart, partFactorsMap, partIntvlMap,
-                   keepingTrack, smoothInterval, largeCoFactors,
-                   partialInterval, NextPrime, LowBound, myNum,
-                   nPartial, nSmooth, coFactorInd, theCut, DoubleLenB,
+                   myStart, partFactorsMap, partIntvlMap, smoothInterval,
+                   largeCoFactors, partialInterval, NextPrime, LowBound,
+                   myNum, nPartial, nSmooth, theCut, DoubleLenB,
                    mpzFacSize, vecMaxSize, strt);
 
         ++nPolys;
@@ -433,7 +391,30 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
 
     const std::size_t nRows = nSmooth + nPartial;
     const std::size_t nonTrivSize = setIndex.size() + facSize;
-
+    
+    std::size_t coFactorInd = 0;
+    std::vector<std::size_t> coFactorIndexVec;
+    coFactorIndexVec.reserve(largeCoFactors.size());
+    
+    std::unordered_map<uint64_t, std::size_t> keepingTrack;
+    keepingTrack.reserve(largeCoFactors.size());
+    
+    std::vector<double> uniLargeCoFacs;
+    uniLargeCoFacs.reserve(largeCoFactors.size());
+    
+    for (auto myKey: largeCoFactors) {
+        const auto trackIt = keepingTrack.find(myKey);
+        
+        if (trackIt != keepingTrack.end()) {
+            coFactorIndexVec.push_back(trackIt->second);
+        } else {
+            keepingTrack[myKey] = coFactorInd;
+            uniLargeCoFacs.push_back(static_cast<double>(myKey));
+            coFactorIndexVec.push_back(coFactorInd);
+            ++coFactorInd;
+        }
+    }
+    
     const std::size_t nCols = nonTrivSize + coFactorInd + 1;
     std::vector<mpz_class> nonTrivialFacs(nCols);
 
@@ -451,7 +432,7 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
     }
     
     for (std::size_t i = 0, j = setInd; i < coFactorInd; ++i, ++j)
-        nonTrivialFacs[j] = largeCoFactors[i];
+        nonTrivialFacs[j] = uniLargeCoFacs[i];
 
     std::vector<mpz_class> newTestInt(nRows);
     std::vector<std::uint8_t> mat(nRows * nCols, 0u);
