@@ -2,7 +2,7 @@
  *  \file tonelliShanks.cc
  *  \brief C function for obtaining quadratic residues via Tonelli Shanks algorithm
  *
- *  \version 1
+ *  \version 2
  *
  *  \date Created: 10/06/17
  *
