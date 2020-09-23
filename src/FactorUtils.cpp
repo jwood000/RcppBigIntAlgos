@@ -14,7 +14,7 @@
  *  \version 1
  *
  *  \date Created: 10/06/17
- *  \date Last modified: Time-stamp: <2018-04-07 12:20:00 EDT jwood000>
+ *  \date Last modified: Time-stamp: <2020-09-14 jwood000>
  *
  *  \author Joseph Wood. Original C code from libgmp.
  *       See factor.cc from the R gmp package for more details.
