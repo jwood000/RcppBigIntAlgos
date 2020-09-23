@@ -172,13 +172,14 @@ void SieveListsInit(const std::vector<int> &FBase, const std::vector<int> &LnFB,
 void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 const std::vector<int> &facBase, const std::vector<int> &LnFB,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
-                std::vector<std::size_t> &coFactorIndexVec, std::vector<int> &myStart,
-                hash64vec &partFactorsMap, hash64mpz &partIntvlMap, hash64size_t &keepingTrack,
-                std::vector<mpz_class> &smoothInterval, std::vector<double> &largeCoFactors,
-                std::vector<mpz_class> &partialInterval, const mpz_class &NextPrime,
-                const mpz_class &LowBound, const mpz_class &myNum, std::size_t &nPartial,
-                std::size_t &nSmooth, std::size_t &coFactorInd, int theCut,
-                int DoubleLenB, int mpzFacSize, int vecMaxSize, std::size_t strt) {
+                std::vector<int> &myStart, hash64vec &partFactorsMap,
+                hash64mpz &partIntvlMap, std::vector<mpz_class> &smoothInterval,
+                std::vector<uint64_t> &largeCoFactors,
+                std::vector<mpz_class> &partialInterval,
+                const mpz_class &NextPrime, const mpz_class &LowBound,
+                const mpz_class &myNum, std::size_t &nPartial,
+                std::size_t &nSmooth, int theCut,int DoubleLenB,
+                int mpzFacSize, int vecMaxSize, std::size_t strt) {
     
     mpz_class VarA, VarB, VarC, AUtil, Temp, IntVal;
     TonelliShanksC(myNum, NextPrime, VarC);
@@ -245,11 +246,11 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 }
             }
 
-            Temp = VarA * myIntVal;
+            Temp = VarA * myIntVal + VarB;
             
             if (cmp(IntVal, 1u) == 0) {
                 // Found a smooth number
-                smoothInterval.push_back(Temp + VarB);
+                smoothInterval.push_back(Temp);
                 powsOfSmooths.push_back(primeIndexVec);
                 ++nSmooth;
             } else if (cmp(IntVal, Significand53) < 0) {
@@ -257,24 +258,13 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 const auto pFacIt = partFactorsMap.find(myKey);
 
                 if (pFacIt != partFactorsMap.end()) {
-                    const auto trackIt = keepingTrack.find(myKey);
-
-                    if (trackIt != keepingTrack.end()) {
-                        coFactorIndexVec.push_back(trackIt->second);
-                    } else {
-                        keepingTrack[myKey] = coFactorInd;
-                        largeCoFactors.push_back(IntVal.get_d());
-                        coFactorIndexVec.push_back(coFactorInd);
-                        ++coFactorInd;
-                    }
-
+                    largeCoFactors.push_back(myKey);
                     primeIndexVec.insert(primeIndexVec.begin(),
                                          pFacIt->second.cbegin(), pFacIt->second.cend());
-
+                    
                     powsOfPartials.push_back(primeIndexVec);
+                    
                     const auto intervalIt = partIntvlMap.find(myKey);
-
-                    Temp += VarB;
                     partialInterval.push_back(Temp * intervalIt->second);
 
                     partFactorsMap.erase(pFacIt);
@@ -282,7 +272,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     ++nPartial;
                 } else {
                     partFactorsMap[myKey] = primeIndexVec;
-                    partIntvlMap[myKey] = Temp + VarB;
+                    partIntvlMap[myKey] = Temp;
                 }
             }
         }
