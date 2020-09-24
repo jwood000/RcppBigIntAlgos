@@ -257,6 +257,40 @@ Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
 ```
 
+### Using Multiple Threads
+
+With version `0.3.0`, we can now utilize multiple threads. For example, `mostWanted1983` is now factored in under a minute and **RSA-79** can now be factored in under 7 minutes on my machine.
+
+```r
+quadraticSieve(mostWanted1983, showStats=TRUE, nThreads=4)
+
+Summary Statistics for Factoring:
+    11111111111111111111111111111111111111111111111111111111111111111111111
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|      53s 613ms     |   100%   |    16954    |    4201    |    4312    |
+
+Big Integer ('bigz') object of length 2:
+[1] 241573142393627673576957439049            45994811347886846310221728895223034301839
+
+
+## ***************************************************************************
+
+
+quadraticSieve(rsa79, showStats=TRUE, nThreads=4)
+
+Summary Statistics for Factoring:
+    7293469445285646172092483905177589838606665884410340391954917800303813280275279
+
+|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|     6m 46s 29ms    |   100%   |    96310    |    5677    |    7165    |
+
+Big Integer ('bigz') object of length 2:
+[1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
+```
+
 ### Factor More Than Just Semiprimes
 
 If you encounter a number that is a product of multiple large primes, the algorithm will recursively factor the number into two numbers until every part is prime.
