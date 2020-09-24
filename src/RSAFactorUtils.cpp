@@ -41,7 +41,7 @@ std::size_t GetPower(mpz_class &nMpz) {
     
     // This means the powers involved are very large
     if (mpz_perfect_power_p(nMpz.get_mpz_t())) {
-        mpz_class myNextP = p;
+        mpz_class myNextP = static_cast<int>(p);
         
         for (;;) {
             mpz_root(testRoot.get_mpz_t(), nMpz.get_mpz_t(), p);

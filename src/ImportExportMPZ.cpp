@@ -23,7 +23,7 @@ void CreateMPZVector(SEXP v, std::vector<mpz_class> &myVec, std::size_t sizevec)
             const char* raw = (char*) RAW(v);
             int pos = intSize; // position in raw[]. Starting after header.
             
-            for (int i = 0; i < sizevec; ++i) {
+            for (std::size_t i = 0; i < sizevec; ++i) {
                 const int* r = (int*) (&raw[pos]);
                 
                 if (r[0] > 0) {
@@ -44,7 +44,7 @@ void CreateMPZVector(SEXP v, std::vector<mpz_class> &myVec, std::size_t sizevec)
             const std::vector<double> myDbl = Rcpp::as<std::vector<double>>(v);
             constexpr double Sig53 = 9007199254740991.0;
             
-            for (int j = 0; j < sizevec; ++j) {
+            for (std::size_t j = 0; j < sizevec; ++j) {
                 if (Rcpp::NumericVector::is_na(myDbl[j]) || std::isnan(myDbl[j]))
                     Rcpp::stop("Elements in v cannot be NA or NaN");
                 
@@ -67,7 +67,7 @@ void CreateMPZVector(SEXP v, std::vector<mpz_class> &myVec, std::size_t sizevec)
             const std::vector<int> myInt = Rcpp::as<std::vector<int>>(v);
             const std::vector<double> dblVec = Rcpp::as<std::vector<double>>(v);
             
-            for (int j = 0; j < sizevec; ++j) {
+            for (std::size_t j = 0; j < sizevec; ++j) {
                 if (Rcpp::NumericVector::is_na(dblVec[j]) || std::isnan(dblVec[j]))
                     Rcpp::stop("Elements in v cannot be NA or NaN");
                 
@@ -77,7 +77,7 @@ void CreateMPZVector(SEXP v, std::vector<mpz_class> &myVec, std::size_t sizevec)
             break;
         }
         case STRSXP: {
-            for (int i = 0; i < sizevec; ++i) {
+            for (std::size_t i = 0; i < sizevec; ++i) {
                 if (STRING_ELT(v, i) == NA_STRING) {
                     Rcpp::stop("Elements in v  cannot be NA or NaN");
                 } else {

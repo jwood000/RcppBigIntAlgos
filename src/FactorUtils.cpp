@@ -32,7 +32,7 @@ std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,
     std::size_t count = 0;
     const std::size_t totalSize  = numSecs * secSize;
     
-    std::size_t tempSize = totalSize;
+    int tempSize = totalSize;
     std::vector<int> leftOver;
     std::vector<int> myInd(totalSize);
     
@@ -47,7 +47,7 @@ std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,
     while (numSecs > 1) {
         if (numSecs % 2 != 0) {
             leftOver.push_back(tempSize);
-            tempSize -= secSize;
+            tempSize -= static_cast<int>(secSize);
         }
         
         std::vector<int> endPoints(numSecs);

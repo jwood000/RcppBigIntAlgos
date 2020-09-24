@@ -135,11 +135,13 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     }
     
     const std::size_t nRows = nullMat.size() / nCols;
-    
     std::vector<std::size_t> myCols(nCols, 0);
     std::iota(myCols.begin(), myCols.end(), 0);
     
-    ReduceMatrix(nullMat, myCols, static_cast<int>(nCols), static_cast<int>(nRows));
+    ReduceMatrix(nullMat, myCols, 
+                 static_cast<int>(nCols),
+                 static_cast<int>(nRows));
+    
     const std::size_t newNrow = nullMat.size() / nCols;
     std::vector<std::size_t> freeVariables;
     

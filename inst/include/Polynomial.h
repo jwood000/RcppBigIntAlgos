@@ -26,7 +26,6 @@ private:
     std::size_t nSmooth;
     int mpzFacSize;
     
-    bool GoSingle;
     std::size_t SaPThresh;
     const std::size_t facSize;
     const bool bShowStats;
@@ -78,6 +77,8 @@ public:
                      const std::vector<int> &facBase, std::vector<mpz_class> &factors,
                      const mpz_class &mpzNum, std::size_t nThreads,
                      typeTimePoint checkPoint0);
+    
+    bool ContinueToSolution() {return (nSmooth + nPartial) > SaPThresh;};
 };
 
 #endif

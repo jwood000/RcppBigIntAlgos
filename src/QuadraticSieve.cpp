@@ -1,5 +1,4 @@
 #include "Polynomial.h"
-#include <RcppThread.h>
 
 constexpr std::size_t ParBitCutOff = 140u;
 
@@ -134,8 +133,11 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                               LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
                               strt, checkPoint0, nThreads);
         
-        myPoly.GetSolution(mpzFacBase, facBase, factors,
-                           myNum, nThreads, checkPoint0);
+        if (myPoly.ContinueToSolution()) {
+            myPoly.GetSolution(mpzFacBase, facBase, factors,
+                               myNum, nThreads, checkPoint0);
+        }
+        
         NextPrime = mpzFacBase.back();
     }
     
