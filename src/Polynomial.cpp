@@ -8,6 +8,7 @@ constexpr std::size_t InitialNumPolys = 50u;
 constexpr std::size_t bigFacsTWO = 2u;
 constexpr std::size_t bigFacsFOUR = 4u;
 
+constexpr double dbl1000ms = 1000;
 constexpr auto sOneMin = std::chrono::seconds(60);
 constexpr double dblMsOneMin = std::chrono::duration_cast<std::chrono::milliseconds>(sOneMin).count();
 
@@ -176,48 +177,76 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
     }
 }
 
-inline std::size_t SetNumThreads(std::size_t currLim, std::size_t SaPThresh, std::size_t nThreads) {
+inline void SetNumThreads(std::size_t currLim, std::size_t prevLim,
+                          std::size_t SaPThresh, std::size_t &nThreads,
+                          double polysPerThread) {
     
-    const std::size_t MaxThreads = ((2 * currLim) > SaPThresh) ? 0u :
-                                         (currLim == 0u) ? nThreads : 
-                                         (SaPThresh - currLim) / currLim;
-    
-    return std::min(nThreads, MaxThreads);
+    if (currLim >= SaPThresh) {
+        nThreads = 0;
+    } else {
+        
+        double test = polysPerThread * static_cast<double>(SaPThresh - currLim)
+            / static_cast<double>(currLim - prevLim);
+        
+        while (test < InitialNumPolys && nThreads) {
+            nThreads /= 2;
+            test *= 2;
+        }
+    }
 }
 
 template <typename typeTimeDiff>
 inline std::size_t SetNumPolys(std::size_t currLim, std::size_t prevLim,
-                               std::size_t SaPThresh, double maxThreads,
-                               double actualThreads, double nPolys,
-                               typeTimeDiff polyTime, bool &GoSingle) {
+                               std::size_t SaPThresh, std::size_t &nThreads,
+                               std::size_t oldThreads, double nPolys,
+                               typeTimeDiff polyTime, typeTimeDiff totalTime) {
     
-    const double percentComplete = ((100 * currLim) / SaPThresh) + 1;
-    const double percentSection = ((100 * (currLim - prevLim)) / SaPThresh) + 1;
+    const double percentComplete = (100 * currLim) / SaPThresh;
+    const double percentSection = std::max((100.0 * (currLim - prevLim)) / SaPThresh, 1.0);
     const double percentRemaining = 100 - percentComplete;
     
-    const auto calcTimeNext = (polyTime * maxThreads) / actualThreads;
-    const double dblCalcTime = std::chrono::duration_cast<std::chrono::milliseconds>(calcTimeNext).count();
+    const auto onePercentTime = totalTime / static_cast<std::size_t>(percentComplete + 1);
+    
+    const double dblPolyTime = std::chrono::duration_cast<
+        std::chrono::milliseconds>(polyTime).count();
     
     double myRatio = 1.0;
+    const double fudge = 2 - (percentComplete / 100);
+    const double thrdRatio = static_cast<double>(oldThreads) / 
+        static_cast<double>(nThreads);
     
-    if (percentRemaining < (2 * percentSection)) {
-        myRatio = percentRemaining / (2 * percentSection);
-        GoSingle = true;
-    } else if (calcTimeNext > std::chrono::seconds(60)) {
-        myRatio = dblMsOneMin / dblCalcTime;
-    } else if (calcTimeNext < std::chrono::seconds(
-            static_cast<int>(maxThreads / 2))) {
-        
-        const double dblTimeGoal = 1000 * maxThreads;
-        myRatio = dblTimeGoal / dblCalcTime;
-        
-        if (percentRemaining < (myRatio * percentSection)) {
-            myRatio = percentRemaining / (2 * percentSection);
+    if (percentRemaining < percentSection) {
+        myRatio = (percentRemaining / (fudge * percentSection));
+    } else {
+        if (onePercentTime > sOneMin) {
+            myRatio = (dblMsOneMin / dblPolyTime);
+        } else {
+            
+            // Try to get 25%. If it ends up greater than 15 seconds
+            // or we overshoot percentRemaining, we dial it back
+            if (percentRemaining > 33.0) {
+                myRatio = (25.0 / percentSection);
+                
+                if ((thrdRatio * myRatio * polyTime) > std::chrono::seconds(15)) {
+                    myRatio = dblMsOneMin / (dblPolyTime * 4);
+                }
+            } else if (percentRemaining < percentSection) {
+                myRatio = (dbl1000ms / dblPolyTime);
+                
+                if (percentRemaining < (thrdRatio * myRatio * percentSection)) {
+                    myRatio = (percentRemaining / (fudge * percentSection));
+                }
+            }
         }
     }
     
-    std::size_t calcNumPolys = std::max(static_cast<std::size_t>(myRatio * nPolys), 
-                                        InitialNumPolys);
+    myRatio *= thrdRatio;
+    std::size_t calcNumPolys = static_cast<std::size_t>(myRatio * nPolys);
+    
+    if (calcNumPolys < InitialNumPolys) {
+        nThreads = 0;
+    }
+    
     return calcNumPolys;
 }
 
@@ -230,20 +259,22 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
     
     auto checkPoint1 = std::chrono::steady_clock::now();
     auto checkPoint2 = checkPoint1;
-    auto showStatsTime = (checkPoint1 - checkPoint0);
+    auto showStatsTime = checkPoint1 - checkPoint0;
     
     this->InitialParSieve(SieveDist, facBase, LnFB, mpzFacBase,
                           NextPrime, LowBound, myNum, theCut,
                           DoubleLenB, vecMaxSize, strt, checkPoint0);
     
-    nThreads = SetNumThreads(nSmooth + nPartial, SaPThresh, nThreads);
+    auto checkPoint3 = std::chrono::steady_clock::now();
+    auto polyTime = checkPoint3 - checkPoint1;
+    
+    SetNumThreads(nSmooth + nPartial, 0u, SaPThresh, nThreads, 1u);
     std::size_t prevThread = 1;
     
     std::size_t PrevSaP = 0;
     std::size_t polysPerThread = InitialNumPolys;
-    GoSingle = false;
     
-    while ((nSmooth + nPartial) <= SaPThresh) {
+    while ((nSmooth + nPartial) <= SaPThresh && nThreads > 1) {
         std::vector<std::unique_ptr<Polynomial>> vecPoly;
         std::vector<std::thread> myThreads;
         
@@ -252,51 +283,59 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
         
         polysPerThread = SetNumPolys(nSmooth + nPartial, PrevSaP, SaPThresh,
                                      nThreads, prevThread, polysPerThread,
-                                     showStatsTime, GoSingle);
-        PrevSaP = nSmooth + nPartial;
-        prevThread = nThreads;
+                                     polyTime, checkPoint3 - checkPoint0);
         
-        GetNPrimes(mpzFacBase, NextPrime, myNum, polysPerThread * nThreads);
-        mpzFacSize = mpzFacBase.size();
-        
-        for (std::size_t i = 0, step = startStep; i < nThreads; ++i, step += polysPerThread) {
-            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize));
-            vecPoly[i]->SetMpzFacSize(step);
-
-            myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),
-                                   std::cref(SieveDist), std::cref(facBase), std::cref(LnFB),
-                                   std::cref(mpzFacBase), LowBound, myNum, theCut, DoubleLenB,
-                                   vecMaxSize, strt, polysPerThread);
-        }
-
-        for (auto &thr: myThreads)
-            thr.join();
-        
-        for (std::size_t i = 0; i < nThreads; ++i) {
-            vecPoly[i]->MergeMaster(powsOfSmooths, powsOfPartials, partFactorsMap,
-                                    partIntvlMap, smoothInterval,
-                                    largeCoFactors, partialInterval);
-        }
-        
-        nSmooth = smoothInterval.size();
-        nPartial = partialInterval.size();
-        nPolys += (nThreads * polysPerThread);
-        
-        const auto checkPoint3 = std::chrono::steady_clock::now();
-
-        if ((checkPoint3 - checkPoint1) > checkInterTime) {
-            // Check for user interrupt and udpate timepoint
-            RcppThread::checkUserInterrupt();
-            checkPoint1 = std::chrono::steady_clock::now();
-        }
-
-        if (bShowStats && (checkPoint3 - checkPoint2) > showStatsTime) {
-            MakeStats(SaPThresh, nPolys, nSmooth,
-                      nPartial, checkPoint3 - checkPoint0);
-
-            checkPoint2 = std::chrono::steady_clock::now();
-            UpdateStatTime(nSmooth + nPartial, facSize,
-                           checkPoint3 - checkPoint0, showStatsTime);
+        if (nThreads) {
+            PrevSaP = nSmooth + nPartial;
+            prevThread = nThreads;
+            
+            GetNPrimes(mpzFacBase, NextPrime, myNum, polysPerThread * nThreads);
+            mpzFacSize = mpzFacBase.size();
+            
+            for (std::size_t i = 0, step = startStep; i < nThreads; ++i, step += polysPerThread) {
+                vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize));
+                vecPoly[i]->SetMpzFacSize(step);
+    
+                myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),
+                                       std::cref(SieveDist), std::cref(facBase), std::cref(LnFB),
+                                       std::cref(mpzFacBase), LowBound, myNum, theCut, DoubleLenB,
+                                       vecMaxSize, strt, polysPerThread);
+            }
+    
+            for (auto &thr: myThreads)
+                thr.join();
+            
+            for (std::size_t i = 0; i < nThreads; ++i) {
+                vecPoly[i]->MergeMaster(powsOfSmooths, powsOfPartials, partFactorsMap,
+                                        partIntvlMap, smoothInterval,
+                                        largeCoFactors, partialInterval);
+            }
+            
+            nSmooth = smoothInterval.size();
+            nPartial = partialInterval.size();
+            nPolys += (nThreads * polysPerThread);
+            
+            SetNumThreads(nSmooth + nPartial, PrevSaP,
+                          SaPThresh, nThreads, polysPerThread);
+            
+            const auto checkPoint4 = std::chrono::steady_clock::now();
+            polyTime = checkPoint4 - checkPoint3;
+            checkPoint3 = checkPoint4;
+    
+            if ((checkPoint4 - checkPoint1) > checkInterTime) {
+                // Check for user interrupt and udpate timepoint
+                RcppThread::checkUserInterrupt();
+                checkPoint1 = std::chrono::steady_clock::now();
+            }
+    
+            if (bShowStats && (checkPoint4 - checkPoint2) > showStatsTime) {
+                MakeStats(SaPThresh, nPolys, nSmooth,
+                          nPartial, checkPoint4 - checkPoint0);
+    
+                checkPoint2 = std::chrono::steady_clock::now();
+                UpdateStatTime(nSmooth + nPartial, facSize,
+                               checkPoint4 - checkPoint0, showStatsTime);
+            }
         }
     }
     
@@ -323,7 +362,6 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         }
 
         mpzFacBase.push_back(NextPrime);
-        RcppThread::Rcout << mpzFacSize << " " << static_cast<uint64_t>(mpzFacBase[mpzFacSize].get_d()) << "\n";
         ++mpzFacSize;
 
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
