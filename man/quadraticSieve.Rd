@@ -7,17 +7,18 @@ Prime Factorization with the Quadratic Sieve
 Get the prime factorization of a number, \eqn{n}, using the \href{https://en.wikipedia.org/wiki/Quadratic_sieve}{Quadratic Sieve}.
 }
 \usage{
-quadraticSieve(n, showStats = FALSE, nThreads = NULL)
+quadraticSieve(n, showStats = FALSE, nThreads = NULL, skipExtPolRho = FALSE)
 }
 \arguments{
   \item{n}{An integer, numeric, string value, or an element of class bigz.}
   \item{showStats}{Logical flag. If \code{TRUE}, summary statistics will be displayed.}
-  \item{nThreads}{Specific number of threads to be used. The default is \code{NULL}.}
+  \item{nThreads}{Number of threads to be used. The default is \code{NULL}.}
+  \item{skipExtPolRho}{Logical flag for skipping extended pollard rho algorithm. The default is \code{FALSE}.}
 }
 \details{
 First, \href{https://en.wikipedia.org/wiki/Trial_division}{trial division} is carried out to remove small prime numbers, then a modified version of \href{https://en.wikipedia.org/wiki/Pollard\%27s_rho_algorithm}{Pollard's rho algorithm} that is constrained is called to quickly remove further prime numbers. Next, we check to make sure that we are not passing a perfect power to the main quadratic sieve algorithm. After removing any perfect powers, we finally call the quadratic sieve with multiple polynomials in a recursive fashion until we have completely factored our number.
 
-When \code{showStats = TRUE}, summary statistics will be shown if the quadratic sieve is needed. The frequency of updates is dynamic as writing to stdout can be expensive. It is determined by how fast smooth numbers (including partially smooth numbers) are found along with the total number of smooth numbers required in order to find a non-trivial factorization. The statistics are:
+When \code{showStats = TRUE}, summary statistics will be shown. The frequency of updates is dynamic as writing to stdout can be expensive. It is determined by how fast smooth numbers (including partially smooth numbers) are found along with the total number of smooth numbers required in order to find a non-trivial factorization. The statistics are:
 \describe{
     \item{\code{Time}}{The time measured in hours \code{h}, minutes \code{m}, seconds \code{s}, and milliseconds \code{ms}.}
     \item{\code{Complete}}{The percent of smooth numbers plus partially smooth numbers required to guarantee a non-trivial solution when \href{https://en.wikipedia.org/wiki/Gaussian_elimination}{Gaussian Elimination} is performed on the matrix of powers of primes.}
