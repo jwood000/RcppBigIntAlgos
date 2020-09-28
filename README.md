@@ -378,17 +378,33 @@ quadraticSieve(threePrime195bits, showStats = TRUE)
 Summary Statistics for Factoring:
     6634573213431810791169420577087478977215298519759798575509
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|        57ms        |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      12s 779ms     |   100%   |     2887    |    1738    |    2064    |
+|      11s 854ms     |   100%   |     2887    |    1738    |    2064    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|      1s 604ms      |
 
 
 Summary Statistics for Factoring:
-    369498233670465681342232176125551121921
+    588086587700463836402055514719534121277
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|        235ms       |   100%   |      60     |     571    |     261    |
+|        211ms       |   100%   |     133     |     404    |     385    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|        35ms        |
+
+|     Total Time     |
+|--------------------|
+|      13s 909ms     |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
