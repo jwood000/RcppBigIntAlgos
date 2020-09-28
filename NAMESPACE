@@ -4,4 +4,5 @@ importFrom("Rcpp", evalCpp)
 import(gmp)
 
 export(divisorsBig,
-       quadraticSieve)
+       quadraticSieve,
+       stdThreadMax)

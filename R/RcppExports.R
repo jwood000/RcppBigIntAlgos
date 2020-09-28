@@ -9,7 +9,7 @@ cpp11GetNumThreads <- function() {
     .Call(`_RcppBigIntAlgos_cpp11GetNumThreads`)
 }
 
-QuadraticSieveContainer <- function(Rn, RShowStats, RNumThreads, maxThreads) {
-    .Call(`_RcppBigIntAlgos_QuadraticSieveContainer`, Rn, RShowStats, RNumThreads, maxThreads)
+QuadraticSieveContainer <- function(Rn, RShowStats, RNumThreads, maxThreads, RSkipExtPR) {
+    .Call(`_RcppBigIntAlgos_QuadraticSieveContainer`, Rn, RShowStats, RNumThreads, maxThreads, RSkipExtPR)
 }
 
