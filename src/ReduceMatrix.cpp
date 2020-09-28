@@ -27,7 +27,7 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                 if (nullMat[rowInd + k])
                     cols.push_back(k);
             
-            for (std::size_t i = 1, r = rows[i], rowSize = rows.size(); i < rowSize; r = rows[++i])
+            for (std::size_t i = 1, r = rows[i]; i < rows.size(); ++i, r = rows[i])
                 for (auto k: cols)
                     nullMat[r + k] ^= u8one;
             
@@ -56,8 +56,8 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                 rowInd -= nCols;
                 continue;
             }
-
-            if (nullMat[i + k] != 1) {
+            
+            if (!nullMat[i + k]) {
                 for (int j = k; j < nCols; ++j) {
                     if (nullMat[i + j]) {
                         for (int m = 0; m < rowInd; m += nCols)
