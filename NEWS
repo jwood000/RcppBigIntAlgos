@@ -1,4 +1,9 @@
-RcppBigIntAlgos 0.2.5 (Release date: TBD)
+RcppBigIntAlgos 0.3.0 (Release date: TBD)
+
+* Multiple threads can now be used.
+* Switched completely to gmpxx. Had to copy gmpxx source and modify in order to easily build on all platforms.
+
+RcppBigIntAlgos 0.2.5 (Release date: Never Released)
 
 * Improved efficiency of quadraticSieve by segmenting the sieving portion. For larger number (greater than 65 decimal digits) it has a great impact.
 
