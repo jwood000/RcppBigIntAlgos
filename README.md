@@ -259,17 +259,29 @@ Big Integer ('bigz') object of length 2:
 
 ### Using Multiple Threads
 
-With version `0.3.0`, we can now utilize multiple threads. For example, `mostWanted1983` is now factored in under a minute and **RSA-79** can now be factored in under 7 minutes on my machine.
+With version `0.3.0`, we can now utilize multiple threads. For example, `mostWanted1983` is now factored in under a minute and **RSA-79** can now be factored in under 7 minutes on my machine. I obtained the best performance when `nThreads = stdThreadMax() / 2`. When the number of threads was maximized, there was a decrease in efficiency probably due to pollution of the cache.
 
 ```r
-quadraticSieve(mostWanted1983, showStats=TRUE, nThreads=4)
+quadraticSieve(mostWanted1983, nThreads=4, skipExtPolRho=TRUE, showStats=TRUE)
 
 Summary Statistics for Factoring:
     11111111111111111111111111111111111111111111111111111111111111111111111
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|        55ms        |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      53s 613ms     |   100%   |    16954    |    4201    |    4312    |
+|      35s 983ms     |   100%   |    16843    |    4175    |    4259    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|      14s 792ms     |
+
+|     Total Time     |
+|--------------------|
+|      51s 79ms      |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -278,14 +290,26 @@ Big Integer ('bigz') object of length 2:
 ## ***************************************************************************
 
 
-quadraticSieve(rsa79, showStats=TRUE, nThreads=4)
+quadraticSieve(rsa79, showStats=TRUE, nThreads=4, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     7293469445285646172092483905177589838606665884410340391954917800303813280275279
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|        65ms        |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|     6m 46s 29ms    |   100%   |    96310    |    5677    |    7165    |
+|    5m 41s 650ms    |   100%   |    96257    |    5676    |    7160    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|      53s 175ms     |
+
+|     Total Time     |
+|--------------------|
+|    6m 35s 453ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
