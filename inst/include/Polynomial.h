@@ -3,7 +3,7 @@
 
 #include "Cpp14MakeUnique.h"
 #include "SieveUtils.h"
-#include <chrono>
+#include "StatsUtils.h"
 
 using typeTimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
@@ -28,7 +28,7 @@ private:
     
     std::size_t SaPThresh;
     const std::size_t facSize;
-    const bool bShowStats;
+    bool bShowStats;
     
     void MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartialsBig,
                      hash64vec &partFactorsMapBig, hash64mpz &partIntvlMapBig,
@@ -79,6 +79,7 @@ public:
                      typeTimePoint checkPoint0);
     
     bool ContinueToSolution() {return (nSmooth + nPartial) > SaPThresh;};
+    void MakeStatsFalse() {bShowStats = false;};
 };
 
 #endif
