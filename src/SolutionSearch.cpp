@@ -37,7 +37,7 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
                  const std::vector<mpz_class> &mpzFacBase,
                  const std::vector<mpz_class> &testInterval,
                  std::vector<mpz_class> &factors, const mpz_class &myNum,
-                 std::size_t nCols, std::size_t matNCols, std::size_t ind, 
+                 std::size_t nCols, std::size_t matNCols, unsigned long int ind, 
                  std::size_t lenFree, std::size_t threadInd) {
     
     std::vector<std::size_t> ansVec;
@@ -188,21 +188,21 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
         --mpzTemp1;
         
-        const std::size_t myLim = (cmp(mpzTemp1, std::numeric_limits<std::size_t>::max()) > 0)
-                                    ? std::numeric_limits<std::size_t>::max() : mpzTemp1.get_ui();
+        const unsigned long int myLim = (cmp(mpzTemp1, std::numeric_limits<unsigned long int>::max()) > 0)
+                                    ? std::numeric_limits<unsigned long int>::max() : mpzTemp1.get_ui();
         
         const std::size_t sampSize = nThreads * (((myLim > oneThousand)
                                                       ? oneThousand : myLim) / nThreads);
         
         bool bSuccess = false;
         std::mt19937 mersenne_engine(42);
-        std::uniform_int_distribution<std::size_t> dist(1, myLim);
+        std::uniform_int_distribution<unsigned long int> dist(1, myLim);
         
         auto gen = [&dist, &mersenne_engine](){
             return dist(mersenne_engine);
         };
         
-        std::vector<std::size_t> sample(sampSize);
+        std::vector<unsigned long int> sample(sampSize);
         std::generate(sample.begin(), sample.end(), gen);
         
         if (bShowStats) {
