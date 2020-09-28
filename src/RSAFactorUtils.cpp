@@ -232,7 +232,7 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
         PollardRhoWithConstraint(nMpz, 1, factors, lengths,
                                  POLLARD_RHO_REPS, 1);
         
-        if (bShowStats && !bSkipExtPR) {
+        if (bShowStats) {
             Rcpp::Rcout << "|  Pollard Rho Time  |\n|--------------------|" << std::endl;
             OneColumnStats(std::chrono::steady_clock::now() - t0);
         }
@@ -261,7 +261,7 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                                              POLLARD_RHO_REPS + adder, 1);
                 }
                 
-                if (bShowStats && !bSkipExtPR) {
+                if (bShowStats) {
                     OneColumnStats(std::chrono::steady_clock::now() - t0);
                     Rcpp::Rcout << "\n" << std::endl;
                 }
@@ -270,5 +270,11 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                                 nThreads, bShowStats, myPow);
             }
         }
+    }
+    
+    if (bShowStats) {
+        Rcpp::Rcout << "|     Total Time     |\n|--------------------|" << std::endl;
+        OneColumnStats(std::chrono::steady_clock::now() - t0);
+        Rcpp::Rcout << "\n" << std::endl;
     }
 }
