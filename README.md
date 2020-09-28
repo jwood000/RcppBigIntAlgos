@@ -4,7 +4,7 @@
 ![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
 [![Coverage status](https://codecov.io/gh/jwood000/RcppBigIntAlgos/branch/master/graph/badge.svg)](https://codecov.io/github/jwood000/RcppBigIntAlgos?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c)](https://www.codacy.com/manual/jwood000/RcppBigIntAlgos?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jwood000/RcppBigIntAlgos&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c)](https://app.codacy.com/manual/jwood000/RcppBigIntAlgos?utm_source=github.com&utm_medium=referral&utm_content=jwood000/RcppBigIntAlgos&utm_campaign=Badge_Grade)
 
 # RcppBigIntAlgos
 
@@ -193,9 +193,21 @@ quadraticSieve(semiPrime164bits, showStats = TRUE)
 Summary Statistics for Factoring:
     10050120961360479179164300841596861740399588283187
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|        77ms        |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      1s 969ms      |   100%   |     740     |    1010    |    1012    |
+|      1s 800ms      |   100%   |     740     |    1010    |    1012    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|        261ms       |
+
+|     Total Time     |
+|--------------------|
+|      2s 196ms      |
 
 Big Integer ('bigz') object of length 2:
 [1] 2128750292720207278230259 4721136619794898059404993
@@ -212,9 +224,21 @@ quadraticSieve(semiPrime200bits, showStats = TRUE)
 Summary Statistics for Factoring:
     394753378083444510740772455309612207212651808400888672450967
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|        59ms        |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      17s 868ms     |   100%   |     4267    |    1848    |    2221    |
+|      16s 267ms     |   100%   |     4267    |    1848    |    2221    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|      1s 604ms      |
+
+|     Total Time     |
+|--------------------|
+|       18s 7ms      |
 
 Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
@@ -234,12 +258,27 @@ quadraticSieve(mostWanted1983, showStats = TRUE)
 Summary Statistics for Factoring:
     11111111111111111111111111111111111111111111111111111111111111111111111
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|      1s 296ms      |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    2m 20s 494ms    |   100%   |    16823    |    4172    |    4252    |
+|     2m 6s 912ms    |   100%   |    16823    |    4172    |    4252    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|      15s 259ms     |
+
+|     Total Time     |
+|--------------------|
+|    2m 23s 685ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
+
+
+## ***************************************************************************
 
 
 rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
@@ -249,9 +288,21 @@ quadraticSieve(rsa79, showStats=TRUE)
 Summary Statistics for Factoring:
     7293469445285646172092483905177589838606665884410340391954917800303813280275279
 
-|        Time        | Complete | Polynomials |   Smooths  |  Partials  |
+|  Pollard Rho Time  |
+|--------------------|
+|      12s 738ms     |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    17m 47s 893ms   |   100%   |    96215    |    5671    |    7155    |
+|    16m 47s 863ms   |   100%   |    96215    |    5671    |    7155    |
+
+|  Mat Algebra Time  |
+|--------------------|
+|      51s 534ms     |
+
+|     Total Time     |
+|--------------------|
+|    17m 53s 178ms   |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
