@@ -156,7 +156,7 @@ SEXP FactorNum(mpz_class &val) {
         
         if (mpz_sizeinbase(val.get_mpz_t(), 10) > 23) {
             std::size_t nThreads = 1;
-            QuadSieveHelper(val, primeFacs, lengths, nThreads, false);
+            QuadSieveHelper(val, primeFacs, lengths, nThreads, false, false);
         } else {
             GetPrimeFactors(val, primeFacs, lengths);
         }

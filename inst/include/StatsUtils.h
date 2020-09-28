@@ -10,10 +10,13 @@ constexpr auto milliCutOff = std::chrono::milliseconds(1000);
 constexpr auto secondCutOff = std::chrono::seconds(60);
 constexpr auto minuteCutOff = std::chrono::minutes(60);
 
+constexpr auto fifteenSeconds = std::chrono::seconds(15);
 constexpr std::size_t maxHours = 999 * 60;
 constexpr std::size_t maxMinutes = (maxHours * 60) + 59;
 
-void MakeStrLen(std::string & myStr, std::size_t myLen) {
+constexpr std::size_t colOneWidth = 20u;
+
+static void MakeStrLen(std::string & myStr, std::size_t myLen) {
     
     while (myStr.size() < myLen) {
         myStr = " " + myStr + " ";
@@ -23,19 +26,7 @@ void MakeStrLen(std::string & myStr, std::size_t myLen) {
 }
 
 template <typename typeTime>
-void MakeStats(std::size_t loopLimit, std::size_t nPolys,
-               std::size_t nSmooth, std::size_t nPartial, typeTime timeDiff) {
-    
-    std::string strPerc = std::to_string(100 * (nSmooth + nPartial) / loopLimit) + "%";
-    std::string strPolys = std::to_string(nPolys);
-    std::string strSmooth = std::to_string(nSmooth);
-    std::string strPartial = std::to_string(nPartial);
-    
-    MakeStrLen(strPerc, 10);
-    MakeStrLen(strPolys, 13);
-    MakeStrLen(strSmooth, 12);
-    MakeStrLen(strPartial, 12);
-    
+std::string GetTime(typeTime timeDiff) {
     std::string myTime;
     
     std::size_t nMilliSec = std::chrono::duration_cast<std::chrono::milliseconds>(timeDiff).count();
@@ -65,7 +56,25 @@ void MakeStats(std::size_t loopLimit, std::size_t nPolys,
     }
     
     myTime += std::to_string(nMilliSec) + "ms";
-    MakeStrLen(myTime, 20);
+    return myTime;
+}
+
+template <typename typeTime>
+void MakeStats(std::size_t loopLimit, std::size_t nPolys,
+               std::size_t nSmooth, std::size_t nPartial, typeTime timeDiff) {
+    
+    std::string strPerc = std::to_string(100 * (nSmooth + nPartial) / loopLimit) + "%";
+    std::string strPolys = std::to_string(nPolys);
+    std::string strSmooth = std::to_string(nSmooth);
+    std::string strPartial = std::to_string(nPartial);
+    
+    MakeStrLen(strPerc, 10);
+    MakeStrLen(strPolys, 13);
+    MakeStrLen(strSmooth, 12);
+    MakeStrLen(strPartial, 12);
+    
+    std::string myTime = GetTime(timeDiff);
+    MakeStrLen(myTime, colOneWidth);
     
     RcppThread::Rcout << "\r|" << myTime << "|" << strPerc << "|" << strPolys << "|"
                       << strSmooth << "|" << strPartial << "|";
@@ -78,8 +87,8 @@ void UpdateStatTime(std::size_t n, std::size_t facSize,
         const std::size_t percentComplete = ((100 * n) / facSize) + 1;
         const auto onePercentTime = timeDiff / percentComplete;
         
-        if (onePercentTime > std::chrono::seconds(15)) {
-            showStatsTime = std::chrono::seconds(15);
+        if (onePercentTime > fifteenSeconds) {
+            showStatsTime = fifteenSeconds;
         } else {
             if (onePercentTime < std::chrono::seconds(1)) {
                 showStatsTime = 5 * onePercentTime;
@@ -90,6 +99,13 @@ void UpdateStatTime(std::size_t n, std::size_t facSize,
     } else {
         showStatsTime = std::chrono::milliseconds(500);
     }
+}
+
+template <typename typeTime>
+void OneColumnStats(typeTime timeDiff) {
+    std::string myTime = GetTime(timeDiff);
+    MakeStrLen(myTime, colOneWidth);
+    RcppThread::Rcout << "\r|" << myTime << "|";
 }
 
 #endif

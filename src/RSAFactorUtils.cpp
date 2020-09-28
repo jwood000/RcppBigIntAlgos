@@ -1,4 +1,5 @@
 #include "RSAFactorUtils.h"
+#include "StatsUtils.h"
 #include <limits>
 
 // Max number of iterations in the main loop
@@ -191,6 +192,12 @@ void GetBigPrimeFacs(mpz_class &n, std::vector<mpz_class> &factors,
             
             if (mpz_probab_prime_p(result[i].get_mpz_t(), MR_REPS) == 0) {
                 std::vector<mpz_class> recurseTemp(2);
+                
+                if (bShowStats) {
+                    Rcpp::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
+                                << result[i].get_str() << "\n" << std::endl;
+                }
+                
                 GetBigPrimeFacs(result[i], factors, recurseTemp,
                                 myLens, nThreads, bShowStats, myPow);
             } else {
@@ -206,17 +213,29 @@ void GetBigPrimeFacs(mpz_class &n, std::vector<mpz_class> &factors,
 }
 
 void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
-                     std::vector<std::size_t> &lengths,
-                     std::size_t nThreads, bool bShowStats) {
+                     std::vector<std::size_t> &lengths, std::size_t nThreads,
+                     bool bShowStats, bool bSkipExtPR) {
+    
+    const auto t0 = std::chrono::steady_clock::now();
     
     // First we test for small factors.
     TrialDivision(nMpz, factors, lengths);
+    
+    if (bShowStats) {
+        Rcpp::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
+                    << nMpz.get_str() << "\n" << std::endl;
+    }
     
     if (cmp(nMpz, 1) != 0) {
         // We now test for larger primes using pollard's rho
         // algorithm, but constrain it to a limited number of checks
         PollardRhoWithConstraint(nMpz, 1, factors, lengths,
                                  POLLARD_RHO_REPS, 1);
+        
+        if (bShowStats && !bSkipExtPR) {
+            Rcpp::Rcout << "|  Pollard Rho Time  |\n|--------------------|" << std::endl;
+            OneColumnStats(std::chrono::steady_clock::now() - t0);
+        }
         
         if (cmp(nMpz, 1) != 0) {
             std::vector<mpz_class> result(2);
@@ -237,9 +256,14 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                 const std::size_t adder = std::min((digCount > 70) ? (digCount - 70)
                                                        * 2500000 : 0, 100000000);
                 
-                if (adder > 0) {
+                if (adder > 0 && !bSkipExtPR) {
                     PollardRhoWithConstraint(nMpz, 1, factors, lengths,
                                              POLLARD_RHO_REPS + adder, 1);
+                }
+                
+                if (bShowStats && !bSkipExtPR) {
+                    OneColumnStats(std::chrono::steady_clock::now() - t0);
+                    Rcpp::Rcout << "\n" << std::endl;
                 }
                 
                 GetBigPrimeFacs(nMpz, factors, result, lengths,

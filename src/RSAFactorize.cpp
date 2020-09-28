@@ -15,8 +15,8 @@
 #include "CleanConvert.h"
 
 // [[Rcpp::export]]
-SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
-                             SEXP RNumThreads, int maxThreads) {
+SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats, SEXP RNumThreads,
+                             int maxThreads, SEXP RSkipExtPR) {
     
     std::size_t vSize;
     
@@ -68,12 +68,14 @@ SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats,
     std::vector<mpz_class> factors;
     
     int nThreads = 1;
-    const bool bShowStats = convertLogical(RShowStats, "bShowStats");
+    const bool bShowStats = convertLogical(RShowStats, "showStats");
+    const bool bSkipExtPR = convertLogical(RSkipExtPR, "skipExtPolRho");
     
     if (!Rf_isNull(RNumThreads))
         convertInt(RNumThreads, nThreads, "nThreads");
     
-    QuadSieveHelper(nMpz, factors, lengths, nThreads, bShowStats);
+    QuadSieveHelper(nMpz, factors, lengths,
+                    nThreads, bShowStats, bSkipExtPR);
     
     // Sort the prime factors as well as order the
     // lengths vector by the order of the factors array

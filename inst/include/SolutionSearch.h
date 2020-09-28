@@ -9,6 +9,6 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                     const std::vector<mpz_class> &mpzFacBase,
                     const std::vector<mpz_class> &testInterval,
                     std::vector<mpz_class> &factors,
-                    std::size_t nThreads);
+                    std::size_t nThreads, bool bShowStats);
 
 #endif

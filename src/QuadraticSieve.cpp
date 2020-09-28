@@ -1,6 +1,6 @@
 #include "Polynomial.h"
 
-constexpr std::size_t ParBitCutOff = 140u;
+constexpr std::size_t ParBitCutOff = 160u;
 
 void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                     std::size_t nThreads, bool bShowStats) {
@@ -127,27 +127,54 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
         NextPrime = facBase.back();
     
     Polynomial myPoly(mpzContainerSize, facSize, bShowStats, myNum);
+    bool xtraTime = true;
     
     if (IsParallel) {
         myPoly.FactorParallel(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
                               LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
                               strt, checkPoint0, nThreads);
-        
+
         if (myPoly.ContinueToSolution()) {
             myPoly.GetSolution(mpzFacBase, facBase, factors,
                                myNum, nThreads, checkPoint0);
+            myPoly.MakeStatsFalse();
+
+            if (bShowStats && cmp(factors[0], 0) == 0) {
+                RcppThread::Rcout << "|      Extra Time      |\n|--------------------|" << std::endl;
+                xtraTime = false;
+            }
         }
-        
+
         NextPrime = mpzFacBase.back();
     }
-    
+
+    auto t0 = std::chrono::steady_clock::now();
+    bool bUpdateXtra = false;
+
     while (cmp(factors[0], 0) == 0) {
         myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
                             LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
                             strt, checkPoint0);
-        
+
         myPoly.GetSolution(mpzFacBase, facBase, factors,
                            myNum, nThreads, checkPoint0);
+        myPoly.MakeStatsFalse();
         NextPrime = mpzFacBase.back();
+
+        if (bShowStats && cmp(factors[0], 0) == 0 && xtraTime) {
+            t0 = std::chrono::steady_clock::now();
+            RcppThread::Rcout << " Unsuccessful initial factorization... more smooths needed \n" << std::endl;
+            RcppThread::Rcout << "|     Extra Time     |\n|--------------------|" << std::endl;
+            xtraTime = false;
+            bUpdateXtra = true;
+        }
+
+        if (bShowStats && bUpdateXtra) {
+            OneColumnStats(std::chrono::steady_clock::now() - t0);
+
+            if (cmp(factors[0], 0) > 0) {
+                RcppThread::Rcout << "\n" << std::endl;
+            }
+        }
     }
 }

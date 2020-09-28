@@ -1,5 +1,5 @@
 #include "SolutionSearch.h"
-#include <RcppThread.h>
+#include "StatsUtils.h"
 #include <random>
 
 void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
@@ -115,7 +115,14 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                     std::size_t matNCols, const mpz_class &myNum,
                     const std::vector<mpz_class> &mpzFacBase,
                     const std::vector<mpz_class> &testInterval,
-                    std::vector<mpz_class> &factors, std::size_t nThreads) {
+                    std::vector<mpz_class> &factors,
+                    std::size_t nThreads, bool bShowStats) {
+    
+    const auto t0 = std::chrono::steady_clock::now();
+    
+    if (bShowStats) {
+        RcppThread::Rcout << "|  Mat Algebra Time  |\n|--------------------|" << std::endl;
+    }
     
     const std::size_t matSize = mat.size();
     const std::size_t nCols = matNRows;
@@ -138,9 +145,17 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     std::vector<std::size_t> myCols(nCols, 0);
     std::iota(myCols.begin(), myCols.end(), 0);
     
+    if (bShowStats) {
+        OneColumnStats(std::chrono::steady_clock::now() - t0);
+    }
+    
     ReduceMatrix(nullMat, myCols, 
                  static_cast<int>(nCols),
                  static_cast<int>(nRows));
+    
+    if (bShowStats) {
+        OneColumnStats(std::chrono::steady_clock::now() - t0);
+    }
     
     const std::size_t newNrow = nullMat.size() / nCols;
     std::vector<std::size_t> freeVariables;
@@ -173,42 +188,50 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
         --mpzTemp1;
         
-        const std::size_t myLim = (cmp(mpzTemp1, oneThousand) > 0)
-                                    ? oneThousand : mpzTemp1.get_ui();
+        const std::size_t myLim = (cmp(mpzTemp1, std::numeric_limits<std::size_t>::max()) > 0)
+                                    ? std::numeric_limits<std::size_t>::max() : mpzTemp1.get_ui();
+        
+        const std::size_t sampSize = nThreads * (((myLim > oneThousand)
+                                                      ? oneThousand : myLim) / nThreads);
         
         bool bSuccess = false;
-        
         std::mt19937 mersenne_engine(42);
-        std::uniform_int_distribution<std::size_t> dist{1, myLim};
+        std::uniform_int_distribution<std::size_t> dist(1, myLim);
         
         auto gen = [&dist, &mersenne_engine](){
             return dist(mersenne_engine);
         };
         
-        std::vector<std::size_t> sample(myLim - 1);
+        std::vector<std::size_t> sample(sampSize);
         std::generate(sample.begin(), sample.end(), gen);
+        
+        if (bShowStats) {
+            OneColumnStats(std::chrono::steady_clock::now() - t0);
+        }
 
         if (nThreads > 1) {
             std::vector<mpz_class> vecFactors(nThreads * 2);
             std::vector<std::future<bool>> myFutures(nThreads);
             std::vector<bool> vecSuccess(nThreads);
 
-            for (std::size_t i = 1; i < sample.size() && !bSuccess;) {
+            for (std::size_t i = 0; i < sampSize && !bSuccess;) {
                 RcppThread::ThreadPool pool(nThreads);
 
-                for (std::size_t j = 0; j < nThreads; ++j, ++i) {
-                    myFutures[j] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat), std::cref(mat),
-                                                   std::cref(freeVariables), std::cref(mpzFacBase),
-                                                   std::cref(testInterval), std::ref(vecFactors),
-                                                   std::cref(cppNum), nCols, matNCols, sample[i], lenFree, j);
+                for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
+                    myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
+                                                      std::cref(mat), std::cref(freeVariables),
+                                                      std::cref(mpzFacBase), std::cref(testInterval),
+                                                      std::ref(vecFactors), std::cref(cppNum), nCols,
+                                                      matNCols, sample[i], lenFree, thrd);
                 }
-
+                
                 pool.join();
-
+                
                 for (std::size_t j = 0; j < nThreads; ++j)
                     vecSuccess[j] = myFutures[j].get();
-
-                bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(), [](bool v) {return v;});
+                
+                bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
+                                       [](bool v) {return v;});
             }
 
             for (std::size_t j = 0; j < nThreads; ++j) {
@@ -219,11 +242,16 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                 }
             }
         } else {
-            for (std::size_t i = 0; i < sample.size() && !bSuccess; ++i) {
+            for (std::size_t i = 0; i < sampSize && !bSuccess; ++i) {
                 bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
                                        testInterval, factors, cppNum, nCols,
                                        matNCols, sample[i], lenFree, 0);
             }
         }
+    }
+    
+    if (bShowStats) {
+        OneColumnStats(std::chrono::steady_clock::now() - t0);
+        RcppThread::Rcout << "\n" << std::endl;
     }
 }
