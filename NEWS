@@ -1,4 +1,8 @@
-RcppBigIntAlgos 0.3.0 (Release date: 2020-09-28)
+RcppBigIntAlgos 0.3.1 (Release date: 2020-09-28)
+
+* Fixed URL in README
+
+RcppBigIntAlgos 0.3.0 (Release date: Never Released)
 
 * Multiple threads can now be used.
 * Switched completely to gmpxx. Had to copy gmpxx source and modify in order to easily build on all platforms.
