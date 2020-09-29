@@ -41,31 +41,28 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
         nullMat.resize(rowInd);
 
     if (rowInd > 0) {
-        int i = 0;
-        int k = 0;
-
-        while (i < rowInd) {
+        for (int i = 0, k = 0; i < rowInd; ) {
             const auto it = std::find(nullMat.cbegin(),
                                       nullMat.cend(), u8one);
             
-            if (it == nullMat.end()) {
-                rowInd -= nCols;
-            } else {
+            if (it != nullMat.end()) {
                 if (!nullMat[i + k]) {
                     for (int j = k + 1; j < nCols; ++j) {
                         if (nullMat[i + j]) {
                             for (int m = 0; m < rowInd; m += nCols)
                                 if (nullMat[m + k] != nullMat[m + j])
                                     std::swap(nullMat[m + k], nullMat[m + j]);
-    
-                            std::swap(myCols[j], myCols[k]);
-                            break;
+                                
+                                std::swap(myCols[j], myCols[k]);
+                                break;
                         }
                     }
                 }
-    
+                
                 i += nCols;
                 ++k;
+            } else {
+                rowInd -= nCols;
             }
         }
         
