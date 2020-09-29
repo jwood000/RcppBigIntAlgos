@@ -20,7 +20,7 @@ First, \href{https://en.wikipedia.org/wiki/Trial_division}{trial division} is ca
 
 When \code{showStats = TRUE}, summary statistics will be shown. The frequency of updates is dynamic as writing to stdout can be expensive. It is determined by how fast smooth numbers (including partially smooth numbers) are found along with the total number of smooth numbers required in order to find a non-trivial factorization. The statistics are:
 \describe{
-    \item{\code{Time}}{The time measured in hours \code{h}, minutes \code{m}, seconds \code{s}, and milliseconds \code{ms}.}
+    \item{\code{MPQS Time}}{The time measured for the multiple polynomial quadratic sieve section in hours \code{h}, minutes \code{m}, seconds \code{s}, and milliseconds \code{ms}.}
     \item{\code{Complete}}{The percent of smooth numbers plus partially smooth numbers required to guarantee a non-trivial solution when \href{https://en.wikipedia.org/wiki/Gaussian_elimination}{Gaussian Elimination} is performed on the matrix of powers of primes.}
     \item{\code{Polynomials}}{The number of polynomials sieved}
     \item{\code{Smooths}}{The number of \href{https://en.wikipedia.org/wiki/Smooth_number}{Smooth numbers} found}
