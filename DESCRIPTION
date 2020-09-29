@@ -1,7 +1,7 @@
 Package: RcppBigIntAlgos
 Type: Package
 Title: Factor Big Integers with the Quadratic Sieve
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
              person("Free Software Foundation, Inc.", role ="cph"),
              person("Mike","Tryczak", role="ctb"))

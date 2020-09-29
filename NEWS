@@ -1,3 +1,7 @@
+RcppBigIntAlgos 0.3.2 (Release date: 2020-09-29)
+
+* Fixed ASAN/UBSAN/valgrind issue. See https://github.com/jwood000/RcppBigIntAlgos/issues/1 for more information.
+
 RcppBigIntAlgos 0.3.1 (Release date: 2020-09-28)
 
 * Fixed URL in README
