@@ -11,7 +11,7 @@
 ## Overview
 
 RcppBigIntAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
-factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
+factoring big integers. Links to `RcppThread` for factoring in parallel. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
 
 ## Installation
 
@@ -110,7 +110,7 @@ Big Integer ('bigz') object of length 6:
 
 ## The Quadratic Sieve
 
-The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 60 digits (~200 bits).
+The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 70 digits (~230 bits).
 
 ```r
 ## Generate large semi-primes
@@ -244,7 +244,7 @@ Big Integer ('bigz') object of length 2:
 [1] 514864663444011777835756770809 766712897798959945129214210063
 ```
 
-Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 2.5 minutes followed by [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under 20 minutes.
+Finally, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 2.5 minutes followed by [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under 18 minutes.
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
@@ -348,19 +348,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        65ms        |
+|        62ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    5m 41s 650ms    |   100%   |    96257    |    5676    |    7160    |
+|    5m 33s 130ms    |   100%   |    96257    |    5676    |    7160    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      53s 175ms     |    12702 x 12836   |
+|      51s 319ms     |    12701 x 12836   |
 
 |     Total Time     |
 |--------------------|
-|    6m 35s 453ms    |
+|    6m 25s 347ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727

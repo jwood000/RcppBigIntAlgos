@@ -4,15 +4,15 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                   std::vector<std::size_t> &myCols,
                   int nCols, int nRows) {
 
-    int matSize = nullMat.size();
+    const int matSize = nullMat.size();
     int rowInd = 0;
     
     for (int j = 0; j < nCols; ++j) {
         std::vector<int> rows;
         
-        for (int i = rowInd; i < matSize; i += nCols)
-            if (nullMat[i + j])
-                rows.push_back(i);
+        for (int i = rowInd + j; i < matSize; i += nCols)
+            if (nullMat[i])
+                rows.push_back(i - j);
         
         if (!rows.empty()) {
             std::vector<int> cols;
@@ -45,35 +45,28 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
         int k = 0;
 
         while (i < rowInd) {
-            bool allZero = true;
+            const auto it = std::find(nullMat.cbegin(),
+                                      nullMat.cend(), u8one);
             
-            for (int j = 0; j < nCols; ++j) {
-                if (nullMat[i + j]) {
-                    allZero = false;
-                    break;
-                }
-            }
-
-            if (allZero) {
+            if (it == nullMat.end()) {
                 rowInd -= nCols;
-                continue;
-            }
-            
-            if (!nullMat[i + k]) {
-                for (int j = k; j < nCols; ++j) {
-                    if (nullMat[i + j]) {
-                        for (int m = 0; m < rowInd; m += nCols)
-                            if (nullMat[m + k] != nullMat[m + j])
-                                std::swap(nullMat[m + k], nullMat[m + j]);
-
-                        std::swap(myCols[j], myCols[k]);
-                        break;
+            } else {
+                if (!nullMat[i + k]) {
+                    for (int j = k + 1; j < nCols; ++j) {
+                        if (nullMat[i + j]) {
+                            for (int m = 0; m < rowInd; m += nCols)
+                                if (nullMat[m + k] != nullMat[m + j])
+                                    std::swap(nullMat[m + k], nullMat[m + j]);
+    
+                            std::swap(myCols[j], myCols[k]);
+                            break;
+                        }
                     }
                 }
+    
+                i += nCols;
+                ++k;
             }
-
-            i += nCols;
-            ++k;
         }
         
         nullMat.resize(rowInd);
