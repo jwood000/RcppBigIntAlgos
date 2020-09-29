@@ -121,7 +121,9 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     const auto t0 = std::chrono::steady_clock::now();
     
     if (bShowStats) {
-        RcppThread::Rcout << "|  Mat Algebra Time  |\n|--------------------|" << std::endl;
+        RcppThread::Rcout << "|  Mat Algebra Time  |    Mat Dimension   |\n"
+                          << "|--------------------|--------------------|" << std::endl;
+        TwoColumnStats(std::chrono::steady_clock::now() - t0, matNCols, matNRows);
     }
     
     const std::size_t matSize = mat.size();
@@ -146,7 +148,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     std::iota(myCols.begin(), myCols.end(), 0);
     
     if (bShowStats) {
-        OneColumnStats(std::chrono::steady_clock::now() - t0);
+        TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
     }
     
     ReduceMatrix(nullMat, myCols, 
@@ -154,7 +156,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                  static_cast<int>(nRows));
     
     if (bShowStats) {
-        OneColumnStats(std::chrono::steady_clock::now() - t0);
+        TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
     }
     
     const std::size_t newNrow = nullMat.size() / nCols;
@@ -206,7 +208,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         std::generate(sample.begin(), sample.end(), gen);
         
         if (bShowStats) {
-            OneColumnStats(std::chrono::steady_clock::now() - t0);
+            TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
         }
 
         if (nThreads > 1) {
@@ -251,7 +253,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     }
     
     if (bShowStats) {
-        OneColumnStats(std::chrono::steady_clock::now() - t0);
+        TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
         RcppThread::Rcout << "\n" << std::endl;
     }
 }

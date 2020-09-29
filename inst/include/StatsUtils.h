@@ -108,4 +108,13 @@ void OneColumnStats(typeTime timeDiff) {
     RcppThread::Rcout << "\r|" << myTime << "|";
 }
 
+template <typename typeTime>
+void TwoColumnStats(typeTime timeDiff, std::size_t nRows, std::size_t nCols) {
+    std::string myTime = GetTime(timeDiff);
+    MakeStrLen(myTime, colOneWidth);
+    std::string myDim = std::to_string(nRows) + " x " + std::to_string(nCols);
+    MakeStrLen(myDim, colOneWidth);
+    RcppThread::Rcout << "\r|" << myTime << "|" << myDim << "|";
+}
+
 #endif
