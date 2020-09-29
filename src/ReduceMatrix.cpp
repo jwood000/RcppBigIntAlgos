@@ -23,13 +23,15 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                     if (nullMat[firstRow + k] != nullMat[rowInd + k])
                         std::swap(nullMat[firstRow + k], nullMat[rowInd + k]);
             
-            for (int k = j; k < nCols; ++k)
-                if (nullMat[rowInd + k])
-                    cols.push_back(k);
-            
-            for (std::size_t i = 1, r = rows[i]; i < rows.size(); ++i, r = rows[i])
-                for (auto k: cols)
-                    nullMat[r + k] ^= u8one;
+            if (rows.size() > 1) {
+                for (int k = j; k < nCols; ++k)
+                    if (nullMat[rowInd + k])
+                        cols.push_back(k);
+                
+                for (std::size_t i = 1, r = rows[1]; i < rows.size(); ++i, r = rows[i])
+                    for (auto k: cols)
+                        nullMat[r + k] ^= u8one;
+            }
             
             rowInd += nCols;
         }
