@@ -42,10 +42,18 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
 
     if (rowInd > 0) {
         for (int i = 0, k = 0; i < rowInd; ) {
-            const auto it = std::find(nullMat.cbegin(),
-                                      nullMat.cend(), u8one);
+            bool allZero = true;
             
-            if (it != nullMat.end()) {
+            for (int j = 0; j < nCols; ++j) {
+                if (nullMat[i + j]) {
+                    allZero = false;
+                    break;
+                }
+            }
+            
+            if (allZero) {
+                rowInd -= nCols;
+            } else {
                 if (!nullMat[i + k]) {
                     for (int j = k + 1; j < nCols; ++j) {
                         if (nullMat[i + j]) {
@@ -53,16 +61,14 @@ void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
                                 if (nullMat[m + k] != nullMat[m + j])
                                     std::swap(nullMat[m + k], nullMat[m + j]);
                                 
-                                std::swap(myCols[j], myCols[k]);
-                                break;
+                            std::swap(myCols[j], myCols[k]);
+                            break;
                         }
                     }
                 }
                 
                 i += nCols;
                 ++k;
-            } else {
-                rowInd -= nCols;
             }
         }
         
