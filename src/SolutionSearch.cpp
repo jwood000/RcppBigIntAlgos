@@ -147,8 +147,6 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     std::vector<std::size_t> myCols(nCols, 0);
     std::iota(myCols.begin(), myCols.end(), 0);
     
-    std::size_t count1 = std::accumulate(nullMat.cbegin(), nullMat.cend(), static_cast<std::size_t>(0));
-    
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
     }
@@ -157,16 +155,17 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                  static_cast<int>(nCols),
                  static_cast<int>(nRows));
     
-    std::size_t count = std::accumulate(nullMat.cbegin(), nullMat.cend(), static_cast<std::size_t>(0));
-    
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-        RcppThread::Rcout << count1 <<  " " << count << "\n" << std::endl;
+        RcppThread::Rcout << "\n" << std::endl;
     }
     
-    // const std::size_t newNrow = nullMat.size() / nCols;
-    // std::vector<std::size_t> freeVariables;
-    // 
+    
+    
+    const std::size_t newNrow = nullMat.size() / nCols;
+    RcppThread::Rcout << newNrow << "\n" << std::endl;
+    std::vector<std::size_t> freeVariables;
+
     // if (nCols > newNrow && newNrow > 0) {
     //     for (std::size_t i = newNrow; i < nCols; ++i)
     //         freeVariables.push_back(myCols[i]);
