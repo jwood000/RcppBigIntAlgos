@@ -128,9 +128,11 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     
     const std::size_t matSize = mat.size();
     const std::size_t nCols = matNRows;
+    std::size_t nRows = 0;
     
-    std::vector<std::uint8_t> nullMat;
-    nullMat.reserve(matSize);
+    std::vector<std::bitset<wordSize>> nullMat;
+    const std::size_t maxNullSize = (matSize + wordSize - 1u) / wordSize;
+    nullMat.reserve(maxNullSize);
     
     for (std::size_t j = 0; j < matNCols; ++j) {
         std::size_t i = 0;
@@ -138,12 +140,21 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         while ((i < matSize) && ((mat[i + j] % 2u) == 0))
             i += matNCols;
         
-        if (i < matSize)
-            for (std::size_t k = 0; k < matSize; k += matNCols)
-                nullMat.push_back(mat[k + j] % 2u);
+        if (i < matSize) {
+            for (std::size_t k = 0; k < matSize;) {
+                std::bitset<wordSize> num;
+                
+                for (std::size_t r = 0; r < wordSize && k < matSize; ++r, k += matNCols)
+                    if (mat[k + j] % 2u)
+                        num.set(r);
+                
+                nullMat.push_back(num);
+            }
+            
+            ++nRows;
+        }
     }
     
-    const std::size_t nRows = nullMat.size() / nCols;
     std::vector<std::size_t> myCols(nCols, 0);
     std::iota(myCols.begin(), myCols.end(), 0);
     
@@ -151,109 +162,113 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
     }
     
-    ReduceMatrix(nullMat, myCols, 
-                 static_cast<int>(nCols),
-                 static_cast<int>(nRows));
+    ReduceMatrix(nullMat, myCols, nCols, nRows);
+    
+    std::size_t count = 0;
+    
+    for (auto k: nullMat)
+        count += k.count();
     
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
+        RcppThread::Rcout << count << "\n" << std::endl;
     }
     
-    const std::size_t newNrow = nullMat.size() / nCols;
-    std::vector<std::size_t> freeVariables;
-    
-    if (nCols > newNrow && newNrow > 0) {
-        for (std::size_t i = newNrow; i < nCols; ++i)
-            freeVariables.push_back(myCols[i]);
-        
-        std::sort(freeVariables.begin(), freeVariables.end());
-        const std::size_t myMin = freeVariables.front();
-        
-        const std::size_t lenFree = freeVariables.size();
-        std::vector<std::uint8_t> freeMat(lenFree * nCols, 0u);
-        
-        std::transform(freeVariables.begin(), freeVariables.end(),
-                       freeVariables.begin(), [myMin](std::size_t f) {return f - myMin;});
-        
-        // freeVariables isn't guranteed to be contiguous. That is,
-        // we would have freeVarabiables = {10, 14, 15, 17}. This means
-        // that lenFree = 4, and since the dimensions of freeMat is
-        // based off of lenFree and not the range of (fV), we must
-        // take care not to access memory we don't own.
-        
-        for (std::size_t i = 0; i < freeVariables.size(); ++i)
-            freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
-        
-        ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
-        mpz_class mpzTemp1, cppNum(myNum);;
-
-        mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
-        --mpzTemp1;
-        
-        const unsigned long int myLim = (cmp(mpzTemp1, std::numeric_limits<unsigned long int>::max()) > 0)
-                                    ? std::numeric_limits<unsigned long int>::max() : mpzTemp1.get_ui();
-        
-        const std::size_t sampSize = nThreads * (((myLim > oneThousand)
-                                                      ? oneThousand : myLim) / nThreads);
-        
-        bool bSuccess = false;
-        std::mt19937 mersenne_engine(42);
-        std::uniform_int_distribution<unsigned long int> dist(1, myLim);
-        
-        auto gen = [&dist, &mersenne_engine](){
-            return dist(mersenne_engine);
-        };
-        
-        std::vector<unsigned long int> sample(sampSize);
-        std::generate(sample.begin(), sample.end(), gen);
-        
-        if (bShowStats) {
-            TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-        }
-
-        if (nThreads > 1) {
-            std::vector<mpz_class> vecFactors(nThreads * 2);
-            std::vector<std::future<bool>> myFutures(nThreads);
-            std::vector<bool> vecSuccess(nThreads);
-
-            for (std::size_t i = 0; i < sampSize && !bSuccess;) {
-                RcppThread::ThreadPool pool(nThreads);
-
-                for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
-                    myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
-                                                      std::cref(mat), std::cref(freeVariables),
-                                                      std::cref(mpzFacBase), std::cref(testInterval),
-                                                      std::ref(vecFactors), std::cref(cppNum), nCols,
-                                                      matNCols, sample[i], lenFree, thrd);
-                }
-                
-                pool.join();
-                
-                for (std::size_t j = 0; j < nThreads; ++j)
-                    vecSuccess[j] = myFutures[j].get();
-                
-                bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
-                                       [](bool v) {return v;});
-            }
-
-            for (std::size_t j = 0; j < nThreads; ++j) {
-                if (vecSuccess[j]) {
-                    factors[0] = vecFactors[j * 2];
-                    factors[1] = vecFactors[j * 2 + 1];
-                    break;
-                }
-            }
-        } else {
-            for (std::size_t i = 0; i < sampSize && !bSuccess; ++i) {
-                bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
-                                       testInterval, factors, cppNum, nCols,
-                                       matNCols, sample[i], lenFree, 0);
-            }
-        }
-    }
-    
-    if (bShowStats) {
-        TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-        RcppThread::Rcout << "\n" << std::endl;
-    }
+    // const std::size_t newNrow = nullMat.size() / nCols;
+    // std::vector<std::size_t> freeVariables;
+    // 
+    // if (nCols > newNrow && newNrow > 0) {
+    //     for (std::size_t i = newNrow; i < nCols; ++i)
+    //         freeVariables.push_back(myCols[i]);
+    //     
+    //     std::sort(freeVariables.begin(), freeVariables.end());
+    //     const std::size_t myMin = freeVariables.front();
+    //     
+    //     const std::size_t lenFree = freeVariables.size();
+    //     std::vector<std::uint8_t> freeMat(lenFree * nCols, 0u);
+    //     
+    //     std::transform(freeVariables.begin(), freeVariables.end(),
+    //                    freeVariables.begin(), [myMin](std::size_t f) {return f - myMin;});
+    //     
+    //     // freeVariables isn't guranteed to be contiguous. That is,
+    //     // we would have freeVarabiables = {10, 14, 15, 17}. This means
+    //     // that lenFree = 4, and since the dimensions of freeMat is
+    //     // based off of lenFree and not the range of (fV), we must
+    //     // take care not to access memory we don't own.
+    //     
+    //     for (std::size_t i = 0; i < freeVariables.size(); ++i)
+    //         freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
+    //     
+    //     ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
+    //     mpz_class mpzTemp1, cppNum(myNum);;
+    // 
+    //     mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
+    //     --mpzTemp1;
+    //     
+    //     const unsigned long int myLim = (cmp(mpzTemp1, std::numeric_limits<unsigned long int>::max()) > 0)
+    //                                 ? std::numeric_limits<unsigned long int>::max() : mpzTemp1.get_ui();
+    //     
+    //     const std::size_t sampSize = nThreads * (((myLim > oneThousand)
+    //                                                   ? oneThousand : myLim) / nThreads);
+    //     
+    //     bool bSuccess = false;
+    //     std::mt19937 mersenne_engine(42);
+    //     std::uniform_int_distribution<unsigned long int> dist(1, myLim);
+    //     
+    //     auto gen = [&dist, &mersenne_engine](){
+    //         return dist(mersenne_engine);
+    //     };
+    //     
+    //     std::vector<unsigned long int> sample(sampSize);
+    //     std::generate(sample.begin(), sample.end(), gen);
+    //     
+    //     if (bShowStats) {
+    //         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
+    //     }
+    // 
+    //     if (nThreads > 1) {
+    //         std::vector<mpz_class> vecFactors(nThreads * 2);
+    //         std::vector<std::future<bool>> myFutures(nThreads);
+    //         std::vector<bool> vecSuccess(nThreads);
+    // 
+    //         for (std::size_t i = 0; i < sampSize && !bSuccess;) {
+    //             RcppThread::ThreadPool pool(nThreads);
+    // 
+    //             for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
+    //                 myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
+    //                                                   std::cref(mat), std::cref(freeVariables),
+    //                                                   std::cref(mpzFacBase), std::cref(testInterval),
+    //                                                   std::ref(vecFactors), std::cref(cppNum), nCols,
+    //                                                   matNCols, sample[i], lenFree, thrd);
+    //             }
+    //             
+    //             pool.join();
+    //             
+    //             for (std::size_t j = 0; j < nThreads; ++j)
+    //                 vecSuccess[j] = myFutures[j].get();
+    //             
+    //             bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
+    //                                    [](bool v) {return v;});
+    //         }
+    // 
+    //         for (std::size_t j = 0; j < nThreads; ++j) {
+    //             if (vecSuccess[j]) {
+    //                 factors[0] = vecFactors[j * 2];
+    //                 factors[1] = vecFactors[j * 2 + 1];
+    //                 break;
+    //             }
+    //         }
+    //     } else {
+    //         for (std::size_t i = 0; i < sampSize && !bSuccess; ++i) {
+    //             bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
+    //                                    testInterval, factors, cppNum, nCols,
+    //                                    matNCols, sample[i], lenFree, 0);
+    //         }
+    //     }
+    // }
+    // 
+    // if (bShowStats) {
+    //     TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
+    //     RcppThread::Rcout << "\n" << std::endl;
+    // }
 }

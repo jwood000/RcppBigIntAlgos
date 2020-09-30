@@ -23,18 +23,6 @@ std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
     return SieveDist;
 }
 
-std::vector<std::uint8_t> MyIntToBit(std::size_t x, std::size_t dig) {
-    
-    std::vector<std::uint8_t> binaryVec(dig);
-    
-    for (std::size_t i = 0; x > 0; ++i) {
-        binaryVec[i] = x % 2;
-        x >>= 1;
-    }
-    
-    return binaryVec;
-}
-
 std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudge1,
                                   double sqrLogLog, std::size_t myTarget) {
     

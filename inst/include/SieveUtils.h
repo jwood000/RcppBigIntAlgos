@@ -8,7 +8,6 @@
 #include <numeric>
 #include <cmath>
 
-constexpr unsigned long int oneThousand = 1000u;
 constexpr double Significand53 = 9007199254740991.0;
 constexpr int L1Cache = 32768;
 
