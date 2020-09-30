@@ -157,13 +157,9 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-        RcppThread::Rcout << "\n" << std::endl;
     }
     
-    
-    
     const std::size_t newNrow = nullMat.size() / nCols;
-    RcppThread::Rcout << newNrow << "\n" << std::endl;
     std::vector<std::size_t> freeVariables;
 
     if (nCols > newNrow && newNrow > 0) {
@@ -189,10 +185,8 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
             freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
 
         ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
-        mpz_class mpzTemp1, cppNum(myNum);
         
-        std::size_t count = std::accumulate(freeMat.begin(), freeMat.end(), static_cast<std::size_t>(0));
-
+        mpz_class mpzTemp1, cppNum(myNum);
         mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
         --mpzTemp1;
 
@@ -215,7 +209,6 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
 
         if (bShowStats) {
             TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-            RcppThread::Rcout << count << "\n" << std::endl;
         }
 
         if (nThreads > 1) {
