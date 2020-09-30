@@ -137,8 +137,6 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
         if (myPoly.ContinueToSolution()) {
             myPoly.GetSolution(mpzFacBase, facBase, factors,
                                myNum, nThreads, checkPoint0);
-            factors[0] = 11;
-            factors[1] = 13;
             myPoly.MakeStatsFalse();
 
             if (bShowStats && cmp(factors[0], 0) == 0) {
@@ -160,8 +158,6 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
 
         myPoly.GetSolution(mpzFacBase, facBase, factors,
                            myNum, nThreads, checkPoint0);
-        factors[0] = 11;
-        factors[1] = 13;
         myPoly.MakeStatsFalse();
         NextPrime = mpzFacBase.back();
 

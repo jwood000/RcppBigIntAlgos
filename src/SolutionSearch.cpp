@@ -202,9 +202,6 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
             freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
 
         ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
-        
-        std::size_t count = std::accumulate(freeMat.begin(), freeMat.end(), static_cast<std::size_t>(0));
-        
         mpz_class mpzTemp1, cppNum(myNum);
 
         mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
@@ -229,48 +226,47 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
 
         if (bShowStats) {
             TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-            RcppThread::Rcout << count << "\n\n";
         }
 
-        // if (nThreads > 1) {
-        //     std::vector<mpz_class> vecFactors(nThreads * 2);
-        //     std::vector<std::future<bool>> myFutures(nThreads);
-        //     std::vector<bool> vecSuccess(nThreads);
-        // 
-        //     for (std::size_t i = 0; i < sampSize && !bSuccess;) {
-        //         RcppThread::ThreadPool pool(nThreads);
-        // 
-        //         for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
-        //             myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
-        //                                               std::cref(mat), std::cref(freeVariables),
-        //                                               std::cref(mpzFacBase), std::cref(testInterval),
-        //                                               std::ref(vecFactors), std::cref(cppNum), nCols,
-        //                                               matNCols, sample[i], lenFree, thrd);
-        //         }
-        // 
-        //         pool.join();
-        // 
-        //         for (std::size_t j = 0; j < nThreads; ++j)
-        //             vecSuccess[j] = myFutures[j].get();
-        // 
-        //         bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
-        //                                [](bool v) {return v;});
-        //     }
-        // 
-        //     for (std::size_t j = 0; j < nThreads; ++j) {
-        //         if (vecSuccess[j]) {
-        //             factors[0] = vecFactors[j * 2];
-        //             factors[1] = vecFactors[j * 2 + 1];
-        //             break;
-        //         }
-        //     }
-        // } else {
-        //     for (std::size_t i = 0; i < sampSize && !bSuccess; ++i) {
-        //         bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
-        //                                testInterval, factors, cppNum, nCols,
-        //                                matNCols, sample[i], lenFree, 0);
-        //     }
-        // }
+        if (nThreads > 1) {
+            std::vector<mpz_class> vecFactors(nThreads * 2);
+            std::vector<std::future<bool>> myFutures(nThreads);
+            std::vector<bool> vecSuccess(nThreads);
+
+            for (std::size_t i = 0; i < sampSize && !bSuccess;) {
+                RcppThread::ThreadPool pool(nThreads);
+
+                for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
+                    myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
+                                                      std::cref(mat), std::cref(freeVariables),
+                                                      std::cref(mpzFacBase), std::cref(testInterval),
+                                                      std::ref(vecFactors), std::cref(cppNum), nCols,
+                                                      matNCols, sample[i], lenFree, thrd);
+                }
+
+                pool.join();
+
+                for (std::size_t j = 0; j < nThreads; ++j)
+                    vecSuccess[j] = myFutures[j].get();
+
+                bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
+                                       [](bool v) {return v;});
+            }
+
+            for (std::size_t j = 0; j < nThreads; ++j) {
+                if (vecSuccess[j]) {
+                    factors[0] = vecFactors[j * 2];
+                    factors[1] = vecFactors[j * 2 + 1];
+                    break;
+                }
+            }
+        } else {
+            for (std::size_t i = 0; i < sampSize && !bSuccess; ++i) {
+                bSuccess = GetSolution(freeMat, mat, freeVariables, mpzFacBase,
+                                       testInterval, factors, cppNum, nCols,
+                                       matNCols, sample[i], lenFree, 0);
+            }
+        }
     }
 
     if (bShowStats) {
