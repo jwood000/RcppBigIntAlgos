@@ -164,19 +164,16 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     
     ReduceMatrix(nullMat, myCols, nCols, nRows);
     
-    std::size_t count = 0;
-    
-    for (auto k: nullMat)
-        count += k.count();
-    
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
-        RcppThread::Rcout << count << "\n" << std::endl;
+        RcppThread::Rcout << "\n" << std::endl;
     }
     
-    // const std::size_t newNrow = nullMat.size() / nCols;
-    // std::vector<std::size_t> freeVariables;
-    // 
+    const std::size_t newNrow = wordSize * nullMat.size() / (nCols + wordSize - 1);
+    
+    RcppThread::Rcout << newNrow << "\n" << std::endl;
+    std::vector<std::size_t> freeVariables;
+
     // if (nCols > newNrow && newNrow > 0) {
     //     for (std::size_t i = newNrow; i < nCols; ++i)
     //         freeVariables.push_back(myCols[i]);
