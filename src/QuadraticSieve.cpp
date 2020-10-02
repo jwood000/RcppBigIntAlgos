@@ -2,6 +2,64 @@
 
 constexpr std::size_t ParBitCutOff = 160u;
 
+// There are 2 variables below that depend on the size of myNum in a
+// non-Trivial way. They are dblMyTarget and dblLenB.
+// Below, we show how to reproduce these numbers. They were all
+// obtained through experimentation and may need to be readjusted in
+// the future. In particular, they were targeted to the primary dev
+// machine (i.e. 2017 Mac i7 16GB). There could be a more general
+// method for obtaining these values that better suits any platform.
+// 
+// These values were modified from what is suggested in:
+// "The Multiple Polynomial Quadratic Sieve" by Robert D. Silverman
+//
+// DigSize <- c(24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84)
+// FBSize <- c(133, 266, 532, 1197, 1596, 2660, 3990, 5985, 7980, 10640, 13965)
+// MSize <- c(7, 28, 49, 140, 175, 350, 490, 700, 925, 1150, 1400)
+//
+// dblMyTarget:
+// rawCoef <- round(unname(lm(FBSize ~ poly(DigSize, 4,
+//                                      raw = TRUE))$coefficients), 7)
+// names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
+// rawCoef
+//     intercept           x^1           x^2           x^3           x^4
+//  -1196.999999    25.9297462  - 4.7601496     0.0794196  -0.000179411
+//
+//
+// dblLenB:
+// rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4,
+//                                      raw = TRUE))$coefficients), 7)
+// names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
+// rawCoef
+//    intercept           x^1           x^2           x^3           x^4
+// -422.2004662    44.2665760    -1.7020526     0.0281537    -0.0001304
+//
+// Note that the smallest that dblDigCount can be in order for dblLenB to be
+// valid is 22. This is no problem as we factor numbers less than 23 digits
+// with Pollard's Rho algorithm.
+
+// lm(MSize[10:11] ~ DigSize[10:11])
+// 
+// Call:
+//     lm(formula = MSize[10:11] ~ DigSize[10:11])
+//     
+//     Coefficients:
+//     (Intercept)  DigSize[10:11]  
+//        -2300.00              45
+//
+// ***********************************************************************
+
+inline double GetIntervalSize(double dig) {
+    if (dig < 85) {
+        return std::ceil(34.0943408 * dig - 1.4227370
+                             * std::pow(dig, 2.0) + 0.0253568
+                             * std::pow(dig, 3.0) - 0.0001237
+                             * std::pow(dig, 4.0) - 300.8135198);
+    } else {
+        return std::ceil(41.67 * dig - 2100.0);
+    }
+}
+
 void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                     std::size_t nThreads, bool bShowStats) {
     
@@ -14,26 +72,12 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     const double sqrLogLog = std::sqrt(lognum * std::log(lognum));
     const double dblDigCount = digCount;
     
-    // These values were obtained from "The Multiple Polynomial
-    // Quadratic Sieve" by Robert D. Silverman
-    // DigSize <- c(24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84)
-    // FBSize <- c(100, 200, 400, 900, 1200, 2000, 3000, 4500)
-    // MSize <- c(5,20,35,100,125,250,350,500)
-    // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
-    //
-    // rawCoef <- round(unname(lm(FBSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
-    // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
-    // rawCoef
-    //     intercept           x^1           x^2           x^3           x^4
-    // -1197.0000000   125.9297462    -4.7601496     0.0794196    -0.0001794
-    
     double fudge1 = -0.4;
     double LimB = std::exp((0.5 + fudge1) * sqrLogLog);
-    
     const double dblMyTarget = std::ceil(125.9297462 * dblDigCount - 4.7601496
                                              * std::pow(dblDigCount, 2.0) + 0.0794196
                                              * std::pow(dblDigCount, 3.0) - 0.0001794
-                                             * std::pow(dblDigCount, 4.0) - 1197);
+                                             * std::pow(dblDigCount, 4.0) - 1196.9999);
     
     std::size_t myTarget = static_cast<std::size_t>(dblMyTarget);
     
@@ -43,21 +87,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     }
     
     const std::vector<int> facBase = GetPrimesQuadRes(myNum, LimB, fudge1, sqrLogLog, myTarget);
-    
-    // rawCoef <- round(unname(lm(MSize ~ poly(DigSize, 4, raw = TRUE))$coefficients), 7)
-    // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
-    // rawCoef
-    //    intercept           x^1           x^2           x^3           x^4
-    // -237.5850816    26.7743460    -1.1188164     0.0200060    -0.0000899
-    //
-    // Note that the smallest that dblDigCount can be in order for dblLenB to be
-    // valid is 22. This is no problem as we factor numbers less than 23 digits
-    // with Pollard's Rho algorithm.
-    
-    const double dblLenB = std::ceil(26.7743460 * dblDigCount - 1.1188164
-                                         * std::pow(dblDigCount, 2.0) + 0.0200060
-                                         * std::pow(dblDigCount, 3.0) - 0.0000899
-                                         * std::pow(dblDigCount, 4.0) - 237.5850816);
+    const double dblLenB = GetIntervalSize(dblDigCount);
     
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     const int DoubleLenB = 2 * LenB + 1;
@@ -66,24 +96,8 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     const int vecMaxSize = std::min(static_cast<int>((1 + facBase.back() / L1Cache) * L1Cache), DoubleLenB);
     const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum);
     
-    // CounterSize <- c(10, 7, 5, 3.5, 2.25, 1.25, 1, 0.9)
-    // rawCoef <- round(unname(lm(CounterSize ~ poly(DigSize[seq_along(CounterSize)], 4, raw = TRUE))$coefficients), 7)
-    // names(rawCoef) <- c("intercept", "x^1", "x^2", "x^3", "x^4")
-    // rawCoef
-    //  intercept        x^1        x^2        x^3        x^4 
-    // 40.1734307 -2.2578629  0.0571943 -0.0007403  0.0000039
-    
-    double dblFacMultiplier = std::max(std::ceil(-2.2578629 * dblDigCount + 0.0571943
-                                                     * std::pow(dblDigCount, 2.0) - 0.0007403
-                                                     * std::pow(dblDigCount, 3.0) + 0.0000039
-                                                     * std::pow(dblDigCount, 4.0) + 40.1734307), 1.0);
-    
-    const std::size_t mpzContainerSize = static_cast<double>(facSize) * dblFacMultiplier;
-    std::size_t mpzFSzLIMIT = facSize * 10;
-    
     // This array will be passed to solutionSeach.
     std::vector<mpz_class> mpzFacBase;
-    mpzFacBase.reserve(mpzFSzLIMIT);
     
     mpz_class Temp;
     Temp = myNum * 2;
@@ -126,7 +140,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     if (cmp(NextPrime, facBase.back()) < 0)
         NextPrime = facBase.back();
     
-    Polynomial myPoly(mpzContainerSize, facSize, bShowStats, myNum);
+    Polynomial myPoly(facSize, bShowStats, myNum);
     bool xtraTime = true;
     
     if (IsParallel) {
