@@ -18,8 +18,6 @@ using hash64mpz = std::unordered_map<std::uint64_t, mpz_class>;
 std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
                                       const mpz_class &myNum);
 
-std::vector<std::uint8_t> MyIntToBit(std::size_t x, std::size_t dig);
-
 std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudge1,
                                   double sqrLogLog, std::size_t myTarget);
 

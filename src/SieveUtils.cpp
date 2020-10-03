@@ -1,14 +1,104 @@
 #include "SieveUtils.h"
 
-// Getting quadratic residues. See tonellishanks.cc for more details
+int64_t int64_invert(int64_t n, int64_t p) {
+    
+    const int64_t const_p = p;
+    int64_t x = 0;
+    n %= p;
+    
+    for (int64_t u = 1; n; ) {
+        int64_t temp = x - ((p / n) * u);
+        x = u;
+        u = temp;
+        temp = p % n;
+        p = n;
+        n = temp;
+    }
+    
+    return (x + const_p) % const_p;
+}
+
+// while q < x_max:
+//      # find all square roots mod p^n via Hensel Lifting
+//     r = int((r + (n - r*r)*my_math.mod_inv(r+r, q))%q)
+//      #assert r*r%q == n%q
+//     roots += [r]
+//      q *= p
+
+// Getting quadratic residues. See TonelliShanks.cpp for more details
 std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
-                                      const mpz_class &myNum) {
+                                      std::vector<int> &primesAndPows,
+                                      std::vector<int> &LnFB,
+                                      const mpz_class &myNum, int minPrime) {
     
     const std::size_t facSize = facBase.size();
-    std::vector<std::size_t> SieveDist(facSize * 2, 0u);
-    SieveDist[0] = SieveDist[1] = 1;
+    std::vector<std::size_t> SieveDist;
     
-    mpz_class p, TS_1, TS_2;
+    mpz_class p, TS_1, TS_2, temp;
+    
+    for (std::size_t i = 1; i < facSize; ++i) {
+        int primePow = facBase[i];
+        const int myLog = std::floor(100.0 * 
+                                     std::log(static_cast<double>(facBase[i])));
+        
+        p = facBase[i];
+        TonelliShanksC(myNum, p, TS_1);
+        TS_2 = p - TS_1;
+        int64_t r1 = TS_1.get_si();
+        int64_t r2 = TS_2.get_si();
+        
+        if (facBase[i] > minPrime) {
+            SieveDist.push_back(TS_1.get_ui());
+            SieveDist.push_back(TS_2.get_ui());
+            LnFB.push_back(myLog);
+        } else {
+            int multiplier = 1;
+            
+            while (primePow < minPrime) {
+                double myInv = int64_invert(r1 + r1, static_cast<int64_t>(primePow));
+                double dblRVal = r1;
+                temp = myNum - (dblRVal * dblRVal);
+                temp *= myInv;
+                temp += dblRVal;
+                temp %= primePow;
+                r1 = temp.get_si();
+                
+                myInv = int64_invert(r2 + r2, static_cast<int64_t>(primePow));
+                dblRVal = r2;
+                temp = myNum - (dblRVal * dblRVal);
+                temp *= myInv;
+                temp += dblRVal;
+                temp %= primePow;
+                r2 = temp.get_si();
+                
+                ++multiplier;
+                primePow *= facBase[i];
+            }
+            
+            LnFB.push_back(multiplier * myLog);
+        }
+        
+        for (; primePow <= facBase.back();) {
+            double myInv = int64_invert(r1 + r1, static_cast<int64_t>(primePow));
+            double dblRVal = r1;
+            temp = myNum - (dblRVal * dblRVal);
+            temp *= myInv;
+            temp += dblRVal;
+            temp %= primePow;
+            r1 = temp.get_si();
+            
+            myInv = int64_invert(r2 + r2, static_cast<int64_t>(primePow));
+            dblRVal = r2;
+            temp = myNum - (dblRVal * dblRVal);
+            temp *= myInv;
+            temp += dblRVal;
+            temp %= primePow;
+            r2 = temp.get_si();
+            
+            primesAndPows.push_back(primePow);
+            primePow *= facBase[i];
+        }
+    }
     
     for (std::size_t i = 1; i < facSize; ++i) {
         p = facBase[i];
@@ -217,23 +307,23 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
             AUtil = VarA * myIntVal;
             AUtil *= myIntVal;
             IntVal = AUtil + Temp;
-
+            
             // Add the index referring to A^2.. (i.e. add it twice)
             primeIndexVec.insert(primeIndexVec.end(), 2, mpzFacSize);
-
+            
             // If Negative, we push zero (i.e. the index referring to -1)
             if (sgn(IntVal) < 0) {
                 IntVal = abs(IntVal);
                 primeIndexVec.push_back(0);
             }
-
+            
             for (int j = 0, facSize = facBase.size(); j < facSize; ++j) {
                 while (mpz_divisible_ui_p(IntVal.get_mpz_t(), facBase[j])) {
                     IntVal /= facBase[j];
                     primeIndexVec.push_back(j + 1);
                 }
             }
-
+            
             Temp = VarA * myIntVal + VarB;
             
             if (cmp(IntVal, 1u) == 0) {
@@ -244,7 +334,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
             } else if (cmp(IntVal, Significand53) < 0) {
                 const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
                 const auto pFacIt = partFactorsMap.find(myKey);
-
+                
                 if (pFacIt != partFactorsMap.end()) {
                     largeCoFactors.push_back(myKey);
                     primeIndexVec.insert(primeIndexVec.begin(),
@@ -254,7 +344,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     
                     const auto intervalIt = partIntvlMap.find(myKey);
                     partialInterval.push_back(Temp * intervalIt->second);
-
+                    
                     partFactorsMap.erase(pFacIt);
                     partIntvlMap.erase(intervalIt);
                     ++nPartial;

@@ -43,35 +43,32 @@ private:
                     const std::vector<mpz_class> &mpzFacBase,
                     const mpz_class &LowBound, const mpz_class &myNum,
                     int theCut, int DoubleLenB, int vecMaxSize,
-                    std::size_t strt, std::size_t polyLimit);
+                    std::size_t polyLimit);
     
 public:
     
     Polynomial(std::size_t _facSize);
     
-    Polynomial(std::size_t _mpzContainerSize,
-               std::size_t _facSize, bool _bShowStats, const mpz_class &myNum);
+    Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum);
     
     void InitialParSieve(const std::vector<std::size_t> &SieveDist,
                          const std::vector<int> &facBase, const std::vector<int> &LnFB,
                          std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                          const mpz_class &LowBound, const mpz_class &myNum, int theCut,
-                         int DoubleLenB, int vecMaxSize, std::size_t strt,
-                         typeTimePoint checkPoint0);
+                         int DoubleLenB, int vecMaxSize, typeTimePoint checkPoint0);
     
     void FactorParallel(const std::vector<std::size_t> &SieveDist,
                         const std::vector<int> &facBase, const std::vector<int> &LnFB,
                         std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                         const mpz_class &LowBound, const mpz_class &myNum, int theCut,
-                        int DoubleLenB, int vecMaxSize, std::size_t strt,
-                        typeTimePoint checkPoint0, std::size_t nThreads);
+                        int DoubleLenB, int vecMaxSize, typeTimePoint checkPoint0,
+                        std::size_t nThreads);
     
     void FactorSerial(const std::vector<std::size_t> &SieveDist,
                       const std::vector<int> &facBase, const std::vector<int> &LnFB,
                       std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                       const mpz_class &LowBound, const mpz_class &myNum, int theCut,
-                      int DoubleLenB, int vecMaxSize, std::size_t strt,
-                      typeTimePoint checkPoint0);
+                      int DoubleLenB, int vecMaxSize, typeTimePoint checkPoint0);
     
     void GetSolution(const std::vector<mpz_class> &mpzFacBase, 
                      const std::vector<int> &facBase, std::vector<mpz_class> &factors,

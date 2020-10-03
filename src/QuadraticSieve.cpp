@@ -86,11 +86,17 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
         fudge1 += 0.001;
     }
     
-    const std::vector<int> facBase = GetPrimesQuadRes(myNum, LimB, fudge1, sqrLogLog, myTarget);
-    const double dblLenB = GetIntervalSize(dblDigCount);
+    const std::vector<int> facBase = GetPrimesQuadRes(myNum, LimB,
+                                                      fudge1, sqrLogLog, myTarget);
     
+    std::vector<int> primesAndPows;
+    const double dblLenB = GetIntervalSize(dblDigCount);
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     const int DoubleLenB = 2 * LenB + 1;
+    
+    mpz_class Temp = sqrt(myNum);
+    Temp -= static_cast<unsigned long int>(LenB);
+    const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
     
     const std::size_t facSize = facBase.size();
     const int vecMaxSize = std::min(static_cast<int>((1 + facBase.back() / L1Cache) * L1Cache), DoubleLenB);
@@ -99,7 +105,6 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     // This array will be passed to solutionSeach.
     std::vector<mpz_class> mpzFacBase;
     
-    mpz_class Temp;
     Temp = myNum * 2;
     Temp = sqrt(Temp);
     Temp *= static_cast<unsigned long int>(LenB);
@@ -119,15 +124,6 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
         LnFB[i] = std::floor(100.0 * std::log(static_cast<double>(facBase[i])));
     }
     
-    Temp = sqrt(myNum);
-    Temp -= static_cast<unsigned long int>(LenB);
-    const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
-    
-    const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
-                                 [minPrime](int f) {return f > minPrime;});
-    
-    const std::size_t strt = std::distance(facBase.cbegin(), it) + 1u;
-    
     mpz_class LowBound;
     LowBound = -1 * static_cast<int>(LenB);
     
@@ -146,7 +142,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     if (IsParallel) {
         myPoly.FactorParallel(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
                               LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
-                              strt, checkPoint0, nThreads);
+                              checkPoint0, nThreads);
 
         if (myPoly.ContinueToSolution()) {
             myPoly.GetSolution(mpzFacBase, facBase, factors,
@@ -168,7 +164,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     while (cmp(factors[0], 0) == 0) {
         myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
                             LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
-                            strt, checkPoint0);
+                            checkPoint0);
 
         myPoly.GetSolution(mpzFacBase, facBase, factors,
                            myNum, nThreads, checkPoint0);

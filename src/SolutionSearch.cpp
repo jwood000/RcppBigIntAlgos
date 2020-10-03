@@ -2,6 +2,18 @@
 #include "StatsUtils.h"
 #include <random>
 
+std::vector<std::uint8_t> MyIntToBit(std::size_t x, std::size_t dig) {
+    
+    std::vector<std::uint8_t> binaryVec(dig);
+    
+    for (std::size_t i = 0; x > 0; ++i) {
+        binaryVec[i] = x % 2;
+        x >>= 1;
+    }
+    
+    return binaryVec;
+}
+
 void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
                     const std::vector<std::size_t> &myCols,
                     std::vector<std::uint8_t> &freeMat,
@@ -9,29 +21,34 @@ void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
     
     const std::size_t freeMatSize = freeMat.size();
     const std::size_t adjustedCols = (nCols + wordSize - 1) / wordSize;
+    const std::size_t nColsWordSize = (nCols / wordSize) * nCols;
 
     for (int i = newNrow - 1; i >= 0; --i) {
-        std::vector<std::size_t> temp;
+        std::vector<std::size_t> nonTriv;
         
-        for (std::size_t j = i + 1; j < nCols; ++j)
-            if (nullMat[i * adjustedCols + j / wordSize].test(j % wordSize))
-                temp.push_back(j);
-
-        if (!temp.empty()) {
-            if (temp.front() >= newNrow) {
-                for (std::size_t t = 0, col1 = myCols[i]; t < temp.size(); ++t) {
-                    std::size_t col2 = myCols[temp[t]];
-                    
-                    for (std::size_t j = 0; j < freeMatSize; j += nCols)
+        for (std::size_t j = i + 1, d = (i + 1) / wordSize,
+             myRow = i * adjustedCols; j < nColsWordSize; ++d) {
+            
+            for (std::size_t m = 0; m < wordSize; ++m, ++j)
+                if (nullMat[myRow + d].test(m))
+                    nonTriv.push_back(j);
+        }
+        
+        if (!nonTriv.empty()) {
+            if (nonTriv.front() >= newNrow) {
+                for (std::size_t t = 0, col1 = myCols[i]; t < nonTriv.size(); ++t) {
+                    for (std::size_t j = 0,
+                         col2 = myCols[nonTriv[t]]; j < freeMatSize; j += nCols) {
                         if (freeMat[col2 + j])
                             freeMat[col1 + j] = 1u;
+                    }
                 }
             } else {
-                for (std::size_t t = 0, col1 = myCols[i]; t < temp.size(); ++t) {
-                    std::size_t col2 = myCols[temp[t]];
-                    
-                    for (std::size_t j = 0; j < freeMatSize; j += nCols)
+                for (std::size_t t = 0, col1 = myCols[i]; t < nonTriv.size(); ++t) {
+                    for (std::size_t j = 0,
+                         col2 = myCols[nonTriv[t]]; j < freeMatSize; j += nCols) {
                         freeMat[col1 + j] ^= freeMat[col2 + j];
+                    }
                 }
             }
         }

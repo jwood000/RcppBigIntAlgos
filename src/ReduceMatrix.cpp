@@ -31,9 +31,12 @@ void ReduceMatrix(std::vector<std::bitset<wordSize>> &nullMat,
                     if (nullMat[rowInd + k].any())
                         cols.push_back(k);
                 
-                for (std::size_t i = 1, r = rows[1]; i < rows.size(); ++i, r = rows[i])
+                for (std::size_t i = 1; i < rows.size(); ++i) {
+                    const std::size_t r = rows[i];
+                    
                     for (auto k: cols)
                         nullMat[r + k] ^= nullMat[rowInd + k];
+                }
             }
             
             rowInd += adjustedCols;
