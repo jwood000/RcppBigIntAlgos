@@ -5,7 +5,6 @@
 
 // Determined empirically
 constexpr std::size_t MinPolysPerThrd = 40u;
-
 constexpr std::size_t bigFacsTWO = 2u;
 constexpr std::size_t bigFacsFOUR = 4u;
 
@@ -16,72 +15,67 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
                              std::vector<mpz_class> &partialIntervalBig) {
     
     powsOfSmoothsBig.insert(powsOfSmoothsBig.end(),
-                            std::make_move_iterator(powsOfSmooths.begin()),
-                            std::make_move_iterator(powsOfSmooths.end())
+                            std::make_move_iterator(powsOfSmooths.cbegin()),
+                            std::make_move_iterator(powsOfSmooths.cend())
     );
     
     powsOfPartialsBig.insert(powsOfPartialsBig.end(),
-                             std::make_move_iterator(powsOfPartials.begin()),
-                             std::make_move_iterator(powsOfPartials.end())
+                             std::make_move_iterator(powsOfPartials.cbegin()),
+                             std::make_move_iterator(powsOfPartials.cend())
     );
     
     smoothIntervalBig.insert(smoothIntervalBig.end(),
-                             std::make_move_iterator(smoothInterval.begin()),
-                             std::make_move_iterator(smoothInterval.end())
+                             std::make_move_iterator(smoothInterval.cbegin()),
+                             std::make_move_iterator(smoothInterval.cend())
     );
     
     partialIntervalBig.insert(partialIntervalBig.end(),
-                              std::make_move_iterator(partialInterval.begin()),
-                              std::make_move_iterator(partialInterval.end())
+                              std::make_move_iterator(partialInterval.cbegin()),
+                              std::make_move_iterator(partialInterval.cend())
     );
     
     largeCoFactorsBig.insert(largeCoFactorsBig.end(),
-                             std::make_move_iterator(largeCoFactors.begin()),
-                             std::make_move_iterator(largeCoFactors.end())
+                             std::make_move_iterator(largeCoFactors.cbegin()),
+                             std::make_move_iterator(largeCoFactors.cend())
     );
     
     std::vector<uint64_t> deleteLater;
     
     // First identify intersection
     for (const auto &pFac: partFactorsMap) {
-        const uint64_t myKey = pFac.first;
-        const auto pFacBigIt = partFactorsMapBig.find(myKey);
+        const auto pFacBigIt = partFactorsMapBig.find(pFac.first);
 
         if (pFacBigIt != partFactorsMapBig.end()) {
-            largeCoFactorsBig.push_back(myKey);
+            largeCoFactorsBig.push_back(pFac.first);
             pFacBigIt->second.insert(pFacBigIt->second.end(),
                                      pFac.second.cbegin(), pFac.second.cend());
             
             powsOfPartialsBig.push_back(pFacBigIt->second);
-            partialIntervalBig.push_back(partIntvlMap[myKey] * partIntvlMapBig[myKey]);
-            deleteLater.push_back(myKey);
+            partialIntervalBig.push_back(partIntvlMap[pFac.first]
+                                             * partIntvlMapBig[pFac.first]);
+            deleteLater.push_back(pFac.first);
         }
     }
     
-    for (auto myKey: deleteLater) {
+    for (const auto myKey: deleteLater) {
         partFactorsMap.erase(myKey);
         partFactorsMapBig.erase(myKey);
         partIntvlMap.erase(myKey);
         partIntvlMapBig.erase(myKey);
     }
     
-    partFactorsMapBig.insert(partFactorsMap.begin(), partFactorsMap.end());
-    partIntvlMapBig.insert(partIntvlMap.begin(), partIntvlMap.end());
+    partFactorsMapBig.insert(partFactorsMap.cbegin(), partFactorsMap.cend());
+    partIntvlMapBig.insert(partIntvlMap.cbegin(), partIntvlMap.cend());
 }
 
-Polynomial::Polynomial(std::size_t _mpzContainerSize,
-                       std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
+Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
             mpzFacSize(_facSize), SaPThresh(_facSize),
             facSize(_facSize), bShowStats(_bShowStats) {
     
     powsOfSmooths.reserve(_facSize);
     powsOfPartials.reserve(_facSize);
     myStart.assign(_facSize * 2, 0u);
-
-    smoothInterval.reserve(_mpzContainerSize);
-    largeCoFactors.reserve(_mpzContainerSize);
-    partialInterval.reserve(_mpzContainerSize);
-
+    
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
@@ -130,8 +124,7 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    myStart, partFactorsMap, partIntvlMap, smoothInterval,
                    largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
-                   LowBound, myNum, nPartial, nSmooth, theCut, DoubleLenB,
-                   mpzFacSize, vecMaxSize, strt);
+                   LowBound, myNum, theCut, DoubleLenB, mpzFacSize, vecMaxSize, strt);
     }
 }
 
@@ -153,6 +146,8 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
                vecMaxSize, strt, MinPolysPerThrd);
     
     nPolys = MinPolysPerThrd;
+    nSmooth = smoothInterval.size();
+    nPartial = partialInterval.size();
     const auto checkPoint3 = std::chrono::steady_clock::now();
     
     if ((checkPoint3 - checkPoint1) > checkInterTime) {
@@ -197,7 +192,9 @@ void SetThreadsPolys(std::size_t currLim, std::size_t SaPThresh,
         const auto timePerPoly = nThreads * totalTime / nPolys;
         const auto maxTime = maxPolys * timePerPoly;
         
-        if (maxTime > fifteenSeconds) {
+        if (maxTime > (2 * fifteenSeconds)) {
+            polysPerThread = 2 * fifteenSeconds / timePerPoly;
+        } else if (maxTime > fifteenSeconds) {
             polysPerThread = fifteenSeconds / timePerPoly;
         } else {
             polysPerThread =  maxPolys;
@@ -242,8 +239,8 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
 
             myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),
                                    std::cref(SieveDist), std::cref(facBase), std::cref(LnFB),
-                                   std::cref(mpzFacBase), LowBound, myNum, theCut, DoubleLenB,
-                                   vecMaxSize, strt, polysPerThread);
+                                   std::cref(mpzFacBase), std::cref(LowBound), std::cref(myNum),
+                                   theCut, DoubleLenB, vecMaxSize, strt, polysPerThread);
         }
 
         for (auto &thr: myThreads)
@@ -258,7 +255,6 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
         nSmooth = smoothInterval.size();
         nPartial = partialInterval.size();
         nPolys += (nThreads * polysPerThread);
-        
         const auto checkPoint3 = std::chrono::steady_clock::now();
         
         SetThreadsPolys(nSmooth + nPartial, SaPThresh, nThreads, maxThreads,
@@ -308,10 +304,11 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    myStart, partFactorsMap, partIntvlMap, smoothInterval,
                    largeCoFactors, partialInterval, NextPrime, LowBound,
-                   myNum, nPartial, nSmooth, theCut, DoubleLenB,
-                   mpzFacSize, vecMaxSize, strt);
+                   myNum, theCut, DoubleLenB, mpzFacSize, vecMaxSize, strt);
 
         ++nPolys;
+        nSmooth = smoothInterval.size();
+        nPartial = partialInterval.size();
         const auto checkPoint3 = std::chrono::steady_clock::now();
 
         if ((checkPoint3 - checkPoint1) > checkInterTime) {

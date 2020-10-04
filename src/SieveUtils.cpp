@@ -6,33 +6,17 @@ std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
     
     const std::size_t facSize = facBase.size();
     std::vector<std::size_t> SieveDist(facSize * 2, 0u);
-    SieveDist[0] = SieveDist[1] = 1;
-    
-    mpz_class p, TS_1, TS_2;
+    mpz_class p, TS_1;
     
     for (std::size_t i = 1; i < facSize; ++i) {
         p = facBase[i];
         TonelliShanksC(myNum, p, TS_1);
-        
         SieveDist[i * 2] = TS_1.get_ui();
-        
-        TS_2 = p - TS_1;
-        SieveDist[i * 2 + 1] = TS_2.get_ui();
+        TS_1 = p - TS_1;
+        SieveDist[i * 2 + 1] = TS_1.get_ui();
     }
     
     return SieveDist;
-}
-
-std::vector<std::uint8_t> MyIntToBit(std::size_t x, std::size_t dig) {
-    
-    std::vector<std::uint8_t> binaryVec(dig);
-    
-    for (std::size_t i = 0; x > 0; ++i) {
-        binaryVec[i] = x % 2;
-        x >>= 1;
-    }
-    
-    return binaryVec;
 }
 
 std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudge1,
@@ -149,13 +133,8 @@ void SieveListsInit(const std::vector<int> &FBase, const std::vector<int> &LnFB,
         if (myStart0 == 0) {
             myStart1 = (q == myMin) ? (myMax - myMin) : FBase[i] - (myMax - myMin);
         } else {
-            myStart0 = (myMin > q) ? myMin - q :
-                       (sgn(LowBound) < 0) ? FBase[i] + myMin - q :
-                       FBase[i] - ((myMax + q) % FBase[i]);
-            
-            myStart1 = (myMax > q) ? myMax - q :
-                       (sgn(LowBound) < 0) ? FBase[i] + myMax - q :
-                       FBase[i] - ((myMin + q) % FBase[i]);
+            myStart0 = (myMin > q) ? myMin - q : FBase[i] + myMin - q;
+            myStart1 = (myMax > q) ? myMax - q : FBase[i] + myMax - q;
         }
         
         for (int j = myStart0; j < vecMaxSize; j += FBase[i])
@@ -177,8 +156,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 std::vector<uint64_t> &largeCoFactors,
                 std::vector<mpz_class> &partialInterval,
                 const mpz_class &NextPrime, const mpz_class &LowBound,
-                const mpz_class &myNum, std::size_t &nPartial,
-                std::size_t &nSmooth, int theCut,int DoubleLenB,
+                const mpz_class &myNum, int theCut,int DoubleLenB,
                 int mpzFacSize, int vecMaxSize, std::size_t strt) {
     
     mpz_class VarA, VarB, VarC, AUtil, Temp, IntVal;
@@ -208,7 +186,6 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
     IntVal = AUtil + Temp;
     
     std::vector<int> myLogs(vecMaxSize);
-    
     SieveListsInit(facBase, LnFB, SieveDist, myLogs,
                    myStart, IntVal, VarA, VarB, LowBound, strt);
     
@@ -219,7 +196,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
             if (myLogs[i] > theCut)
                 largeLogs.push_back(i + chunk);
             
-        for (auto lrgLog: largeLogs) {
+        for (const auto lrgLog: largeLogs) {
             std::vector<int> primeIndexVec;
             const int myIntVal = intLowBound + lrgLog;
             
@@ -252,7 +229,6 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 // Found a smooth number
                 smoothInterval.push_back(Temp);
                 powsOfSmooths.push_back(primeIndexVec);
-                ++nSmooth;
             } else if (cmp(IntVal, Significand53) < 0) {
                 const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
                 const auto pFacIt = partFactorsMap.find(myKey);
@@ -263,13 +239,11 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                                          pFacIt->second.cbegin(), pFacIt->second.cend());
                     
                     powsOfPartials.push_back(primeIndexVec);
-                    
                     const auto intervalIt = partIntvlMap.find(myKey);
                     partialInterval.push_back(Temp * intervalIt->second);
 
                     partFactorsMap.erase(pFacIt);
                     partIntvlMap.erase(intervalIt);
-                    ++nPartial;
                 } else {
                     partFactorsMap[myKey] = primeIndexVec;
                     partIntvlMap[myKey] = Temp;
@@ -280,15 +254,15 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
         if (chunk + 2 * vecMaxSize < DoubleLenB) {
             std::fill(myLogs.begin(), myLogs.end(), 0);
             
-            for (std::size_t i = strt, facSize = facBase.size(); i < facSize; ++i) {
-                for (int j = myStart[i * 2]; j < vecMaxSize; j += facBase[i])
+            for (std::size_t i = strt, row = strt * 2, facSize = facBase.size(); i < facSize; ++i, row += 2) {
+                for (int j = myStart[row]; j < vecMaxSize; j += facBase[i])
                     myLogs[j] += LnFB[i];
                 
-                for (int j = myStart[i * 2 + 1]; j < vecMaxSize; j += facBase[i])
+                for (int j = myStart[row + 1]; j < vecMaxSize; j += facBase[i])
                     myLogs[j] += LnFB[i];
                 
-                myStart[i * 2] = ((myStart[i * 2] - vecMaxSize) % facBase[i]) + facBase[i];
-                myStart[i * 2 + 1] = ((myStart[i * 2 + 1] - vecMaxSize) % facBase[i]) + facBase[i];
+                myStart[row] = ((myStart[row] - vecMaxSize) % facBase[i]) + facBase[i];
+                myStart[row + 1] = ((myStart[row + 1] - vecMaxSize) % facBase[i]) + facBase[i];
             }
         } else if (chunk + vecMaxSize < DoubleLenB) {
             myLogs.resize(DoubleLenB % vecMaxSize);
