@@ -1,4 +1,5 @@
 #include "Polynomial.h"
+#include <Rcpp.h>
 
 constexpr std::size_t ParBitCutOff = 160u;
 
@@ -90,6 +91,8 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                                                       fudge1, sqrLogLog, myTarget);
     
     std::vector<int> primesAndPows;
+    std::vector<int> LnFB;
+        
     const double dblLenB = GetIntervalSize(dblDigCount);
     const std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     const int DoubleLenB = 2 * LenB + 1;
@@ -99,30 +102,30 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
     
     const std::size_t facSize = facBase.size();
-    const int vecMaxSize = std::min(static_cast<int>((1 + facBase.back() / L1Cache) * L1Cache), DoubleLenB);
-    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum);
+    const int vecMaxSize = std::min(static_cast<int>(((facBase.back()
+                                     + L1Cache - 1) / L1Cache) * L1Cache), DoubleLenB);
+    
+    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, primesAndPows, LnFB,myNum,
+                                                            static_cast<std::size_t>(DoubleLenB),
+                                                            minPrime);
     
     // This array will be passed to solutionSeach.
     std::vector<mpz_class> mpzFacBase;
+    
+    for (const auto fb: facBase)
+        mpzFacBase.push_back(fb);
     
     Temp = myNum * 2;
     Temp = sqrt(Temp);
     Temp *= static_cast<unsigned long int>(LenB);
     
-    const double fudge2 = (digCount < 45) ? 1.410 :
-                          (digCount < 50) ? 1.440 :
-                          (digCount < 60) ? 1.510 : 
-                          (digCount < 65) ? 1.515 : 1.540;
+    const double fudge2 = (digCount < 45) ? 1.450 :
+                          (digCount < 50) ? 1.505 :
+                          (digCount < 60) ? 1.560 : 
+                          (digCount < 65) ? 1.570 : 1.575;
     
     const int theCut = std::ceil(100.0 * fudge2 *
                                  static_cast<double>(mpz_sizeinbase(Temp.get_mpz_t(), 10)));
-    
-    std::vector<int> LnFB(facSize);
-    
-    for (std::size_t i = 0; i < facSize; ++i) {
-        mpzFacBase.push_back(facBase[i]);
-        LnFB[i] = std::floor(100.0 * std::log(static_cast<double>(facBase[i])));
-    }
     
     mpz_class LowBound;
     LowBound = -1 * static_cast<int>(LenB);
@@ -136,11 +139,11 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     if (cmp(NextPrime, facBase.back()) < 0)
         NextPrime = facBase.back();
     
-    Polynomial myPoly(facSize, bShowStats, myNum);
+    Polynomial myPoly(facSize, SieveDist.size(), bShowStats, myNum);
     bool xtraTime = true;
     
     if (IsParallel) {
-        myPoly.FactorParallel(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+        myPoly.FactorParallel(SieveDist, primesAndPows, facBase, LnFB, mpzFacBase, NextPrime,
                               LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
                               checkPoint0, nThreads);
 
@@ -162,10 +165,11 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     bool bUpdateXtra = false;
 
     while (cmp(factors[0], 0) == 0) {
-        myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+        myPoly.FactorSerial(SieveDist, primesAndPows, facBase, LnFB, mpzFacBase, NextPrime,
                             LowBound, myNum, theCut, DoubleLenB, vecMaxSize,
                             checkPoint0);
-
+        // factors[0] = 11;
+        // factors[1] = 13;
         myPoly.GetSolution(mpzFacBase, facBase, factors,
                            myNum, nThreads, checkPoint0);
         myPoly.MakeStatsFalse();

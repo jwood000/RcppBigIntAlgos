@@ -26,13 +26,9 @@ void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
     for (int i = newNrow - 1; i >= 0; --i) {
         std::vector<std::size_t> nonTriv;
         
-        for (std::size_t j = i + 1, d = (i + 1) / wordSize,
-             myRow = i * adjustedCols; j < nColsWordSize; ++d) {
-            
-            for (std::size_t m = 0; m < wordSize; ++m, ++j)
-                if (nullMat[myRow + d].test(m))
-                    nonTriv.push_back(j);
-        }
+        for (std::size_t j = i + 1, myRow = i * adjustedCols; j < nCols; ++j)
+            if (nullMat[myRow + j / wordSize].test(j % wordSize))
+                nonTriv.push_back(j);
         
         if (!nonTriv.empty()) {
             if (nonTriv.front() >= newNrow) {

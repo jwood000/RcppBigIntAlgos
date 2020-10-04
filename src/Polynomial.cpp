@@ -69,13 +69,14 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
     partIntvlMapBig.insert(partIntvlMap.begin(), partIntvlMap.end());
 }
 
-Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
+Polynomial::Polynomial(std::size_t _facSize, std::size_t SieveDistSize,
+                       bool _bShowStats, const mpz_class &myNum) : 
             mpzFacSize(_facSize), SaPThresh(_facSize),
             facSize(_facSize), bShowStats(_bShowStats) {
     
     powsOfSmooths.reserve(_facSize);
     powsOfPartials.reserve(_facSize);
-    myStart.assign(_facSize * 2, 0u);
+    myStart.assign(SieveDistSize * 2, 0u);
     
     nPolys = 0;
     nPartial = 0;
@@ -88,10 +89,10 @@ Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &
     }
 }
 
-Polynomial::Polynomial(std::size_t _facSize) : 
+Polynomial::Polynomial(std::size_t _facSize, std::size_t SieveDistSize) : 
     SaPThresh(_facSize), facSize(_facSize), bShowStats(false) {
 
-    myStart.assign(_facSize * 2, 0u);
+    myStart.assign(SieveDistSize * 2, 0u);
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
@@ -113,6 +114,7 @@ void GetNPrimes(std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
 }
 
 void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
+                            const std::vector<int> &primesAndPow,
                             const std::vector<int> &facBase, const std::vector<int> &LnFB, 
                             const std::vector<mpz_class> &mpzFacBase,
                             const mpz_class &LowBound, const mpz_class &myNum,
@@ -122,7 +124,7 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
     for (std::size_t poly = 0; poly < polyLimit; ++poly) {
         ++mpzFacSize;
 
-        SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
+        SinglePoly(SieveDist, primesAndPow, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    myStart, partFactorsMap, partIntvlMap, smoothInterval,
                    largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
                    LowBound, myNum, nPartial, nSmooth, theCut, DoubleLenB,
@@ -131,6 +133,7 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
 }
 
 void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
+                                 const std::vector<int> &primesAndPow,
                                  const std::vector<int> &facBase, const std::vector<int> &LnFB,
                                  std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                                  const mpz_class &LowBound, const mpz_class &myNum, int theCut,
@@ -142,7 +145,7 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
     auto showStatsTime = (checkPoint1 - checkPoint0);
     GetNPrimes(mpzFacBase, NextPrime, myNum, MinPolysPerThrd);
     
-    SievePolys(SieveDist, facBase, LnFB, mpzFacBase,
+    SievePolys(SieveDist, primesAndPow, facBase, LnFB, mpzFacBase,
                LowBound, myNum, theCut, DoubleLenB,
                vecMaxSize, MinPolysPerThrd);
     
@@ -202,6 +205,7 @@ void SetThreadsPolys(std::size_t currLim, std::size_t SaPThresh,
 }
 
 void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
+                                const std::vector<int> &primesAndPow,
                                 const std::vector<int> &facBase, const std::vector<int> &LnFB,
                                 std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                                 const mpz_class &LowBound, const mpz_class &myNum, int theCut,
@@ -211,7 +215,7 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
     auto checkPoint1 = std::chrono::steady_clock::now();
     auto checkPoint2 = checkPoint1;
     
-    this->InitialParSieve(SieveDist, facBase, LnFB, mpzFacBase,
+    this->InitialParSieve(SieveDist, primesAndPow, facBase, LnFB, mpzFacBase,
                           NextPrime, LowBound, myNum, theCut,
                           DoubleLenB, vecMaxSize, checkPoint0);
     
@@ -233,11 +237,11 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
         mpzFacSize = mpzFacBase.size();
         
         for (std::size_t i = 0, step = startStep; i < nThreads; ++i, step += polysPerThread) {
-            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize));
+            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize, SieveDist.size()));
             vecPoly[i]->SetMpzFacSize(step);
 
             myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),
-                                   std::cref(SieveDist), std::cref(facBase), std::cref(LnFB),
+                                   std::cref(SieveDist), std::ref(primesAndPow), std::cref(facBase), std::cref(LnFB),
                                    std::cref(mpzFacBase), LowBound, myNum, theCut, DoubleLenB,
                                    vecMaxSize, polysPerThread);
         }
@@ -280,6 +284,7 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
 }
 
 void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
+                              const std::vector<int> &primesAndPow,
                               const std::vector<int> &facBase, const std::vector<int> &LnFB,
                               std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                               const mpz_class &LowBound, const mpz_class &myNum, int theCut,
@@ -300,7 +305,7 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         mpzFacBase.push_back(NextPrime);
         ++mpzFacSize;
 
-        SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
+        SinglePoly(SieveDist, primesAndPow, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    myStart, partFactorsMap, partIntvlMap, smoothInterval,
                    largeCoFactors, partialInterval, NextPrime, LowBound,
                    myNum, nPartial, nSmooth, theCut, DoubleLenB,

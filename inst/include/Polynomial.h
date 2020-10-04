@@ -39,6 +39,7 @@ private:
     void SetMpzFacSize(int _mpzFacSize) {mpzFacSize = _mpzFacSize;}
     
     void SievePolys(const std::vector<std::size_t> &SieveDist,
+                    const std::vector<int> &primesAndPow,
                     const std::vector<int> &facBase, const std::vector<int> &LnFB, 
                     const std::vector<mpz_class> &mpzFacBase,
                     const mpz_class &LowBound, const mpz_class &myNum,
@@ -47,17 +48,19 @@ private:
     
 public:
     
-    Polynomial(std::size_t _facSize);
-    
-    Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum);
+    Polynomial(std::size_t _facSize, std::size_t SieveDistSize);
+    Polynomial(std::size_t _facSize, std::size_t SieveDistSize,
+               bool _bShowStats, const mpz_class &myNum);
     
     void InitialParSieve(const std::vector<std::size_t> &SieveDist,
+                         const std::vector<int> &primesAndPow,
                          const std::vector<int> &facBase, const std::vector<int> &LnFB,
                          std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                          const mpz_class &LowBound, const mpz_class &myNum, int theCut,
                          int DoubleLenB, int vecMaxSize, typeTimePoint checkPoint0);
     
     void FactorParallel(const std::vector<std::size_t> &SieveDist,
+                        const std::vector<int> &primesAndPow,
                         const std::vector<int> &facBase, const std::vector<int> &LnFB,
                         std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                         const mpz_class &LowBound, const mpz_class &myNum, int theCut,
@@ -65,6 +68,7 @@ public:
                         std::size_t nThreads);
     
     void FactorSerial(const std::vector<std::size_t> &SieveDist,
+                      const std::vector<int> &primesAndPow,
                       const std::vector<int> &facBase, const std::vector<int> &LnFB,
                       std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
                       const mpz_class &LowBound, const mpz_class &myNum, int theCut,

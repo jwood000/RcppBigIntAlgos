@@ -16,12 +16,15 @@ using hash64vec = std::unordered_map<std::uint64_t, std::vector<int>>;
 using hash64mpz = std::unordered_map<std::uint64_t, mpz_class>;
 
 std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
-                                      const mpz_class &myNum);
+                                      std::vector<int> &primesAndPows,
+                                      std::vector<int> &LnFB, const mpz_class &myNum,
+                                      std::size_t DoubleLenB, int minPrime);
 
 std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudge1,
                                   double sqrLogLog, std::size_t myTarget);
 
 void SinglePoly(const std::vector<std::size_t> &SieveDist,
+                const std::vector<int> &primesAndPow,
                 const std::vector<int> &facBase, const std::vector<int> &LnFB,
                 vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
                 std::vector<int> &myStart, hash64vec &partFactorsMap,
@@ -31,6 +34,6 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 const mpz_class &NextPrime, const mpz_class &LowBound,
                 const mpz_class &myNum, std::size_t &nPartial,
                 std::size_t &nSmooth, int theCut,int DoubleLenB,
-                int mpzFacSize, int vecMaxSize, std::size_t strt);
+                int mpzFacSize, int vecMaxSize);
 
 #endif
