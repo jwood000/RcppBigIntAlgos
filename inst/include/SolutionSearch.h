@@ -1,7 +1,6 @@
 #ifndef SOLUTION_SEARCH_H
 #define SOLUTION_SEARCH_H
 
-#include "SieveUtils.h"
 #include "ReduceMatrix.h"
 
 void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,

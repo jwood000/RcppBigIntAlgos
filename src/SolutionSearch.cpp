@@ -2,30 +2,49 @@
 #include "StatsUtils.h"
 #include <random>
 
-void ProcessFreeMat(const std::vector<std::uint8_t> &nullMat,
+std::vector<std::uint8_t> MyIntToBit(std::size_t x, std::size_t dig) {
+    
+    std::vector<std::uint8_t> binaryVec(dig);
+    
+    for (std::size_t i = 0; x > 0; ++i) {
+        binaryVec[i] = x % 2;
+        x >>= 1;
+    }
+    
+    return binaryVec;
+}
+
+void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
                     const std::vector<std::size_t> &myCols,
                     std::vector<std::uint8_t> &freeMat,
                     std::size_t newNrow, std::size_t nCols) {
     
     const std::size_t freeMatSize = freeMat.size();
+    const std::size_t adjustedCols = (nCols + wordSize - 1) / wordSize;
 
     for (int i = newNrow - 1; i >= 0; --i) {
-        std::vector<int> temp;
+        std::vector<std::size_t> nonTriv;
         
-        for (int j = i + 1; j < static_cast<int>(nCols); ++j)
-            if (nullMat[i * nCols + j])
-                temp.push_back(j);
-
-        if (!temp.empty()) {
-            if (temp.front() >= static_cast<int>(newNrow)) {
-                for (const auto t: temp)
-                    for (std::size_t j = 0; j < freeMatSize; j += nCols)
-                        if (freeMat[myCols[t] + j])
-                            freeMat[myCols[i] + j] = 1u;
+        for (std::size_t j = i + 1, myRow = i * adjustedCols; j < nCols; ++j)
+            if (nullMat[myRow + j / wordSize].test(j % wordSize))
+                nonTriv.push_back(j);
+        
+        if (!nonTriv.empty()) {
+            if (nonTriv.front() >= newNrow) {
+                for (std::size_t t = 0, col1 = myCols[i]; t < nonTriv.size(); ++t) {
+                    for (std::size_t j = 0,
+                         col2 = myCols[nonTriv[t]]; j < freeMatSize; j += nCols) {
+                        if (freeMat[col2 + j])
+                            freeMat[col1 + j] = 1u;
+                    }
+                }
             } else {
-                for (const auto t: temp)
-                    for (std::size_t j = 0; j < freeMatSize; j += nCols)
-                        freeMat[myCols[i] + j] ^= freeMat[myCols[t] + j];
+                for (std::size_t t = 0, col1 = myCols[i]; t < nonTriv.size(); ++t) {
+                    for (std::size_t j = 0,
+                         col2 = myCols[nonTriv[t]]; j < freeMatSize; j += nCols) {
+                        freeMat[col1 + j] ^= freeMat[col2 + j];
+                    }
+                }
             }
         }
     }
@@ -128,9 +147,12 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     
     const std::size_t matSize = mat.size();
     const std::size_t nCols = matNRows;
+    const std::size_t adjustedCols = (nCols + wordSize - 1) / wordSize;
+    std::size_t nRows = 0;
     
-    std::vector<std::uint8_t> nullMat;
-    nullMat.reserve(matSize);
+    std::vector<std::bitset<wordSize>> nullMat;
+    const std::size_t maxNullSize = (matSize + wordSize - 1u) / wordSize;
+    nullMat.reserve(maxNullSize);
     
     for (std::size_t j = 0; j < matNCols; ++j) {
         std::size_t i = 0;
@@ -138,12 +160,21 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         while ((i < matSize) && ((mat[i + j] % 2u) == 0))
             i += matNCols;
         
-        if (i < matSize)
-            for (std::size_t k = 0; k < matSize; k += matNCols)
-                nullMat.push_back(mat[k + j] % 2u);
+        if (i < matSize) {
+            for (std::size_t k = 0; k < matSize;) {
+                std::bitset<wordSize> num;
+                
+                for (std::size_t r = 0; r < wordSize && k < matSize; ++r, k += matNCols)
+                    if (mat[k + j] % 2u)
+                        num.set(r);
+                
+                nullMat.push_back(num);
+            }
+            
+            ++nRows;
+        }
     }
     
-    const std::size_t nRows = nullMat.size() / nCols;
     std::vector<std::size_t> myCols(nCols, 0);
     std::iota(myCols.begin(), myCols.end(), 0);
     
@@ -151,15 +182,13 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
     }
     
-    ReduceMatrix(nullMat, myCols, 
-                 static_cast<int>(nCols),
-                 static_cast<int>(nRows));
+    ReduceMatrix(nullMat, myCols, nCols, nRows);
     
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
     }
     
-    const std::size_t newNrow = nullMat.size() / nCols;
+    const std::size_t newNrow =  nullMat.size() / adjustedCols;
     std::vector<std::size_t> freeVariables;
 
     if (nCols > newNrow && newNrow > 0) {
@@ -170,7 +199,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
         const std::size_t myMin = freeVariables.front();
 
         const std::size_t lenFree = freeVariables.size();
-        std::vector<std::uint8_t> freeMat(lenFree * nCols, 0u);
+        std::vector<std::uint8_t> freeMat(lenFree * nCols);
 
         std::transform(freeVariables.begin(), freeVariables.end(),
                        freeVariables.begin(), [myMin](std::size_t f) {return f - myMin;});
@@ -185,8 +214,8 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
             freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
 
         ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
-        
         mpz_class mpzTemp1, cppNum(myNum);
+
         mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
         --mpzTemp1;
 

@@ -1,15 +1,18 @@
 #ifndef REDUCE_MATRIX_H
 #define REDUCE_MATRIX_H
 
+#include "GmpxxCopy.h"
 #include <vector>
-#include <algorithm>
+#include <numeric>
 #include <cstdint>
+#include <cmath>
+#include <bitset>
 
-constexpr int unrollSize = 8;
-constexpr std::uint8_t u8one = static_cast<std::uint8_t>(1u) << 0;
+constexpr unsigned long int oneThousand = 1000u;
+constexpr size_t wordSize = sizeof(std::bitset<1>) * 8;
 
-void ReduceMatrix(std::vector<std::uint8_t> &nullMat,
+void ReduceMatrix(std::vector<std::bitset<wordSize>> &nullMat,
                   std::vector<std::size_t> &myCols,
-                  int nCols, int nRows);
+                  std::size_t nCols, std::size_t nRows);
 
 #endif
