@@ -1,6 +1,5 @@
 #include "Polynomial.h"
 #include "SolutionSearch.h"
-#include <fstream>
 #include <set>
 
 // Determined empirically
@@ -15,28 +14,28 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
                              std::vector<mpz_class> &partialIntervalBig) {
     
     powsOfSmoothsBig.insert(powsOfSmoothsBig.end(),
-                            std::make_move_iterator(powsOfSmooths.cbegin()),
-                            std::make_move_iterator(powsOfSmooths.cend())
+                            std::make_move_iterator(powsOfSmooths.begin()),
+                            std::make_move_iterator(powsOfSmooths.end())
     );
     
     powsOfPartialsBig.insert(powsOfPartialsBig.end(),
-                             std::make_move_iterator(powsOfPartials.cbegin()),
-                             std::make_move_iterator(powsOfPartials.cend())
+                             std::make_move_iterator(powsOfPartials.begin()),
+                             std::make_move_iterator(powsOfPartials.end())
     );
     
     smoothIntervalBig.insert(smoothIntervalBig.end(),
-                             std::make_move_iterator(smoothInterval.cbegin()),
-                             std::make_move_iterator(smoothInterval.cend())
+                             std::make_move_iterator(smoothInterval.begin()),
+                             std::make_move_iterator(smoothInterval.end())
     );
     
     partialIntervalBig.insert(partialIntervalBig.end(),
-                              std::make_move_iterator(partialInterval.cbegin()),
-                              std::make_move_iterator(partialInterval.cend())
+                              std::make_move_iterator(partialInterval.begin()),
+                              std::make_move_iterator(partialInterval.end())
     );
     
     largeCoFactorsBig.insert(largeCoFactorsBig.end(),
-                             std::make_move_iterator(largeCoFactors.cbegin()),
-                             std::make_move_iterator(largeCoFactors.cend())
+                             std::make_move_iterator(largeCoFactors.begin()),
+                             std::make_move_iterator(largeCoFactors.end())
     );
     
     std::vector<uint64_t> deleteLater;

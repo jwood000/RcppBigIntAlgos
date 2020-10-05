@@ -50,7 +50,7 @@ void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
     }
 }
 
-bool GetSolution(const std::vector<std::uint8_t> &freeMat,
+char GetSolution(const std::vector<std::uint8_t> &freeMat,
                  const std::vector<std::uint8_t> &mat,
                  const std::vector<std::size_t> &freeVariables,
                  const std::vector<mpz_class> &mpzFacBase,
@@ -63,7 +63,7 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
     std::vector<std::uint8_t> posVec(nCols, 0u);
     const std::vector<std::uint8_t> posAns = MyIntToBit(ind, lenFree);
     
-    bool bSuccess = false;
+    char bSuccess = 0;
     
     for (std::size_t i = 0; i < freeVariables.size(); ++i)
         for (std::size_t k = 0, j = i * nCols; k < nCols; ++k, ++j)
@@ -122,7 +122,7 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
                     factors[threadInd * 2] = mpzTemp2;
                 }
                 
-                bSuccess = true;
+                bSuccess = 1;
             }
         }
     }
@@ -242,14 +242,14 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
 
         if (nThreads > 1) {
             std::vector<mpz_class> vecFactors(nThreads * 2);
-            std::vector<std::future<bool>> myFutures(nThreads);
-            std::vector<bool> vecSuccess(nThreads);
+            std::vector<std::future<char>> myFutures(nThreads);
+            std::vector<char> vecSuccess(nThreads);
 
             for (std::size_t i = 0; i < sampSize && !bSuccess;) {
                 RcppThread::ThreadPool pool(nThreads);
 
                 for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
-                    myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
+                    myFutures[thrd] = pool.pushReturn(GetSolution, std::cref(freeMat),
                                                       std::cref(mat), std::cref(freeVariables),
                                                       std::cref(mpzFacBase), std::cref(testInterval),
                                                       std::ref(vecFactors), std::cref(cppNum), nCols,
@@ -262,7 +262,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                     vecSuccess[j] = myFutures[j].get();
 
                 bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
-                                       [](bool v) {return v;});
+                                       [](char v) {return v;});
             }
 
             for (std::size_t j = 0; j < nThreads; ++j) {
