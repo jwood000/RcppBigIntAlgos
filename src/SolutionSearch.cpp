@@ -21,15 +21,14 @@ void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
     
     const std::size_t freeMatSize = freeMat.size();
     const std::size_t adjustedCols = (nCols + wordSize - 1) / wordSize;
-    const std::size_t nColsWordSize = (nCols / wordSize) * nCols;
-
+    
     for (int i = newNrow - 1; i >= 0; --i) {
         std::vector<std::size_t> nonTriv;
         
         for (std::size_t j = i + 1, myRow = i * adjustedCols; j < nCols; ++j)
             if (nullMat[myRow + j / wordSize].test(j % wordSize))
                 nonTriv.push_back(j);
-        
+            
         if (!nonTriv.empty()) {
             if (nonTriv.front() >= newNrow) {
                 for (std::size_t t = 0, col1 = myCols[i]; t < nonTriv.size(); ++t) {
@@ -51,7 +50,7 @@ void ProcessFreeMat(const std::vector<std::bitset<wordSize>> &nullMat,
     }
 }
 
-bool GetSolution(const std::vector<std::uint8_t> &freeMat,
+char GetSolution(const std::vector<std::uint8_t> &freeMat,
                  const std::vector<std::uint8_t> &mat,
                  const std::vector<std::size_t> &freeVariables,
                  const std::vector<mpz_class> &mpzFacBase,
@@ -64,17 +63,17 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
     std::vector<std::uint8_t> posVec(nCols, 0u);
     const std::vector<std::uint8_t> posAns = MyIntToBit(ind, lenFree);
     
-    bool bSuccess = false;
+    char bSuccess = 0;
     
     for (std::size_t i = 0; i < freeVariables.size(); ++i)
         for (std::size_t k = 0, j = i * nCols; k < nCols; ++k, ++j)
             if (freeMat[j])
                 posVec[k] ^= posAns[i];
-    
+            
     for (std::size_t k = 0; k < nCols; ++k)
         if (posVec[k])
             ansVec.push_back(k);
-
+        
     if (!ansVec.empty()) {
         std::size_t myCheck = 0;
         std::vector<std::size_t> yExponents(matNCols, 0);
@@ -123,7 +122,7 @@ bool GetSolution(const std::vector<std::uint8_t> &freeMat,
                     factors[threadInd * 2] = mpzTemp2;
                 }
                 
-                bSuccess = true;
+                bSuccess = 1;
             }
         }
     }
@@ -168,7 +167,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
                 for (std::size_t r = 0; r < wordSize && k < matSize; ++r, k += matNCols)
                     if (mat[k + j] % 2u)
                         num.set(r);
-                
+                    
                 nullMat.push_back(num);
             }
             
@@ -191,81 +190,81 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
     
     const std::size_t newNrow =  nullMat.size() / adjustedCols;
     std::vector<std::size_t> freeVariables;
-
+    
     if (nCols > newNrow && newNrow > 0) {
         for (std::size_t i = newNrow; i < nCols; ++i)
             freeVariables.push_back(myCols[i]);
-
+        
         std::sort(freeVariables.begin(), freeVariables.end());
         const std::size_t myMin = freeVariables.front();
-
+        
         const std::size_t lenFree = freeVariables.size();
         std::vector<std::uint8_t> freeMat(lenFree * nCols);
-
+        
         std::transform(freeVariables.begin(), freeVariables.end(),
                        freeVariables.begin(), [myMin](std::size_t f) {return f - myMin;});
-
+        
         // freeVariables isn't guranteed to be contiguous. That is,
         // we would have freeVarabiables = {10, 14, 15, 17}. This means
         // that lenFree = 4, and since the dimensions of freeMat is
         // based off of lenFree and not the range of (fV), we must
         // take care not to access memory we don't own.
-
+        
         for (std::size_t i = 0; i < freeVariables.size(); ++i)
             freeMat[i * nCols + freeVariables[i] + myMin] = 1u;
-
+        
         ProcessFreeMat(nullMat, myCols, freeMat, newNrow, nCols);
         mpz_class mpzTemp1, cppNum(myNum);
-
+        
         mpz_ui_pow_ui(mpzTemp1.get_mpz_t(), 2, lenFree);
         --mpzTemp1;
-
+        
         const unsigned long int myLim = (cmp(mpzTemp1, std::numeric_limits<unsigned long int>::max()) > 0)
-                                    ? std::numeric_limits<unsigned long int>::max() : mpzTemp1.get_ui();
-
+            ? std::numeric_limits<unsigned long int>::max() : mpzTemp1.get_ui();
+        
         const std::size_t sampSize = nThreads * (((myLim > oneThousand)
                                                       ? oneThousand : myLim) / nThreads);
-
+        
         bool bSuccess = false;
         std::mt19937 mersenne_engine(42);
         std::uniform_int_distribution<unsigned long int> dist(1, myLim);
-
+        
         auto gen = [&dist, &mersenne_engine](){
             return dist(mersenne_engine);
         };
-
+        
         std::vector<unsigned long int> sample(sampSize);
         std::generate(sample.begin(), sample.end(), gen);
-
+        
         if (bShowStats) {
             TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
         }
-
+        
         if (nThreads > 1) {
             std::vector<mpz_class> vecFactors(nThreads * 2);
-            std::vector<std::future<bool>> myFutures(nThreads);
-            std::vector<bool> vecSuccess(nThreads);
-
+            std::vector<std::future<char>> myFutures(nThreads);
+            std::vector<char> vecSuccess(nThreads);
+            
             for (std::size_t i = 0; i < sampSize && !bSuccess;) {
                 RcppThread::ThreadPool pool(nThreads);
-
+                
                 for (std::size_t thrd = 0; thrd < nThreads; ++thrd, ++i) {
-                    myFutures[thrd] = pool.pushReturn(std::cref(GetSolution), std::cref(freeMat),
+                    myFutures[thrd] = pool.pushReturn(GetSolution, std::cref(freeMat),
                                                       std::cref(mat), std::cref(freeVariables),
                                                       std::cref(mpzFacBase), std::cref(testInterval),
                                                       std::ref(vecFactors), std::cref(cppNum), nCols,
                                                       matNCols, sample[i], lenFree, thrd);
                 }
-
+                
                 pool.join();
-
+                
                 for (std::size_t j = 0; j < nThreads; ++j)
                     vecSuccess[j] = myFutures[j].get();
-
+                
                 bSuccess = std::any_of(vecSuccess.begin(), vecSuccess.end(),
-                                       [](bool v) {return v;});
+                                       [](char v) {return v;});
             }
-
+            
             for (std::size_t j = 0; j < nThreads; ++j) {
                 if (vecSuccess[j]) {
                     factors[0] = vecFactors[j * 2];
@@ -281,7 +280,7 @@ void SolutionSearch(const std::vector<std::uint8_t> &mat, std::size_t matNRows,
             }
         }
     }
-
+    
     if (bShowStats) {
         TwoColumnStats(std::chrono::steady_clock::now() - t0, nRows, nCols);
         RcppThread::Rcout << "\n" << std::endl;
