@@ -33,8 +33,8 @@ int64_t GetPowIndex(const mpz_class &myNum,
 // Getting quadratic residues. See TonelliShanks.cpp for more details
 std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
                                       std::vector<int> &primesAndPows,
-                                      std::vector<int> &LnFB, const mpz_class &myNum,
-                                      std::size_t DoubleLenB, int minPrime) {
+                                      std::vector<int> &LnFB,
+                                      const mpz_class &myNum, int minPrime) {
     
     const std::size_t facSize = facBase.size();
     std::vector<std::size_t> SieveDist;
@@ -42,7 +42,7 @@ std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
     
     for (std::size_t i = 1; i < facSize; ++i) {
         int64_t primePow = facBase[i];
-        const int myLog = std::floor(100.0 * 
+        const int myLog = std::floor(50.0 * 
                                      std::log(static_cast<double>(facBase[i])));
         
         p = facBase[i];
@@ -64,14 +64,14 @@ std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
             
             SieveDist.push_back(static_cast<unsigned long int>(r1));
             SieveDist.push_back(static_cast<unsigned long int>(r2));
-            LnFB.push_back(std::floor(100.0 * 
+            LnFB.push_back(std::floor(50.0 * 
                 std::log(static_cast<double>(primePow))));
         }
         
         primesAndPows.push_back(primePow);
         primePow *= static_cast<int64_t>(facBase[i]);
         
-        for (; primePow < DoubleLenB;) {
+        for (; primePow < facBase.back();) {
             r1 = GetPowIndex(myNum, temp, r1, primePow);
             r2 = GetPowIndex(myNum, temp, r2, primePow);
             
@@ -83,6 +83,25 @@ std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
             primePow *= static_cast<int64_t>(facBase[i]);
         }
     }
+    
+    // std::vector<int> indices(primesAndPows.size());
+    // std::iota(indices.begin(), indices.end(), 0);
+    // 
+    // // Get an ordering of primesAndPow by index
+    // std::sort(indices.begin(), indices.end(),
+    //           [&](int i, int j) -> bool {
+    //               return primesAndPows[i] < primesAndPows[j];
+    //           });
+    // 
+    // std::vector<std::size_t> SortedSieveDist(SieveDist.size());
+    // 
+    // for (std::size_t i = 0; i < indices.size(); ++i) {
+    //     SortedSieveDist[i * 2] = SieveDist[indices[i] * 2];
+    //     SortedSieveDist[i * 2 + 1] = SieveDist[indices[i] * 2 + 1];
+    // }
+    // 
+    // std::sort(primesAndPows.begin(), primesAndPows.end());
+    // std::sort(LnFB.begin(), LnFB.end());
     
     return SieveDist;
 }

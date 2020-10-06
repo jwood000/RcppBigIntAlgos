@@ -5,7 +5,6 @@
 
 // Determined empirically
 constexpr std::size_t MinPolysPerThrd = 40u;
-
 constexpr std::size_t bigFacsTWO = 2u;
 constexpr std::size_t bigFacsFOUR = 4u;
 
