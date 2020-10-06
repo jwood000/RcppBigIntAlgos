@@ -2,13 +2,13 @@
 
 // Getting quadratic residues. See tonellishanks.cc for more details
 std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
-                                      const mpz_class &myNum) {
+                                      const mpz_class &myNum, std::size_t strt) {
     
     const std::size_t facSize = facBase.size();
     std::vector<std::size_t> SieveDist(facSize * 2, 0u);
     mpz_class p, TS_1;
     
-    for (std::size_t i = 1; i < facSize; ++i) {
+    for (std::size_t i = strt; i < facSize; ++i) {
         p = facBase[i];
         TonelliShanksC(myNum, p, TS_1);
         SieveDist[i * 2] = TS_1.get_ui();
@@ -103,9 +103,9 @@ void SieveListsInit(const std::vector<int> &FBase, const std::vector<int> &LnFB,
                     const mpz_class &VarB, const mpz_class &LowBound, std::size_t strt) {
     
     mpz_class Temp, AUtil;
-    const int vecMaxSize = myLogs.size();
     
-    for (std::size_t i = strt, row = strt * 2, facSize = FBase.size(); i < facSize; ++i, row += 2) {
+    for (std::size_t i = strt, row = strt * 2,
+         vecMaxSize = myLogs.size(), facSize = FBase.size(); i < facSize; ++i, row += 2) {
         
         Temp = static_cast<unsigned long int>(FBase[i]);
         mpz_invert(AUtil.get_mpz_t(), VarA.get_mpz_t(), Temp.get_mpz_t());
@@ -137,14 +137,14 @@ void SieveListsInit(const std::vector<int> &FBase, const std::vector<int> &LnFB,
             myStart1 = (myMax > q) ? myMax - q : FBase[i] + myMax - q;
         }
         
-        for (int j = myStart0; j < vecMaxSize; j += FBase[i])
+        for (std::size_t j = myStart0; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        for (int j = myStart1; j < vecMaxSize; j += FBase[i])
+        for (std::size_t j = myStart1; j < vecMaxSize; j += FBase[i])
             myLogs[j] += LnFB[i];
         
-        myStart[row] = ((myStart0 - vecMaxSize) % FBase[i]) + FBase[i];
-        myStart[row + 1] = ((myStart1 - vecMaxSize) % FBase[i]) + FBase[i];
+        myStart[row] = ((myStart0 - static_cast<int>(vecMaxSize)) % FBase[i]) + FBase[i];
+        myStart[row + 1] = ((myStart1 - static_cast<int>(vecMaxSize)) % FBase[i]) + FBase[i];
     }
 }
 
