@@ -2,13 +2,13 @@
 
 // Getting quadratic residues. See tonellishanks.cc for more details
 std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
-                                      const mpz_class &myNum, std::size_t strt) {
+                                      const mpz_class &myNum) {
     
     const std::size_t facSize = facBase.size();
     std::vector<std::size_t> SieveDist(facSize * 2, 0u);
     mpz_class p, TS_1;
     
-    for (std::size_t i = strt; i < facSize; ++i) {
+    for (std::size_t i = 1; i < facSize; ++i) {
         p = facBase[i];
         TonelliShanksC(myNum, p, TS_1);
         SieveDist[i * 2] = TS_1.get_ui();
@@ -47,53 +47,63 @@ std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudg
         lastP += ind;
     }
     
-    mpz_t test, jmpz, temp;
-    mpz_init(test);
-    mpz_init(jmpz);
-    mpz_init(temp);
-    
     myps.push_back(2u);
+    mpz_class currP, nextP;
     
     for (std::size_t j = 3; j <= uN; j += 2) {
         if (primes[j]) {
-            mpz_set_si(jmpz, j);
-            mpz_set_si(temp, j);
-            mpz_sub_ui(temp, jmpz, 1u);
-            mpz_div_2exp(temp, temp, 1);
-            mpz_powm(test, myN.get_mpz_t(), temp, jmpz);
+            currP = j;
             
-            if (mpz_cmp_ui(test, 1u) == 0)
+            if (mpz_legendre(myN.get_mpz_t(), currP.get_mpz_t()) == 1)
                 myps.push_back(j);
         }
     }
     
-    mpz_clear(jmpz); mpz_clear(temp);
-    mpz_clear(test);
-    
-    mpz_t currP, nextP, resTest, CP1;
-    mpz_init(currP); mpz_init(nextP);
-    mpz_init(CP1); mpz_init(resTest);
-    
     while (myps.size() < myTarget) {
         fudge1 += 0.005;
         LimB = std::exp((0.5 + fudge1) * sqrLogLog);
-        mpz_set_ui(currP, myps.back());
-        mpz_nextprime(nextP, currP);
         
-        while (mpz_cmp_ui(nextP, LimB) < 0) {
-            mpz_set(currP, nextP);
-            mpz_nextprime(nextP, currP);
-            mpz_sub_ui(CP1, currP, 1);
-            mpz_div_2exp(CP1, CP1, 1);
-            mpz_powm(resTest, myN.get_mpz_t(), CP1, currP);
+        currP = myps.back();
+        mpz_nextprime(nextP.get_mpz_t(),
+                      currP.get_mpz_t());
+        
+        while (cmp(nextP, LimB) < 0) {
+            currP = nextP;
+            mpz_nextprime(nextP.get_mpz_t(),
+                          currP.get_mpz_t());
             
-            if (mpz_cmp_ui(resTest, 1) == 0)
-                myps.push_back(mpz_get_si(currP));
+            if (mpz_legendre(myN.get_mpz_t(), currP.get_mpz_t()) == 1)
+                myps.push_back(currP.get_si());
         }
     }
     
-    mpz_clear(currP); mpz_clear(nextP);
-    mpz_clear(CP1); mpz_clear(resTest);
+    // Ensure that the facBase is utilized to most efficiently
+    // based off the size of vecMaxSize (The size of each segment)
+    if (myps.back() > (4 *L1Cache)) {
+        double myDec = std::fmod(static_cast<double>(myps.back()) / static_cast<double>(L1Cache), 1.0);
+        
+        if (myDec > 0.5) {
+            const std::size_t biggerTarget = ((myps.back() + L1Cache - 1) / L1Cache) * L1Cache;
+            
+            while (myps.back() < biggerTarget) {
+                currP = nextP;
+                mpz_nextprime(nextP.get_mpz_t(),
+                              currP.get_mpz_t());
+                
+                if (mpz_legendre(myN.get_mpz_t(), currP.get_mpz_t()) == 1)
+                    myps.push_back(currP.get_si());
+            }
+            
+            myps.pop_back();
+        } else {
+            const std::size_t smallerTarget = (myps.back() / L1Cache) * L1Cache;
+            
+            while (myps.back() > smallerTarget) {
+                myps.pop_back();
+            }
+        }
+    }
+    
     return myps;
 }
 
