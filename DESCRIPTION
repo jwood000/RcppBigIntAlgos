@@ -1,6 +1,6 @@
 Package: RcppBigIntAlgos
 Type: Package
-Title: Factor Big Integers with the Quadratic Sieve
+Title: Factor Big Integers with the Parallel Quadratic Sieve
 Version: 0.3.3
 Authors@R: c(person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
              person("Free Software Foundation, Inc.", role ="cph"),
@@ -13,7 +13,8 @@ Description: Features the multiple polynomial quadratic sieve (MPQS) algorithm
     along with the modification of multiple polynomials introduced by Peter
     Montgomery and J. Davis as outlined by Robert D. Silverman (1987)
     <doi:10.1090/S0025-5718-1987-0866119-8>. Utilizes the C library
-    GMP (GNU Multiple Precision Arithmetic). The Pollard's rho algorithm for
+    GMP (GNU Multiple Precision Arithmetic) and 'RcppThread' for sieving
+    multiple polynomials in parallel. The Pollard's rho algorithm for
     factoring smaller numbers is the same algorithm used by the factorize
     function in the 'gmp' package.
 License: GPL (>= 2)
