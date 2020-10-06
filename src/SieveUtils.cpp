@@ -50,7 +50,7 @@ std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudg
     myps.push_back(2u);
     mpz_class currP, nextP;
     
-    for (std::size_t j = 3; j <= uN; j += 2) {
+    for (int j = 3; j <= static_cast<int>(uN); j += 2) {
         if (primes[j]) {
             currP = j;
             
@@ -83,7 +83,7 @@ std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudg
         double myDec = std::fmod(static_cast<double>(myps.back()) / static_cast<double>(L1Cache), 1.0);
         
         if (myDec > 0.5) {
-            const std::size_t biggerTarget = ((myps.back() + L1Cache - 1) / L1Cache) * L1Cache;
+            const int biggerTarget = ((myps.back() + L1Cache - 1) / L1Cache) * L1Cache;
             
             while (myps.back() < biggerTarget) {
                 currP = nextP;
@@ -96,7 +96,7 @@ std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudg
             
             myps.pop_back();
         } else {
-            const std::size_t smallerTarget = (myps.back() / L1Cache) * L1Cache;
+            const int smallerTarget = (myps.back() / L1Cache) * L1Cache;
             
             while (myps.back() > smallerTarget) {
                 myps.pop_back();
