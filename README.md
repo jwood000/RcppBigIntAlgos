@@ -174,7 +174,7 @@ Big Integer ('bigz') object of length 2:
 
 ### Using Multiple Threads
 
-As of version `0.3.0`, we utilize multiple threads. For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under a minute and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 6 minutes on my machine. I obtained the best performance when `nThreads = stdThreadMax() / 2`. When the number of threads was maximized, there was a decrease in efficiency probably due to pollution of the cache.
+As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under a minute and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 6 minutes on my machine. I obtained the best performance when `nThreads = stdThreadMax() / 2`. When the number of threads was maximized, there was a decrease in efficiency probably due to pollution of the cache.
 
 ```r
 quadraticSieve(mostWanted1983, nThreads=4, skipExtPolRho=TRUE, showStats=TRUE)
@@ -289,7 +289,7 @@ However `gmp::factorize` is more suitable for numbers smaller than 70 bits (abou
 
 ## Safely Interrupt Execution in **`quadraticSieve`**
 
-If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution. Underneath, we check for user interruption once every second.
+If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution.
 
 ```r
 ## User hits Ctrl + c
