@@ -93,9 +93,8 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     const int DoubleLenB = 2 * LenB + 1;
     
     const std::size_t facSize = facBase.size();
-    int vecMaxSize = std::min(static_cast<int>(((L1Cache + facBase.back() - 1)
-                                                    / L1Cache) * L1Cache), DoubleLenB);
-    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum);
+    const int vecMaxSize = std::min(static_cast<int>(((L1Cache + facBase.back() - 1)
+                                                        / L1Cache) * L1Cache), DoubleLenB);
     
     // This array will be passed to solutionSeach.
     std::vector<mpz_class> mpzFacBase;
@@ -106,9 +105,9 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     Temp *= static_cast<unsigned long int>(LenB);
     
     const double fudge2 = (digCount < 45) ? 1.410 :
-                          (digCount < 50) ? 1.445 :
-                          (digCount < 60) ? 1.510 : 
-                          (digCount < 65) ? 1.520 : 1.553;
+                          (digCount < 50) ? 1.440 :
+                          (digCount < 60) ? 1.505 : 
+                          (digCount < 65) ? 1.525 : 1.553;
     
     const int theCut = std::ceil(50.0 * fudge2 *
                                  static_cast<double>(mpz_sizeinbase(Temp.get_mpz_t(), 10)));
@@ -128,6 +127,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                                  [minPrime](int f) {return f > minPrime;});
     
     const std::size_t strt = std::distance(facBase.cbegin(), it) + 1u;
+    const std::vector<std::size_t> SieveDist = SetSieveDist(facBase, myNum, strt);
     
     mpz_class LowBound;
     LowBound = -1 * static_cast<int>(LenB);

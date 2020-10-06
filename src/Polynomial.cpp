@@ -246,8 +246,8 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
             thr.join();
         
         for (std::size_t i = 0; i < nThreads; ++i) {
-            vecPoly[i]->MergeMaster(powsOfSmooths, powsOfPartials, partFactorsMap,
-                                    partIntvlMap, smoothInterval,
+            vecPoly[i]->MergeMaster(powsOfSmooths, powsOfPartials,
+                                    partFactorsMap, partIntvlMap, smoothInterval,
                                     largeCoFactors, partialInterval);
         }
         
