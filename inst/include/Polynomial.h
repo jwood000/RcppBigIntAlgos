@@ -2,8 +2,8 @@
 #define POLYNOMIAL_H
 
 #include "Cpp14MakeUnique.h"
-#include "SieveUtils.h"
 #include "StatsUtils.h"
+#include "MultiPoly.h"
 
 using typeTimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 

@@ -1,5 +1,5 @@
-#ifndef SIEVE_UTILS_R
-#define SIEVE_UTILS_R
+#ifndef SIEVE_UTILS_H
+#define SIEVE_UTILS_H
 
 #include "TonelliShanks.h"
 #include <unordered_map>
@@ -20,16 +20,5 @@ std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
 
 std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudge1,
                                   double sqrLogLog, std::size_t myTarget);
-
-void SinglePoly(const std::vector<std::size_t> &SieveDist,
-                const std::vector<int> &facBase, const std::vector<int> &LnFB,
-                vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
-                std::vector<int> &myStart, hash64vec &partFactorsMap,
-                hash64mpz &partIntvlMap, std::vector<mpz_class> &smoothInterval,
-                std::vector<uint64_t> &largeCoFactors,
-                std::vector<mpz_class> &partialInterval,
-                const mpz_class &NextPrime, const mpz_class &LowBound,
-                const mpz_class &myNum, int theCut,int DoubleLenB,
-                int mpzFacSize, int vecMaxSize, std::size_t strt);
 
 #endif

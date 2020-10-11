@@ -1,5 +1,5 @@
-#ifndef TONELLISHANKS_GMP_R
-#define TONELLISHANKS_GMP_R
+#ifndef TONELLISHANKS_GMP_H
+#define TONELLISHANKS_GMP_H
 
 #include "GmpxxCopy.h"
 

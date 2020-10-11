@@ -1,12 +1,12 @@
 Package: RcppBigIntAlgos
 Type: Package
 Title: Factor Big Integers with the Parallel Quadratic Sieve
-Version: 0.3.3
+Version: 0.4.0
 Authors@R: c(person("Joseph","Wood", role=c("aut","cre"), email="jwood000@gmail.com"),
              person("Free Software Foundation, Inc.", role ="cph"),
              person("Mike","Tryczak", role="ctb"))
 Maintainer: Joseph Wood <jwood000@gmail.com>
-Description: Features the multiple polynomial quadratic sieve (MPQS) algorithm
+Description: Features the self initializing quadratic sieve (MPQS) algorithm
     for factoring large integers and a vectorized factoring function that
     returns the complete factorization of an integer. The MPQS is based off of
     the seminal work of Carl Pomerance (1984) <doi:10.1007/3-540-39757-4_17>

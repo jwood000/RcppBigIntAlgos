@@ -1,5 +1,5 @@
-#ifndef POLLARDRHO_GMP_R
-#define POLLARDRHO_GMP_R
+#ifndef POLLARDRHO_GMP_H
+#define POLLARDRHO_GMP_H
 
 #include <Rcpp.h>
 #include "GmpxxCopy.h"
