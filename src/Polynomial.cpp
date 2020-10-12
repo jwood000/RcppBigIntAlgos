@@ -73,7 +73,7 @@ Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &
     
     powsOfSmooths.reserve(_facSize);
     powsOfPartials.reserve(_facSize);
-    myStart.assign(_facSize * 2, 0u);
+    myStart.assign(_facSize * 2, 0);
     
     nPolys = 0;
     nPartial = 0;
@@ -89,7 +89,7 @@ Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &
 Polynomial::Polynomial(std::size_t _facSize) : 
     SaPThresh(_facSize), facSize(_facSize), bShowStats(false) {
 
-    myStart.assign(_facSize * 2, 0u);
+    myStart.assign(_facSize * 2, 0);
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
