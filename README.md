@@ -174,29 +174,33 @@ Big Integer ('bigz') object of length 2:
 
 ### Using Multiple Threads
 
-As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under a minute and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 6 minutes on my machine. I obtained the best performance when `nThreads = stdThreadMax() / 2`. When the number of threads was maximized, there was a decrease in efficiency probably due to pollution of the cache.
+As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in under 40 seconds and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 5 minutes on my machine. When the number of threads was maximized, there was a decrease in efficiency probably due to pollution of the cache.
 
 ```r
-quadraticSieve(mostWanted1983, nThreads=4, skipExtPolRho=TRUE, showStats=TRUE)
+stdThreadMax()
+[1] 8
+
+mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
+quadraticSieve(mostWanted1983, showStats = TRUE, nThreads=6, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     11111111111111111111111111111111111111111111111111111111111111111111111
 
 |  Pollard Rho Time  |
 |--------------------|
-|        52ms        |
+|        63ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      34s 765ms     |   100%   |    15919    |    4511    |    4461    |
+|      31s 405ms     |   100%   |    18787    |    4268    |    4168    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      5s 123ms      |     8836 x 8972    |
+|      4s 228ms      |     8322 x 8436    |
 
 |     Total Time     |
 |--------------------|
-|      40s 133ms     |
+|      35s 924ms     |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -204,27 +208,27 @@ Big Integer ('bigz') object of length 2:
 
 ## ***************************************************************************
 
-
-quadraticSieve(rsa79, showStats=TRUE, nThreads=4, skipExtPolRho=TRUE)
+rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
+quadraticSieve(rsa79, showStats = TRUE, nThreads=6, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     7293469445285646172092483905177589838606665884410340391954917800303813280275279
 
 |  Pollard Rho Time  |
 |--------------------|
-|        66ms        |
+|        67ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    5m 19s 965ms    |   100%   |    100725   |    5581    |    7166    |
+|    4m 17s 951ms    |   100%   |    97081    |    5718    |    7029    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      12s 694ms     |    12605 x 12747   |
+|      14s 399ms     |    12609 x 12747   |
 
 |     Total Time     |
 |--------------------|
-|    5m 33s 179ms    |
+|    4m 32s 997ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
