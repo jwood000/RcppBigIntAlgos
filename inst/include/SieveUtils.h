@@ -15,21 +15,22 @@ using vec2dint = std::vector<std::vector<int>>;
 using hash64vec = std::unordered_map<std::uint64_t, std::vector<int>>;
 using hash64mpz = std::unordered_map<std::uint64_t, mpz_class>;
 
-std::vector<std::size_t> SetSieveDist(const std::vector<int> &facBase,
+std::vector<std::size_t> GetSieveDist(const std::vector<int> &facBase,
                                       const mpz_class &myNum);
 
 std::vector<int> GetPrimesQuadRes(const mpz_class &myN, double LimB, double fudge1,
                                   double sqrLogLog, std::size_t myTarget);
 
 void SinglePoly(const std::vector<std::size_t> &SieveDist,
-                const std::vector<int> &facBase, const std::vector<int> &LnFB,
-                vec2dint &powsOfSmooths, vec2dint &powsOfPartials,
-                std::vector<int> &myStart, hash64vec &partFactorsMap,
-                hash64mpz &partIntvlMap, std::vector<mpz_class> &smoothInterval,
+                const std::vector<int> &facBase,
+                const std::vector<int> &LnFB, vec2dint &powsOfSmooths,
+                vec2dint &powsOfPartials, std::vector<int> &myStart,
+                hash64vec &partFactorsMap, hash64mpz &partIntvlMap,
+                std::vector<mpz_class> &smoothInterval,
                 std::vector<uint64_t> &largeCoFactors,
                 std::vector<mpz_class> &partialInterval,
-                const mpz_class &NextPrime, const mpz_class &LowBound,
-                const mpz_class &myNum, int theCut,int DoubleLenB,
-                int mpzFacSize, int vecMaxSize, std::size_t strt);
+                const mpz_class &NextPrime, const mpz_class &myNum,
+                int LowBound, int theCut, int TwiceLenB, int mpzFacSize,
+                int vecMaxSize, std::size_t strt);
 
 #endif
