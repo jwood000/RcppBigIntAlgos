@@ -45,19 +45,57 @@ constexpr std::size_t ParBitCutOff = 160u;
 //     
 //     Coefficients:
 //     (Intercept)  DigSize[10:11]  
-//        -2300.00              45
+//        -2100.00           41.67
 //
 // ***********************************************************************
 
-inline double GetIntervalSize(double dig) {
-    if (dig < 85) {
-        return std::ceil(34.0943408 * dig - 1.4227370
-                             * std::pow(dig, 2.0) + 0.0253568
-                             * std::pow(dig, 3.0) - 0.0001237
-                             * std::pow(dig, 4.0) - 300.8135198);
+double GetIntervalSize(double nDig) {
+    if (nDig < 85) {
+        return std::ceil(34.0943408 * nDig - 1.4227370
+                             * std::pow(nDig, 2.0) + 0.0253568
+                             * std::pow(nDig, 3.0) - 0.0001237
+                             * std::pow(nDig, 4.0) - 300.8135198);
     } else {
-        return std::ceil(41.67 * dig - 2100.0);
+        return std::ceil(41.67 * nDig - 2100.0);
     }
+}
+
+// The idea is that we are trying to minimize the size of myLogs, an essential
+// vector in the sieving section
+int GetVecMax(int maxBasePrime, int tempLenB, std::size_t nThreads) {
+    
+    int vecMaxSize = std::min(static_cast<int>(((L1Cache + maxBasePrime - 1)
+                                                    / L1Cache) * L1Cache),
+                                                    2 * tempLenB);
+    if (vecMaxSize < (2 * tempLenB)) {
+        int myDiv = 1;
+        
+        for (; (vecMaxSize / myDiv) > (8 * L1Cache) && myDiv < L1Cache;)
+            myDiv *= 2;
+        
+        if (myDiv == 1 && (vecMaxSize > (4 * L1Cache)) && nThreads > 1) {
+            vecMaxSize = (4 * L1Cache);
+        } else {
+            const int baseVecMax = L1Cache / myDiv;
+            int myMult = std::numeric_limits<int>::max();
+            int myIndex = 0;
+            
+            for (int i = myDiv; (i * baseVecMax) < (8 * L1Cache); ++i) {
+                vecMaxSize = i * baseVecMax;
+                
+                int tempMult = (maxBasePrime + vecMaxSize - 1) / vecMaxSize;
+                
+                if (tempMult < myMult) {
+                    myMult = tempMult;
+                    myIndex = i;
+                }
+            }
+            
+            vecMaxSize = myIndex * baseVecMax;
+        }
+    }
+    
+    return vecMaxSize;
 }
 
 void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
@@ -88,20 +126,12 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     
     const std::vector<int> facBase = GetPrimesQuadRes(myNum, LimB, fudge1, sqrLogLog, myTarget);
     const double dblLenB = GetIntervalSize(dblDigCount);
+    unsigned long int LenB = dblLenB * 1000;
     
-    std::size_t LenB = static_cast<std::size_t>(dblLenB) * 1000;
     const std::size_t facSize = facBase.size();
-    int vecMaxSize = std::min(static_cast<int>(((L1Cache + facBase.back() - 1)
-                                                / L1Cache) * L1Cache), static_cast<int>(2 * LenB));
+    const int vecMaxSize = GetVecMax(facBase.back(), LenB, nThreads);
     
-    int myDiv = 2;
-    
-    if (vecMaxSize > 8 * L1Cache) {
-        vecMaxSize = vecMaxSize / 2;
-        myDiv = 1;
-    }
-    
-    if (vecMaxSize < 2 * LenB) {LenB = (vecMaxSize / myDiv) * (1 + LenB / (vecMaxSize / myDiv));}
+    if (vecMaxSize < 2 * LenB) {LenB = (vecMaxSize) * (1 + LenB / (vecMaxSize));}
     const int TwiceLenB = 2 * LenB;
     
     // This array will be passed to solutionSeach.
@@ -109,8 +139,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     
     mpz_class Temp;
     Temp = myNum * 2;
-    Temp = sqrt(Temp);
-    Temp *= static_cast<unsigned long int>(LenB);
+    Temp = sqrt(Temp) * LenB;
     
     const double fudge2 = (digCount < 45) ? 1.410 :
                           (digCount < 50) ? 1.440 :
@@ -127,9 +156,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
         LnFB[i] = std::floor(50.0 * std::log(static_cast<double>(facBase[i])));
     }
     
-    Temp = sqrt(myNum);
-    Temp -= static_cast<unsigned long int>(LenB);
-    
+    Temp = sqrt(myNum) - LenB;
     const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
     const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
                                  [minPrime](int f) {return f > minPrime;});
@@ -141,7 +168,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     mpz_class NextPrime;
     mpz_mul_2exp(NextPrime.get_mpz_t(), myNum.get_mpz_t(), 1);
     NextPrime = sqrt(NextPrime);
-    NextPrime /= static_cast<unsigned long int>(LenB);
+    NextPrime /= LenB;
     NextPrime = sqrt(NextPrime);
     
     if (cmp(NextPrime, facBase.back()) < 0)
