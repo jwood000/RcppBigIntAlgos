@@ -31,6 +31,6 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 std::vector<mpz_class> &partialInterval,
                 const mpz_class &NextPrime, const mpz_class &myNum,
                 int LowBound, int theCut, int TwiceLenB, int mpzFacSize,
-                int vecMaxSize, std::size_t strt);
+                int vecMaxSize, std::size_t strt, std::size_t vecMaxStrt);
 
 #endif

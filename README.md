@@ -215,19 +215,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        60ms        |
+|        56ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      28s 81ms      |   100%   |    17665    |    4165    |    4270    |
+|      28s 119ms     |   100%   |    17376    |    4111    |    4324    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      4s 449ms      |     8311 x 8435    |
+|      4s 463ms      |     8311 x 8435    |
 
 |     Total Time     |
 |--------------------|
-|      32s 817ms     |
+|      32s 846ms     |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -237,7 +237,6 @@ Big Integer ('bigz') object of length 2:
 ### RSA-79
 
 ```r
-
 rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
 quadraticSieve(rsa79, showStats = TRUE, nThreads=6, skipExtPolRho=TRUE)
 
@@ -250,15 +249,15 @@ Summary Statistics for Factoring:
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    4m 17s 951ms    |   100%   |    97081    |    5718    |    7029    |
+|     4m 7s 442ms    |   100%   |    96213    |    5682    |    7069    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      14s 399ms     |    12609 x 12747   |
+|      14s 381ms     |    12615 x 12751   |
 
 |     Total Time     |
 |--------------------|
-|    4m 32s 997ms    |
+|    4m 22s 452ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727

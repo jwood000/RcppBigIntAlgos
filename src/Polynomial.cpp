@@ -116,7 +116,8 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
                             const std::vector<mpz_class> &mpzFacBase,
                             const mpz_class &myNum, int LowBound,
                             int theCut, int TwiceLenB, int vecMaxSize,
-                            std::size_t strt, std::size_t polyLimit) {
+                            std::size_t strt, std::size_t vecMaxStrt,
+                            std::size_t polyLimit) {
     
     for (std::size_t poly = 0; poly < polyLimit; ++poly) {
         ++mpzFacSize;
@@ -124,7 +125,8 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    myStart, partFactorsMap, partIntvlMap, smoothInterval,
                    largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
-                   myNum, LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize, strt);
+                   myNum, LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
+                   strt, vecMaxStrt);
     }
 }
 
@@ -135,7 +137,7 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
                                  mpz_class &NextPrime, const mpz_class &myNum,
                                  int LowBound, int theCut, int TwiceLenB,
                                  int vecMaxSize, std::size_t strt,
-                                 typeTimePoint checkPoint0) {
+                                 std::size_t vecMaxStrt, typeTimePoint checkPoint0) {
     
     auto checkPoint1 = std::chrono::steady_clock::now();
     auto checkPoint2 = checkPoint1;
@@ -144,7 +146,7 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
     GetNPrimes(mpzFacBase, NextPrime, myNum, MinPolysPerThrd);
     
     SievePolys(SieveDist, facBase, LnFB, mpzFacBase, myNum, LowBound,
-               theCut, TwiceLenB, vecMaxSize, strt, MinPolysPerThrd);
+               theCut, TwiceLenB, vecMaxSize, strt, vecMaxStrt, MinPolysPerThrd);
     
     nPolys = MinPolysPerThrd;
     nSmooth = smoothInterval.size();
@@ -209,14 +211,16 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
                                 std::vector<mpz_class> &mpzFacBase,
                                 mpz_class &NextPrime, const mpz_class &myNum,
                                 int LowBound, int theCut, int TwiceLenB,
-                                int vecMaxSize, std::size_t strt, 
-                                typeTimePoint checkPoint0, std::size_t nThreads) {
+                                int vecMaxSize, std::size_t strt,
+                                std::size_t vecMaxStrt, typeTimePoint checkPoint0,
+                                std::size_t nThreads) {
     
     auto checkPoint1 = std::chrono::steady_clock::now();
     auto checkPoint2 = checkPoint1;
     
-    this->InitialParSieve(SieveDist, facBase, LnFB, mpzFacBase, NextPrime, myNum,
-                          LowBound, theCut, TwiceLenB, vecMaxSize, strt, checkPoint0);
+    this->InitialParSieve(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+                          myNum, LowBound, theCut, TwiceLenB, vecMaxSize,
+                          strt, vecMaxStrt, checkPoint0);
     
     auto showStatsTime = std::chrono::steady_clock::now() - checkPoint0;
     std::size_t polysPerThread = MinPolysPerThrd;
@@ -242,7 +246,7 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
             myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),
                                    std::cref(SieveDist), std::cref(facBase), std::cref(LnFB),
                                    std::cref(mpzFacBase), std::cref(myNum), LowBound, theCut,
-                                   TwiceLenB, vecMaxSize, strt, polysPerThread);
+                                   TwiceLenB, vecMaxSize, strt, vecMaxStrt, polysPerThread);
         }
 
         for (auto &thr: myThreads)
@@ -288,7 +292,7 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
                               mpz_class &NextPrime, const mpz_class &myNum,
                               int LowBound, int theCut, int TwiceLenB,
                               int vecMaxSize, std::size_t strt,
-                              typeTimePoint checkPoint0) {
+                              std::size_t vecMaxStrt, typeTimePoint checkPoint0) {
     
     auto checkPoint1 = std::chrono::steady_clock::now();
     auto checkPoint2 = checkPoint1;
@@ -308,7 +312,8 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
                    myStart, partFactorsMap, partIntvlMap, smoothInterval,
                    largeCoFactors, partialInterval, NextPrime, myNum,
-                   LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize, strt);
+                   LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
+                   strt, vecMaxStrt);
 
         ++nPolys;
         nSmooth = smoothInterval.size();

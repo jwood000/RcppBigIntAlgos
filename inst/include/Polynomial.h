@@ -43,7 +43,8 @@ private:
                     const std::vector<mpz_class> &mpzFacBase,
                     const mpz_class &myNum, int LowBound,
                     int theCut, int TwiceLenB, int vecMaxSize,
-                    std::size_t strt, std::size_t polyLimit);
+                    std::size_t strt, std::size_t vecMaxStrt,
+                    std::size_t polyLimit);
     
 public:
     
@@ -57,7 +58,7 @@ public:
                          mpz_class &NextPrime, const mpz_class &myNum,
                          int LowBound, int theCut, int TwiceLenB,
                          int vecMaxSize, std::size_t strt,
-                         typeTimePoint checkPoint0);
+                         std::size_t vecMaxStrt, typeTimePoint checkPoint0);
     
     void FactorParallel(const std::vector<std::size_t> &SieveDist,
                         const std::vector<int> &facBase, 
@@ -65,8 +66,9 @@ public:
                         std::vector<mpz_class> &mpzFacBase,
                         mpz_class &NextPrime, const mpz_class &myNum,
                         int LowBound, int theCut, int TwiceLenB,
-                        int vecMaxSize, std::size_t strt, 
-                        typeTimePoint checkPoint0, std::size_t nThreads);
+                        int vecMaxSize, std::size_t strt,
+                        std::size_t vecMaxStrt, typeTimePoint checkPoint0,
+                        std::size_t nThreads);
     
     void FactorSerial(const std::vector<std::size_t> &SieveDist,
                       const std::vector<int> &facBase,
@@ -75,7 +77,7 @@ public:
                       mpz_class &NextPrime, const mpz_class &myNum,
                       int LowBound, int theCut, int TwiceLenB,
                       int vecMaxSize, std::size_t strt,
-                      typeTimePoint checkPoint0);
+                      std::size_t vecMaxStrt, typeTimePoint checkPoint0);
     
     void GetSolution(const std::vector<mpz_class> &mpzFacBase, 
                      const std::vector<int> &facBase, std::vector<mpz_class> &factors,

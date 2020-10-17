@@ -145,16 +145,23 @@ void SieveListsInit(const std::vector<int> &facBase, const std::vector<int> &LnF
             myStart[i * 2 + 1] = (myMax > q) ? myMax - q : facBase[i] + myMax - q;
         }
         
-        for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row) {
-            if (myStart[row] < vecMaxSize) {
+        if (facBase[i] < vecMaxSize) {
+            for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row) {
                 for (int j = myStart[row]; j < vecMaxSize; j += myPrime)
                     myLogs[j] += LnFB[i];
                 
                 myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
-            } else if (myStart[row] < (2 * vecMaxSize)) {
-                myStart[row] %= vecMaxSize;
-            } else {
-                myStart[row] -= vecMaxSize;
+            }
+        } else {
+            for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row) {
+                if (myStart[row] < vecMaxSize) {
+                    myLogs[myStart[row]] += LnFB[i];
+                    myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
+                } else if (myStart[row] < (2 * vecMaxSize)) {
+                    myStart[row] %= vecMaxSize;
+                } else {
+                    myStart[row] -= vecMaxSize;
+                }
             }
         }
     }
@@ -170,7 +177,7 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
                 std::vector<mpz_class> &partialInterval,
                 const mpz_class &NextPrime, const mpz_class &myNum,
                 int LowBound, int theCut, int TwiceLenB, int mpzFacSize,
-                int vecMaxSize, std::size_t strt) {
+                int vecMaxSize, std::size_t strt, std::size_t vecMaxStrt) {
     
     mpz_class VarA, VarB, VarC, Temp, IntVal;
     TonelliShanksC(myNum, NextPrime, VarC);
@@ -247,12 +254,19 @@ void SinglePoly(const std::vector<std::size_t> &SieveDist,
         if (chunk + 2 * vecMaxSize < TwiceLenB) {
             std::fill(myLogs.begin(), myLogs.end(), 0);
             
-            for (std::size_t i = strt, facSize = facBase.size(); i < facSize; ++i) {
+            for (std::size_t i = strt; i < vecMaxStrt; ++i) {
+                for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row) {
+                    for (int j = myStart[row]; j < vecMaxSize; j += myPrime)
+                        myLogs[j] += LnFB[i];
+                    
+                    myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
+                }
+            }
+            
+            for (std::size_t i = vecMaxStrt, facSize = facBase.size(); i < facSize; ++i) {
                 for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row) {
                     if (myStart[row] < vecMaxSize) {
-                        for (int j = myStart[row]; j < vecMaxSize; j += myPrime)
-                            myLogs[j] += LnFB[i];
-                        
+                        myLogs[myStart[row]] += LnFB[i];
                         myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
                     } else if (myStart[row] < (2 * vecMaxSize)) {
                         myStart[row] %= vecMaxSize;

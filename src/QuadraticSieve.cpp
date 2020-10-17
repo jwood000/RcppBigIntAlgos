@@ -158,10 +158,12 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     
     Temp = sqrt(myNum) - LenB;
     const int minPrime = static_cast<int>(mpz_sizeinbase(Temp.get_mpz_t(), 10) * 2);
-    const auto it = std::find_if(facBase.cbegin(), facBase.cend(),
-                                 [minPrime](int f) {return f > minPrime;});
+    const auto itLow = std::lower_bound(facBase.cbegin(), facBase.cend(), minPrime);
+    const std::size_t strt = std::distance(facBase.cbegin(), itLow);
     
-    const std::size_t strt = std::distance(facBase.cbegin(), it) + 1u;
+    const auto itUpper = std::lower_bound(facBase.cbegin(), facBase.cend(), vecMaxSize);
+    const std::size_t vecMaxStrt = std::distance(facBase.cbegin(), itUpper);
+    
     const std::vector<std::size_t> SieveDist = GetSieveDist(facBase, myNum);
     const int LowBound = -1 * static_cast<int>(LenB);
     
@@ -178,8 +180,9 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     bool xtraTime = true;
     
     if (IsParallel) {
-        myPoly.FactorParallel(SieveDist, facBase, LnFB, mpzFacBase, NextPrime, myNum,
-                              LowBound, theCut, TwiceLenB, vecMaxSize, strt, checkPoint0, nThreads);
+        myPoly.FactorParallel(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+                              myNum, LowBound, theCut, TwiceLenB, vecMaxSize,
+                              strt, vecMaxStrt, checkPoint0, nThreads);
 
         if (myPoly.ContinueToSolution()) {
             myPoly.GetSolution(mpzFacBase, facBase, factors,
@@ -198,8 +201,9 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     bool bUpdateXtra = false;
 
     while (cmp(factors[0], 0) == 0) {
-        myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime, myNum,
-                            LowBound, theCut, TwiceLenB, vecMaxSize, strt, checkPoint0);
+        myPoly.FactorSerial(SieveDist, facBase, LnFB, mpzFacBase, NextPrime,
+                            myNum, LowBound, theCut, TwiceLenB, vecMaxSize,
+                            strt, vecMaxStrt, checkPoint0);
 
         myPoly.GetSolution(mpzFacBase, facBase, factors,
                            myNum, nThreads, checkPoint0);
