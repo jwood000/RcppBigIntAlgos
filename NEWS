@@ -1,4 +1,8 @@
-RcppBigIntAlgos 0.3.3 (Release date: 2020-10-04)
+RcppBigIntAlgos 0.3.4 (Release date: TBA)
+
+* Improved sieving and tuning for greater efficiency.
+
+RcppBigIntAlgos 0.3.3 (Release date: 2020-10-14)
 
 * Now using bitset for more efficient linear algebra.
 * Also fixed additional memory issues. Confirmed fix by running rhub::check_with_sanitizers(), rhub::check_with_valgrind(), as well as running custom docker clang-ASAN.
