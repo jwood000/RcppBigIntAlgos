@@ -88,6 +88,13 @@ test_that("quadraticSieve generates correct numbers with multiple threads", {
     expect_equal(prod(quadraticSieve(prod(test5), nThreads = 2)), prod(test5))
 })
 
+test_that("quadraticSieve generates correct numbers with RSA-79", {
+    rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
+    myRes <- quadraticSieve(rsa79, showStats=TRUE,
+                            nThreads=(stdThreadMax() / 2), skipExtPolRho=TRUE)
+    expect_equal(prod(myRes), rsa79)
+})
+
 test_that("quadraticSieve produces appropriate error messages", {
     expect_error(quadraticSieve(1:10), "Can only factor one number at a time")
     expect_error(quadraticSieve(0), "Cannot factorize 0")
