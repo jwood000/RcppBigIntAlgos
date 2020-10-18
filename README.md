@@ -178,9 +178,9 @@ As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThr
 
 Finally, we factor [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) in less than half a day on a 2017 laptop.
 
-When the number of threads was maximized for `rsa79` and `rsa99`, there was a decrease in efficiency probably due to pollution of the cache.
+When the number of threads was maximized for `rsa79` and `rsa99`, there was a decrease in efficiency probably due to pollution of the cache. This may not be the case for on all platforms.
 
-Here is are the machine specs and version info:
+Here are the machine specs and version info:
 
 ```r
 MacBook Pro (15-inch, 2017)
@@ -351,7 +351,7 @@ However `gmp::factorize` is more suitable for numbers smaller than 70 bits (abou
 
 ## Safely Interrupt Execution in **`quadraticSieve`**
 
-If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution.
+If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution. When you utilize multiple threads with a very large number (e.g. 90 digit semiprime), you will be able to interrupt execution once every ~30 seconds.
 
 ```r
 ## User hits Ctrl + c
