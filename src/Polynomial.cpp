@@ -122,11 +122,11 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
     for (std::size_t poly = 0; poly < polyLimit; ++poly) {
         ++mpzFacSize;
 
-        SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
-                   myStart, partFactorsMap, partIntvlMap, smoothInterval,
-                   largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
-                   myNum, LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
-                   strt, vecMaxStrt);
+        MPQS::SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
+                         myStart, partFactorsMap, partIntvlMap, smoothInterval,
+                         largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
+                         myNum, LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
+                         strt, vecMaxStrt);
     }
 }
 
@@ -309,11 +309,11 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         mpzFacBase.push_back(NextPrime);
         ++mpzFacSize;
 
-        SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
-                   myStart, partFactorsMap, partIntvlMap, smoothInterval,
-                   largeCoFactors, partialInterval, NextPrime, myNum,
-                   LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
-                   strt, vecMaxStrt);
+        MPQS::SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
+                         myStart, partFactorsMap, partIntvlMap, smoothInterval,
+                         largeCoFactors, partialInterval, NextPrime, myNum,
+                         LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
+                         strt, vecMaxStrt);
 
         ++nPolys;
         nSmooth = smoothInterval.size();
