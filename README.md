@@ -199,65 +199,65 @@ other attached packages:
 
 loaded via a namespace (and not attached):
 [1] compiler_4.0.3 tools_4.0.3    Rcpp_1.0.5
+
+## Maximum number of available threads
+stdThreadMax()
+[1] 8
 ```
 
 ### mostWanted1983
 
 ```r
-stdThreadMax()
-[1] 8
-
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
-quadraticSieve(mostWanted1983, showStats = TRUE, nThreads=8, skipExtPolRho=TRUE)
+quadraticSieve(mostWanted1983, showStats=TRUE, nThreads=8, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     11111111111111111111111111111111111111111111111111111111111111111111111
 
 |  Pollard Rho Time  |
 |--------------------|
-|        56ms        |
+|        61ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      28s 119ms     |   100%   |    17376    |    4111    |    4324    |
+|       28s 2ms      |   100%   |    17376    |    4111    |    4324    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      4s 463ms      |     8311 x 8435    |
+|      4s 534ms      |     8311 x 8435    |
 
 |     Total Time     |
 |--------------------|
-|      32s 846ms     |
+|      32s 823ms     |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
-
 ```
 
 ### RSA-79
 
 ```r
 rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
-quadraticSieve(rsa79, showStats = TRUE, nThreads=6, skipExtPolRho=TRUE)
+quadraticSieve(rsa79, showStats=TRUE, nThreads=7, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     7293469445285646172092483905177589838606665884410340391954917800303813280275279
 
 |  Pollard Rho Time  |
 |--------------------|
-|        67ms        |
+|        68ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|     4m 7s 442ms    |   100%   |    96213    |    5682    |    7069    |
+|     4m 5s 102ms    |   100%   |    96234    |    5684    |    7072    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      14s 381ms     |    12615 x 12751   |
+|      15s 673ms     |    12615 x 12756   |
 
 |     Total Time     |
 |--------------------|
-|    4m 22s 452ms    |
+|    4m 21s 443ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
@@ -267,26 +267,26 @@ Big Integer ('bigz') object of length 2:
 
 ```r
 rsa99 <- "256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881"
-quadraticSieve(rsa99, showStats = TRUE, nThreads=4, skipExtPolRho=TRUE)
+quadraticSieve(rsa99, showStats=TRUE, nThreads=4, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881
 
 |  Pollard Rho Time  |
 |--------------------|
-|        75ms        |
+|        82ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|  11h 32m 25s 891ms |   100%   |   7699593   |    9239    |    15810   |
+|  11h 15m 9s 558ms  |   100%   |   7679576   |    9220    |    15829   |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|    1m 44s 256ms    |    24926 x 25049   |
+|    1m 52s 106ms    |    24927 x 25049   |
 
 |     Total Time     |
 |--------------------|
-|  11h 34m 13s 905ms |
+|  11h 17m 5s 611ms  |
 
 Big Integer ('bigz') object of length 2:
 [1] 4868376167980921239824329271069101142472222111193  52733064254484107837300974402288603361507691060217
