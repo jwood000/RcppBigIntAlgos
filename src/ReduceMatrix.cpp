@@ -20,7 +20,7 @@ void ReduceMatrix(std::vector<std::bitset<wordSize>> &nullMat,
         
         if (!rows.empty()) {
             std::vector<std::size_t> cols;
-            const std::size_t firstRow = rows.front();
+            auto&& firstRow = rows.front();
             
             if (firstRow != rowInd)
                 for (std::size_t k = j / wordSize; k < adjustedCols; ++k)
@@ -32,7 +32,7 @@ void ReduceMatrix(std::vector<std::bitset<wordSize>> &nullMat,
                         cols.push_back(k);
                 
                 for (std::size_t i = 1; i < rows.size(); ++i) {
-                    const std::size_t r = rows[i];
+                    auto&& r = rows[i];
                     
                     for (auto k: cols)
                         nullMat[r + k] ^= nullMat[rowInd + k];
