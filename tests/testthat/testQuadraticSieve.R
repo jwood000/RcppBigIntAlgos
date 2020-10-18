@@ -86,6 +86,9 @@ test_that("quadraticSieve generates correct numbers with multiple threads", {
     
     test5 <- nextprime(urand.bigz(2, 86, 42))
     expect_equal(prod(quadraticSieve(prod(test5), nThreads = 2)), prod(test5))
+    
+    test6 <- nextprime(urand.bigz(2, 100, 42))
+    expect_equal(prod(quadraticSieve(prod(test5), nThreads = 2)), prod(test6))
 })
 
 test_that("quadraticSieve produces appropriate error messages", {
