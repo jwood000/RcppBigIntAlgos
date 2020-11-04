@@ -4,6 +4,7 @@
 #include "TonelliShanks.h"
 #include <unordered_map>
 #include <cstdlib>
+#include <cstdint>
 #include <vector>
 #include <numeric>
 #include <cmath>
@@ -11,6 +12,7 @@
 constexpr double Significand53 = 9007199254740991.0;
 constexpr int L1Cache = 32768;
 
+using logType = std::uint16_t;
 using vec2dint = std::vector<std::vector<int>>;
 using hash64vec = std::unordered_map<std::uint64_t, std::vector<int>>;
 using hash64mpz = std::unordered_map<std::uint64_t, mpz_class>;

@@ -39,10 +39,10 @@ private:
     
     void SievePolys(const std::vector<std::size_t> &SieveDist,
                     const std::vector<int> &facBase,
-                    const std::vector<int> &LnFB,
+                    const std::vector<logType> &LnFB,
                     const std::vector<mpz_class> &mpzFacBase,
                     const mpz_class &myNum, int LowBound,
-                    int theCut, int TwiceLenB, int vecMaxSize,
+                    logType theCut, int TwiceLenB, int vecMaxSize,
                     std::size_t strt, std::size_t vecMaxStrt,
                     std::size_t polyLimit);
     
@@ -53,29 +53,29 @@ public:
     
     void InitialParSieve(const std::vector<std::size_t> &SieveDist,
                          const std::vector<int> &facBase,
-                         const std::vector<int> &LnFB,
+                         const std::vector<logType> &LnFB,
                          std::vector<mpz_class> &mpzFacBase,
                          mpz_class &NextPrime, const mpz_class &myNum,
-                         int LowBound, int theCut, int TwiceLenB,
+                         int LowBound, logType theCut, int TwiceLenB,
                          int vecMaxSize, std::size_t strt,
                          std::size_t vecMaxStrt, typeTimePoint checkPoint0);
     
     void FactorParallel(const std::vector<std::size_t> &SieveDist,
                         const std::vector<int> &facBase, 
-                        const std::vector<int> &LnFB,
+                        const std::vector<logType> &LnFB,
                         std::vector<mpz_class> &mpzFacBase,
                         mpz_class &NextPrime, const mpz_class &myNum,
-                        int LowBound, int theCut, int TwiceLenB,
+                        int LowBound, logType theCut, int TwiceLenB,
                         int vecMaxSize, std::size_t strt,
                         std::size_t vecMaxStrt, typeTimePoint checkPoint0,
                         std::size_t nThreads);
     
     void FactorSerial(const std::vector<std::size_t> &SieveDist,
                       const std::vector<int> &facBase,
-                      const std::vector<int> &LnFB,
+                      const std::vector<logType> &LnFB,
                       std::vector<mpz_class> &mpzFacBase,
                       mpz_class &NextPrime, const mpz_class &myNum,
-                      int LowBound, int theCut, int TwiceLenB,
+                      int LowBound, logType theCut, int TwiceLenB,
                       int vecMaxSize, std::size_t strt,
                       std::size_t vecMaxStrt, typeTimePoint checkPoint0);
     

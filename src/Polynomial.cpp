@@ -112,10 +112,10 @@ void GetNPrimes(std::vector<mpz_class> &mpzFacBase, mpz_class &NextPrime,
 
 void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
                             const std::vector<int> &facBase,
-                            const std::vector<int> &LnFB,
+                            const std::vector<logType> &LnFB,
                             const std::vector<mpz_class> &mpzFacBase,
                             const mpz_class &myNum, int LowBound,
-                            int theCut, int TwiceLenB, int vecMaxSize,
+                            logType theCut, int TwiceLenB, int vecMaxSize,
                             std::size_t strt, std::size_t vecMaxStrt,
                             std::size_t polyLimit) {
     
@@ -132,10 +132,10 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
 
 void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
                                  const std::vector<int> &facBase,
-                                 const std::vector<int> &LnFB,
+                                 const std::vector<logType> &LnFB,
                                  std::vector<mpz_class> &mpzFacBase,
                                  mpz_class &NextPrime, const mpz_class &myNum,
-                                 int LowBound, int theCut, int TwiceLenB,
+                                 int LowBound, logType theCut, int TwiceLenB,
                                  int vecMaxSize, std::size_t strt,
                                  std::size_t vecMaxStrt, typeTimePoint checkPoint0) {
     
@@ -207,10 +207,10 @@ void SetThreadsPolys(std::size_t currLim, std::size_t SaPThresh,
 
 void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
                                 const std::vector<int> &facBase, 
-                                const std::vector<int> &LnFB,
+                                const std::vector<logType> &LnFB,
                                 std::vector<mpz_class> &mpzFacBase,
                                 mpz_class &NextPrime, const mpz_class &myNum,
-                                int LowBound, int theCut, int TwiceLenB,
+                                int LowBound, logType theCut, int TwiceLenB,
                                 int vecMaxSize, std::size_t strt,
                                 std::size_t vecMaxStrt, typeTimePoint checkPoint0,
                                 std::size_t nThreads) {
@@ -287,10 +287,10 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
 
 void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
                               const std::vector<int> &facBase,
-                              const std::vector<int> &LnFB,
+                              const std::vector<logType> &LnFB,
                               std::vector<mpz_class> &mpzFacBase,
                               mpz_class &NextPrime, const mpz_class &myNum,
-                              int LowBound, int theCut, int TwiceLenB,
+                              int LowBound, logType theCut, int TwiceLenB,
                               int vecMaxSize, std::size_t strt,
                               std::size_t vecMaxStrt, typeTimePoint checkPoint0) {
     

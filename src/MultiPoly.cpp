@@ -2,9 +2,9 @@
 
 namespace MPQS {
     
-    void SieveListsInit(const std::vector<int> &facBase, const std::vector<int> &LnFB,
+    void SieveListsInit(const std::vector<int> &facBase, const std::vector<logType> &LnFB,
                         const std::vector<std::size_t> &SieveDist,
-                        std::vector<int> &myLogs, std::vector<int> &myStart,
+                        std::vector<logType> &myLogs, std::vector<int> &myStart,
                         const mpz_class &firstSqrDiff, const mpz_class &VarA,
                         const mpz_class &VarB, std::size_t strt, int LowBound) {
         
@@ -63,14 +63,14 @@ namespace MPQS {
     
     void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     const std::vector<int> &facBase,
-                    const std::vector<int> &LnFB, vec2dint &powsOfSmooths,
+                    const std::vector<logType> &LnFB, vec2dint &powsOfSmooths,
                     vec2dint &powsOfPartials, std::vector<int> &myStart,
                     hash64vec &partFactorsMap, hash64mpz &partIntvlMap,
                     std::vector<mpz_class> &smoothInterval,
                     std::vector<uint64_t> &largeCoFactors,
                     std::vector<mpz_class> &partialInterval,
                     const mpz_class &NextPrime, const mpz_class &myNum,
-                    int LowBound, int theCut, int TwiceLenB, int mpzFacSize,
+                    int LowBound, logType theCut, int TwiceLenB, int mpzFacSize,
                     int vecMaxSize, std::size_t strt, std::size_t vecMaxStrt) {
         
         mpz_class VarA, VarB, VarC, Temp, IntVal;
@@ -84,7 +84,7 @@ namespace MPQS {
         VarC = (VarB * VarB - myNum) / VarA;
         
         IntVal = LowBound * (VarA * LowBound) + VarB * 2 * LowBound + VarC;
-        std::vector<int> myLogs(vecMaxSize);
+        std::vector<logType> myLogs(vecMaxSize);
         
         SieveListsInit(facBase, LnFB, SieveDist, myLogs,
                        myStart, IntVal, VarA, VarB, strt, LowBound);
