@@ -379,7 +379,7 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 
 ## Current Research
 
-Currenlty, our main focus is on implementing our sieve in a parallel fashion.
+Currenlty, our main focus for version `0.4.0` will be implementing the self initiallizing quadratic sieve.
 
 ## Contact
 

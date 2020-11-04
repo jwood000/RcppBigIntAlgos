@@ -1,4 +1,4 @@
-RcppBigIntAlgos 0.3.4 (Release date: TBA)
+RcppBigIntAlgos 0.3.4 (Release date: 2020-11-05)
 
 * Improved sieving and tuning for greater efficiency.
 
