@@ -214,19 +214,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        59ms        |
+|        57ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      25s 100ms     |   100%   |    17291    |    4090    |    4345    |
+|      24s 497ms     |   100%   |    16183    |    4089    |    4345    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      4s 634ms      |     8310 x 8435    |
+|      4s 610ms      |     8301 x 8434    |
 
 |     Total Time     |
 |--------------------|
-|      30s 15ms      |
+|      29s 383ms     |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -243,19 +243,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        68ms        |
+|        64ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    3m 34s 444ms    |   100%   |    96071    |    5668    |    7080    |
+|    3m 28s 293ms    |   100%   |    96071    |    5668    |    7080    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      13s 800ms     |    12614 x 12748   |
+|      14s 935ms     |    12614 x 12748   |
 
 |     Total Time     |
 |--------------------|
-|    3m 48s 833ms    |
+|    3m 44s 881ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
@@ -266,7 +266,7 @@ Big Integer ('bigz') object of length 2:
 ```r
 rsa99 <- "256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881"
 
-quadraticSieve(rsa99, showStats = TRUE, nThreads=8, skipExtPolRho=TRUE)
+quadraticSieve(rsa99, showStats=TRUE, nThreads=8, skipExtPolRho=TRUE)
 
 Summary Statistics for Factoring:
     256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881

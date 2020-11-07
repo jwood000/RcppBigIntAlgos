@@ -48,8 +48,9 @@ private:
     
 public:
     
-    Polynomial(std::size_t _facSize);
-    Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum);
+    Polynomial(std::size_t _facSize, std::size_t StrtSize);
+    Polynomial(std::size_t _facSize, std::size_t StrtSize,
+               bool _bShowStats, const mpz_class &myNum);
     
     void InitialParSieve(const std::vector<std::size_t> &SieveDist,
                          const std::vector<int> &facBase,

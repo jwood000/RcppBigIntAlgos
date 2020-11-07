@@ -152,7 +152,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     
     for (std::size_t i = 0; i < facSize; ++i) {
         mpzFacBase.push_back(facBase[i]);
-        LnFB[i] = std::ceil(100.0 * std::log(static_cast<double>(facBase[i])));
+        LnFB[i] = std::floor(100.0 * std::log(static_cast<double>(facBase[i])));
     }
     
     Temp = sqrt(myNum) - LenB;
