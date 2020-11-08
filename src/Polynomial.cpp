@@ -67,14 +67,13 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
     partIntvlMapBig.insert(partIntvlMap.cbegin(), partIntvlMap.cend());
 }
 
-Polynomial::Polynomial(std::size_t _facSize, std::size_t StrtSize,
-                       bool _bShowStats, const mpz_class &myNum) : 
+Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
             mpzFacSize(_facSize), SaPThresh(_facSize),
             facSize(_facSize), bShowStats(_bShowStats) {
     
     powsOfSmooths.reserve(_facSize);
     powsOfPartials.reserve(_facSize);
-    myStart.assign(StrtSize * 2, 0);
+    myStart.assign(_facSize * 2, 0);
     
     nPolys = 0;
     nPartial = 0;
@@ -87,10 +86,10 @@ Polynomial::Polynomial(std::size_t _facSize, std::size_t StrtSize,
     }
 }
 
-Polynomial::Polynomial(std::size_t _facSize, std::size_t StrtSize) : 
+Polynomial::Polynomial(std::size_t _facSize) : 
     SaPThresh(_facSize), facSize(_facSize), bShowStats(false) {
 
-    myStart.assign(StrtSize * 2, 0);
+    myStart.assign(_facSize * 2, 0);
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
