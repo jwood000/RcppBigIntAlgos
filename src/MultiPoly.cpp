@@ -125,7 +125,7 @@ namespace MPQS {
                     powsOfSmooths.push_back(primeIndexVec);
                 } else if (cmp(IntVal, Significand53) < 0) {
                     const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
-                    const auto pFacIt = partFactorsMap.find(myKey);
+                    auto&& pFacIt = partFactorsMap.find(myKey);
                     
                     if (pFacIt != partFactorsMap.end()) {
                         largeCoFactors.push_back(myKey);
@@ -133,7 +133,7 @@ namespace MPQS {
                                              pFacIt->second.cbegin(), pFacIt->second.cend());
                         
                         powsOfPartials.push_back(primeIndexVec);
-                        const auto intervalIt = partIntvlMap.find(myKey);
+                        auto&& intervalIt = partIntvlMap.find(myKey);
                         partialInterval.push_back(Temp * intervalIt->second);
                         
                         partFactorsMap.erase(pFacIt);

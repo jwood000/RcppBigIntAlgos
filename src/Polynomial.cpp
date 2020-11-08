@@ -42,7 +42,7 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
     
     // First identify intersection
     for (const auto &pFac: partFactorsMap) {
-        const auto pFacBigIt = partFactorsMapBig.find(pFac.first);
+        auto&& pFacBigIt = partFactorsMapBig.find(pFac.first);
 
         if (pFacBigIt != partFactorsMapBig.end()) {
             largeCoFactorsBig.push_back(pFac.first);
