@@ -4,6 +4,7 @@
 #include "PollardRho.h"
 #include "ImportExportMPZ.h"
 
-SEXP FactorNum(mpz_class &val);
+SEXP FactorNum(mpz_class &val, std::size_t nThreads,
+               bool bShowStats, bool bSkipExtPR);
 
 #endif

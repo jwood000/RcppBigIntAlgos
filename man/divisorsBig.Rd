@@ -7,11 +7,15 @@ Vectorized Factorization (Complete) with GMP
 Quickly generates the complete factorization for many (possibly large) numbers.
 }
 \usage{
-divisorsBig(v, namedList = FALSE)
+divisorsBig(v, namedList = FALSE, showStats = FALSE,
+            nThreads = NULL, skipExtPolRho = FALSE)
 }
 \arguments{
   \item{v}{Vector of integers, numerics, string values, or elements of class bigz.}
   \item{namedList}{Logical flag. If \code{TRUE} and the \code{length(v) > 1}, a named list is returned. The default is \code{FALSE}.}
+  \item{showStats}{Logical flag passed to \code{\link{quadraticSieve}} (if needed). If \code{TRUE}, summary statistics will be displayed.}
+  \item{nThreads}{Number of threads to be used for \code{\link{quadraticSieve}} (if needed.) The default is \code{NULL}.}
+  \item{skipExtPolRho}{Logical flag passed to \code{\link{quadraticSieve}} (if needed) for skipping extended pollard rho algorithm. The default is \code{FALSE}.}
 }
 \details{
 Highly optimized algorithm to generate the complete factorization for many numbers. It is built specifically for the data type that is used in the gmp library (i.e. \href{https://gmplib.org/manual/Nomenclature-and-Types.html#Nomenclature-and-Types}{\code{mpz_t}}).

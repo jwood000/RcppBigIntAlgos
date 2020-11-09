@@ -1,7 +1,9 @@
 #include "FactorUtils.h"
+#include "CleanConvert.h"
 
 // [[Rcpp::export]]
-SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
+SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads,
+                  int maxThreads, SEXP RShowStats, SEXP RSkipExtPR) {
     
     std::size_t vSize = 0;
     
@@ -15,11 +17,18 @@ SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
             vSize = LENGTH(Rv);
     }
     
+    int nThreads = 1;
+    const bool bShowStats = convertLogical(RShowStats, "showStats");
+    const bool bSkipExtPR = convertLogical(RSkipExtPR, "skipExtPolRho");
+    
+    if (!Rf_isNull(RNumThreads))
+        convertInt(RNumThreads, nThreads, "nThreads");
+    
     if (vSize > 0) {
         if (vSize == 1) {
             mpz_class myNum;
             convertMpzClass(Rv, myNum);
-            return FactorNum(myNum);
+            return FactorNum(myNum, nThreads, bShowStats, bSkipExtPR);
         } else {
             std::vector<mpz_class> myVec(vSize);
             CreateMPZVector(Rv, myVec, vSize);
@@ -46,12 +55,12 @@ SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads) {
                     myNames[i] = myVec[i].get_str();
                 
                 for (std::size_t i = 0; i < vSize; ++i)
-                    res[i] = FactorNum(myVec[i]);
+                    res[i] = FactorNum(myVec[i], nThreads, bShowStats, bSkipExtPR);
                 
                 res.attr("names") = myNames;
             } else {
                 for (std::size_t i = 0; i < vSize; ++i)
-                    res[i] = FactorNum(myVec[i]);
+                    res[i] = FactorNum(myVec[i], nThreads, bShowStats, bSkipExtPR);
             }
             
             return res;
