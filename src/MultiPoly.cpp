@@ -73,7 +73,7 @@ namespace MPQS {
                     int LowBound, logType theCut, int TwiceLenB, int mpzFacSize,
                     int vecMaxSize, std::size_t strt, std::size_t vecMaxStrt) {
         
-        mpz_class VarA, VarB, VarC, Temp, IntVal;
+        mpz_class VarA, VarB, VarC, IntVal;
         TonelliShanksC(myNum, NextPrime, VarC);
         
         IntVal = VarC * 2u;
@@ -117,11 +117,9 @@ namespace MPQS {
                     }
                 }
                 
-                Temp = VarA * myIntVal + VarB;
-                
                 if (cmp(IntVal, 1u) == 0) {
                     // Found a smooth number
-                    smoothInterval.push_back(Temp);
+                    smoothInterval.push_back(VarA * myIntVal + VarB);
                     powsOfSmooths.push_back(primeIndexVec);
                 } else if (cmp(IntVal, Significand53) < 0) {
                     const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
@@ -134,13 +132,14 @@ namespace MPQS {
                         
                         powsOfPartials.push_back(primeIndexVec);
                         auto&& intervalIt = partIntvlMap.find(myKey);
-                        partialInterval.push_back(Temp * intervalIt->second);
+                        partialInterval.push_back((VarA * myIntVal + VarB) *
+                                                  intervalIt->second);
                         
                         partFactorsMap.erase(pFacIt);
                         partIntvlMap.erase(intervalIt);
                     } else {
                         partFactorsMap[myKey] = primeIndexVec;
-                        partIntvlMap[myKey] = Temp;
+                        partIntvlMap[myKey] = VarA * myIntVal + VarB;
                     }
                 }
             }
