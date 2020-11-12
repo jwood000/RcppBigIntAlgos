@@ -67,13 +67,14 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
     partIntvlMapBig.insert(partIntvlMap.cbegin(), partIntvlMap.cend());
 }
 
-Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
+Polynomial::Polynomial(std::size_t _facSize, std::size_t strtSize,
+                       bool _bShowStats, const mpz_class &myNum) : 
             mpzFacSize(_facSize), SaPThresh(_facSize),
             facSize(_facSize), bShowStats(_bShowStats) {
     
     powsOfSmooths.reserve(_facSize);
     powsOfPartials.reserve(_facSize);
-    myStart.assign(_facSize * 2, 0);
+    myStart.assign(strtSize * 2, 0);
     
     nPolys = 0;
     nPartial = 0;
@@ -86,10 +87,10 @@ Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &
     }
 }
 
-Polynomial::Polynomial(std::size_t _facSize) : 
+Polynomial::Polynomial(std::size_t _facSize, std::size_t strtSize) : 
     SaPThresh(_facSize), facSize(_facSize), bShowStats(false) {
 
-    myStart.assign(_facSize * 2, 0);
+    myStart.assign(strtSize * 2, 0);
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
@@ -240,7 +241,7 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
         mpzFacSize = mpzFacBase.size();
         
         for (std::size_t i = 0, step = startStep; i < nThreads; ++i, step += polysPerThread) {
-            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize));
+            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize, vecMaxStrt));
             vecPoly[i]->SetMpzFacSize(step);
 
             myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),

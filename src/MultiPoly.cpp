@@ -2,10 +2,16 @@
 #include <deque>
 
 namespace MPQS {
-    
+
+    struct bucketType {
+        int startInd;
+        int FBInd;
+    };
+
     void SieveListsInit(const std::vector<int> &facBase,
                         const std::vector<logType> &LnFB,
                         const std::vector<std::size_t> &SieveDist,
+                        std::deque<std::vector<bucketType>> &Buckets,
                         std::vector<logType> &myLogs, std::vector<int> &myStart,
                         const mpz_class &firstSqrDiff, const mpz_class &VarA,
                         const mpz_class &VarB, std::size_t strt, int LowBound) {
@@ -32,16 +38,20 @@ namespace MPQS {
             mpz_mod_ui(Temp.get_mpz_t(), firstSqrDiff.get_mpz_t(), myPrime);
             
             if (myMin > myMax) {std::swap(myMin, myMax);}
-            myStart[i * 2] = Temp.get_si();
+            int myStart0 = Temp.get_si();
+            int myStart1 = 0;
             
-            if (myStart[i * 2] == 0) {
-                myStart[i * 2 + 1] = (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
+            if (myStart0 == 0) {
+                myStart1 = (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
             } else {
-                myStart[i * 2] = (myMin > q) ? myMin - q : myPrime + myMin - q;
-                myStart[i * 2 + 1] = (myMax > q) ? myMax - q : myPrime + myMax - q;
+                myStart0 = (myMin > q) ? myMin - q : myPrime + myMin - q;
+                myStart1 = (myMax > q) ? myMax - q : myPrime + myMax - q;
             }
             
             if (myPrime < vecMaxSize) {
+                myStart[i * 2] = myStart0;
+                myStart[i * 2 + 1] = myStart1;
+                
                 for (int row = i * 2; row <= (i * 2 + 1); ++row) {
                     for (int j = myStart[row]; j < vecMaxSize; j += myPrime)
                         myLogs[j] += LnFB[i];
@@ -49,14 +59,26 @@ namespace MPQS {
                     myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
                 }
             } else {
-                for (int row = i * 2; row <= (i * 2 + 1); ++row) {
-                    if (myStart[row] < vecMaxSize) {
-                        myLogs[myStart[row]] += LnFB[i];
-                        myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
-                    } else {
-                        myStart[row] -= vecMaxSize;
-                    }
+                if (myStart0 < vecMaxSize) {
+                    myLogs[myStart0] += LnFB[i];
+                    myStart0 += myPrime;
                 }
+                
+                if (myStart1 < vecMaxSize) {
+                    myLogs[myStart1] += LnFB[i];
+                    myStart1 += myPrime;
+                }
+                
+                myStart0 -= vecMaxSize;
+                myStart1 -= vecMaxSize;
+                
+                Buckets[myStart0 / vecMaxSize].push_back(
+                        {.startInd = myStart0 % vecMaxSize,
+                         .FBInd = static_cast<int>(i)});
+                        
+                Buckets[myStart1 / vecMaxSize].push_back(
+                        {.startInd = myStart1 % vecMaxSize,
+                         .FBInd = static_cast<int>(i)});
             }
         }
     }
@@ -84,9 +106,12 @@ namespace MPQS {
         VarC = (VarB * VarB - myNum) / VarA;
         
         IntVal = LowBound * (VarA * LowBound) + VarB * 2 * LowBound + VarC;
-        std::vector<logType> myLogs(vecMaxSize);
         
-        SieveListsInit(facBase, LnFB, SieveDist, myLogs,
+        std::vector<logType> myLogs(vecMaxSize);
+        std::deque<std::vector<bucketType>> Buckets(2 + facBase.back()/ vecMaxSize, 
+                                                        std::vector<bucketType>());
+        
+        SieveListsInit(facBase, LnFB, SieveDist, Buckets, myLogs,
                        myStart, IntVal, VarA, VarB, strt, LowBound);
         
         for (int chunk = 0; chunk < TwiceLenB; chunk += vecMaxSize) {
@@ -156,23 +181,28 @@ namespace MPQS {
                     }
                 }
                 
-                for (std::size_t i = vecMaxStrt, facSize = facBase.size(); i < facSize; ++i) {
-                    for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row) {
-                        if (myStart[row] < vecMaxSize) {
-                            myLogs[myStart[row]] += LnFB[i];
-                            myStart[row] = ((myStart[row] - vecMaxSize) % myPrime) + myPrime;
-                        } else {
-                            myStart[row] -= vecMaxSize;
-                        }
-                    }
+                for (const auto &v: Buckets.front()) {
+                    myLogs[v.startInd] += LnFB[v.FBInd];
+                    int newInd = (v.startInd + facBase[v.FBInd]);
+                    
+                    Buckets[newInd / vecMaxSize].push_back(
+                            {.startInd = newInd % vecMaxSize,
+                             .FBInd = v.FBInd});
                 }
+                
+                Buckets.pop_front();
+                Buckets.push_back(std::vector<bucketType>());
+                
             } else if (chunk + vecMaxSize < TwiceLenB) {
                 std::fill(myLogs.begin(), myLogs.end(), 0);
                 
-                for (std::size_t i = strt, facSize = facBase.size(); i < facSize; ++i)
+                for (std::size_t i = strt; i < vecMaxStrt; ++i)
                     for (int row = i * 2, myPrime = facBase[i]; row <= (i * 2 + 1); ++row)
                         for (int j = myStart[row]; j < vecMaxSize; j += myPrime)
                             myLogs[j] += LnFB[i];
+                
+                for (const auto &v: Buckets.front())
+                    myLogs[v.startInd] += LnFB[v.FBInd];
             }
         }
     }
