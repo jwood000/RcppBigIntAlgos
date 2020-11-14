@@ -4,10 +4,16 @@
 #include "SieveUtils.h"
 
 namespace MPQS {
+    
+    struct sieveInd {
+        int ind_1;
+        int ind_2;
+    };
+    
     void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     const std::vector<int> &facBase,
                     const std::vector<logType> &LnFB, vec2dint &powsOfSmooths,
-                    vec2dint &powsOfPartials, std::vector<int> &myStart,
+                    vec2dint &powsOfPartials, std::vector<sieveInd> &myStart,
                     hash64vec &partFactorsMap, hash64mpz &partIntvlMap,
                     std::vector<mpz_class> &smoothInterval,
                     std::vector<std::uint64_t> &largeCoFactors,
