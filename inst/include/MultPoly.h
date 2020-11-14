@@ -5,9 +5,20 @@
 
 namespace MPQS {
     
-    struct sieveInd {
+    class sieveInd {
+    private:
         int ind_1;
         int ind_2;
+        
+    public:
+        bool IsDivisible(unsigned int myPrime, unsigned int ind) const;
+        void InitialSet(int temp, int q, int myMin, int myMax, int myPrime);
+        
+        void SmallSieve(std::vector<logType> &myLogs, int vecMaxSize,
+                        int myPrime, logType LnFB);
+        
+        void LargeSieve(std::vector<logType> &myLogs, int vecMaxSize,
+                        int myPrime, logType LnFB);
     };
     
     void SinglePoly(const std::vector<std::size_t> &SieveDist,
