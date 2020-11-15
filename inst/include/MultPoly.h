@@ -11,7 +11,7 @@ namespace MPQS {
         int ind_2;
         
     public:
-        bool IsDivisible(unsigned int myPrime, unsigned int ind) const;
+        bool IsDivisible(std::uint32_t myPrime, std::uint32_t ind) const;
         void InitialSet(int temp, int q, int myMin, int myMax, int myPrime);
         
         void SmallSieve(std::vector<logType> &myLogs, int vecMaxSize,

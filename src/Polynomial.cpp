@@ -10,7 +10,7 @@ constexpr std::size_t bigFacsFOUR = 4u;
 void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartialsBig,
                              hash64vec &partFactorsMapBig, hash64mpz &partIntvlMapBig,
                              std::vector<mpz_class> &smoothIntervalBig,
-                             std::vector<uint64_t> &largeCoFactorsBig, 
+                             std::vector<std::uint64_t> &largeCoFactorsBig, 
                              std::vector<mpz_class> &partialIntervalBig) {
     
     powsOfSmoothsBig.insert(powsOfSmoothsBig.end(),
@@ -38,7 +38,7 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
                              std::make_move_iterator(largeCoFactors.end())
     );
     
-    std::vector<uint64_t> deleteLater;
+    std::vector<std::uint64_t> deleteLater;
     
     // First identify intersection
     for (const auto &pFac: partFactorsMap) {
@@ -390,7 +390,7 @@ void Polynomial::GetSolution(const std::vector<mpz_class> &mpzFacBase,
     std::vector<std::size_t> coFactorIndexVec;
     coFactorIndexVec.reserve(largeCoFactors.size());
     
-    std::unordered_map<uint64_t, std::size_t> keepingTrack;
+    std::unordered_map<std::uint64_t, std::size_t> keepingTrack;
     keepingTrack.reserve(largeCoFactors.size());
     
     std::vector<double> uniLargeCoFacs;
