@@ -67,13 +67,15 @@ void Polynomial::MergeMaster(vec2dint &powsOfSmoothsBig, vec2dint &powsOfPartial
     partIntvlMapBig.insert(partIntvlMap.cbegin(), partIntvlMap.cend());
 }
 
-Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &myNum) : 
+Polynomial::Polynomial(std::size_t _facSize, std::size_t _vecMaxSize,
+                       bool _bShowStats, const mpz_class &myNum) : 
             mpzFacSize(_facSize), SaPThresh(_facSize),
             facSize(_facSize), bShowStats(_bShowStats) {
     
     powsOfSmooths.reserve(_facSize);
     powsOfPartials.reserve(_facSize);
     myStart.resize(_facSize);
+    myLogs.resize(_vecMaxSize);
     
     nPolys = 0;
     nPartial = 0;
@@ -86,10 +88,11 @@ Polynomial::Polynomial(std::size_t _facSize, bool _bShowStats, const mpz_class &
     }
 }
 
-Polynomial::Polynomial(std::size_t _facSize) : 
+Polynomial::Polynomial(std::size_t _facSize, std::size_t _vecMaxSize) : 
     SaPThresh(_facSize), facSize(_facSize), bShowStats(false) {
 
     myStart.resize(_facSize);
+    myLogs.resize(_vecMaxSize);
     nPolys = 0;
     nPartial = 0;
     nSmooth = 0;
@@ -122,11 +125,145 @@ void Polynomial::SievePolys(const std::vector<std::size_t> &SieveDist,
     for (std::size_t poly = 0; poly < polyLimit; ++poly) {
         ++mpzFacSize;
 
-        MPQS::SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
-                         myStart, partFactorsMap, partIntvlMap, smoothInterval,
-                         largeCoFactors, partialInterval, mpzFacBase[mpzFacSize - 1],
-                         myNum, LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
-                         strt, vecMaxStrt);
+        SinglePoly(SieveDist, facBase, LnFB, mpzFacBase[mpzFacSize - 1],
+                   myNum, LowBound, theCut, TwiceLenB, vecMaxSize, strt, vecMaxStrt);
+    }
+}
+
+void Polynomial::SieveListsInit(const std::vector<int> &facBase,
+                                const std::vector<logType> &LnFB,
+                                const std::vector<std::size_t> &SieveDist,
+                                const mpz_class &firstSqrDiff, const mpz_class &VarA,
+                                const mpz_class &VarB, std::size_t strt,
+                                int LowBound, int vecMaxSize) {
+    
+    mpz_class Temp;
+    
+    for (std::size_t i = strt, facSize = facBase.size(); i < facSize; ++i) {
+        auto&& myPrime = facBase[i];
+        Temp = VarA % myPrime;
+        const int AUtil = int_invert(Temp.get_si(), myPrime);
+        
+        mpz_ui_sub(Temp.get_mpz_t(), SieveDist[i], VarB.get_mpz_t());
+        Temp *= AUtil;
+        mpz_mod_ui(Temp.get_mpz_t(), Temp.get_mpz_t(), myPrime);
+        int myMin = Temp.get_si();
+        
+        mpz_ui_sub(Temp.get_mpz_t(), myPrime - SieveDist[i], VarB.get_mpz_t());
+        Temp *= AUtil;
+        mpz_mod_ui(Temp.get_mpz_t(), Temp.get_mpz_t(), myPrime);
+        int myMax = Temp.get_si();
+        
+        const int q = (LowBound % myPrime) + myPrime;
+        mpz_mod_ui(Temp.get_mpz_t(), firstSqrDiff.get_mpz_t(), myPrime);
+        
+        if (myMin > myMax) {std::swap(myMin, myMax);}
+        myStart[i].InitialSet(Temp.get_si(), q, myMin, myMax, myPrime);
+        
+        if (myPrime < vecMaxSize) {
+            myStart[i].SmallSieve(myLogs, vecMaxSize, myPrime, LnFB[i]);
+        } else {
+            myStart[i].LargeSieve(myLogs, vecMaxSize, myPrime, LnFB[i]);
+        }
+    }
+}
+
+void Polynomial::SinglePoly(const std::vector<std::size_t> &SieveDist,
+                            const std::vector<int> &facBase,
+                            const std::vector<logType> &LnFB,
+                            const mpz_class &NextPrime, const mpz_class &myNum,
+                            int LowBound, logType theCut, int TwiceLenB,
+                            int vecMaxSize, std::size_t strt, std::size_t vecMaxStrt) {
+    
+    mpz_class VarA, VarB, VarC, IntVal;
+    TonelliShanksC(myNum, NextPrime, VarC);
+    
+    IntVal = VarC * 2u;
+    mpz_invert(IntVal.get_mpz_t(), IntVal.get_mpz_t(), NextPrime.get_mpz_t());
+    
+    VarA = NextPrime * NextPrime;
+    VarB = (IntVal * (myNum - VarC * VarC) + VarC) % VarA;
+    VarC = (VarB * VarB - myNum) / VarA;
+    IntVal = LowBound * (VarA * LowBound) + VarB * 2 * LowBound + VarC;
+    std::fill(myLogs.begin(), myLogs.end(), 0);
+    
+    SieveListsInit(facBase, LnFB, SieveDist, IntVal,
+                   VarA, VarB, strt, LowBound, vecMaxSize);
+    
+    for (int chunk = 0; chunk < TwiceLenB; chunk += vecMaxSize) {
+        std::vector<int> largeLogs;
+        
+        for (int i = 0; i < vecMaxSize; ++i)
+            if (myLogs[i] > theCut)
+                largeLogs.push_back(i + chunk);
+            
+        for (const auto lrgLog: largeLogs) {
+            std::vector<int> primeIndexVec;
+            const int myIntVal = LowBound + lrgLog;
+            IntVal = (VarA * myIntVal) * myIntVal + (VarB * myIntVal) * 2 + VarC;
+            
+            // Add the index referring to A^2.. (i.e. add it twice)
+            primeIndexVec.insert(primeIndexVec.end(), 2, mpzFacSize);
+            
+            // If Negative, we push zero (i.e. the index referring to -1)
+            if (sgn(IntVal) < 0) {
+                IntVal = abs(IntVal);
+                primeIndexVec.push_back(0);
+            }
+            
+            for (std::size_t j = 0; j < strt; ++j) {
+                while (mpz_divisible_ui_p(IntVal.get_mpz_t(), facBase[j])) {
+                    IntVal /= facBase[j];
+                    primeIndexVec.push_back(j + 1);
+                }
+            }
+            
+            for (std::uint32_t j = strt, facSize = facBase.size(),
+                 ind = vecMaxSize - (lrgLog - chunk); j < facSize; ++j) {
+                if (myStart[j].IsDivisible(facBase[j], ind)) {
+                    do {
+                        IntVal /= facBase[j];
+                        primeIndexVec.push_back(j + 1);
+                    } while (mpz_divisible_ui_p(IntVal.get_mpz_t(), facBase[j]));
+                }
+            }
+            
+            if (cmp(IntVal, 1u) == 0) {
+                // Found a smooth number
+                smoothInterval.push_back(VarA * myIntVal + VarB);
+                powsOfSmooths.push_back(primeIndexVec);
+            } else if (cmp(IntVal, Significand53) < 0) {
+                const uint64_t myKey = static_cast<uint64_t>(IntVal.get_d());
+                auto&& pFacIt = partFactorsMap.find(myKey);
+                
+                if (pFacIt != partFactorsMap.end()) {
+                    largeCoFactors.push_back(myKey);
+                    primeIndexVec.insert(primeIndexVec.begin(),
+                                         pFacIt->second.cbegin(), pFacIt->second.cend());
+                    
+                    powsOfPartials.push_back(primeIndexVec);
+                    auto&& intervalIt = partIntvlMap.find(myKey);
+                    partialInterval.push_back((VarA * myIntVal + VarB) *
+                        intervalIt->second);
+                    
+                    partFactorsMap.erase(pFacIt);
+                    partIntvlMap.erase(intervalIt);
+                } else {
+                    partFactorsMap[myKey] = primeIndexVec;
+                    partIntvlMap[myKey] = VarA * myIntVal + VarB;
+                }
+            }
+        }
+        
+        if (chunk + vecMaxSize < TwiceLenB) {
+            std::fill(myLogs.begin(), myLogs.end(), 0);
+            
+            for (std::size_t i = strt; i < vecMaxStrt; ++i)
+                myStart[i].SmallSieve(myLogs, vecMaxSize, facBase[i], LnFB[i]);
+            
+            for (std::size_t i = vecMaxStrt, facSize = facBase.size(); i < facSize; ++i)
+                myStart[i].LargeSieve(myLogs, vecMaxSize, facBase[i], LnFB[i]);
+        }
     }
 }
 
@@ -240,7 +377,7 @@ void Polynomial::FactorParallel(const std::vector<std::size_t> &SieveDist,
         mpzFacSize = mpzFacBase.size();
         
         for (std::size_t i = 0, step = startStep; i < nThreads; ++i, step += polysPerThread) {
-            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize));
+            vecPoly.push_back(FromCpp14::make_unique<Polynomial>(facSize, vecMaxSize));
             vecPoly[i]->SetMpzFacSize(step);
 
             myThreads.emplace_back(&Polynomial::SievePolys, vecPoly[i].get(),
@@ -309,11 +446,8 @@ void Polynomial::FactorSerial(const std::vector<std::size_t> &SieveDist,
         mpzFacBase.push_back(NextPrime);
         ++mpzFacSize;
 
-        MPQS::SinglePoly(SieveDist, facBase, LnFB, powsOfSmooths, powsOfPartials,
-                         myStart, partFactorsMap, partIntvlMap, smoothInterval,
-                         largeCoFactors, partialInterval, NextPrime, myNum,
-                         LowBound, theCut, TwiceLenB, mpzFacSize, vecMaxSize,
-                         strt, vecMaxStrt);
+        SinglePoly(SieveDist, facBase, LnFB, NextPrime, myNum,
+                   LowBound, theCut, TwiceLenB, vecMaxSize, strt, vecMaxStrt);
 
         ++nPolys;
         nSmooth = smoothInterval.size();
