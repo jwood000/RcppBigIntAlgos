@@ -4,7 +4,7 @@ int int_invert(unsigned int n, unsigned int p) {
     
     int x = 0;
     
-    for (unsigned int u = 1; n;) {
+    for (int u = 1; n;) {
         int temp = x - static_cast<int>((p / n) * u);
         x = u;
         u = temp;
