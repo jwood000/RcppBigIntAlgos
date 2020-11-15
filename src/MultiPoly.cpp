@@ -3,19 +3,19 @@
 
 namespace MPQS {
 
-    bool sieveInd::IsDivisible(std::uint32_t myPrime, std::uint32_t ind) const {
+    bool SieveIndex::IsDivisible(std::uint32_t myPrime, std::uint32_t ind) const {
         return !((ind_1 + ind) % myPrime && (ind_2 + ind) % myPrime);
     }
     
-    void sieveInd::InitialSet(int temp, int q, int myMin, int myMax, int myPrime) {
+    void SieveIndex::InitialSet(int temp, int q, int myMin, int myMax, int myPrime) {
         
         ind_1 = (temp) ? (myMin > q) ? myMin - q : myPrime + myMin - q : temp;
         ind_2 = (temp) ? (myMax > q) ? myMax - q : myPrime + myMax - q :
             (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
     }
     
-    void sieveInd::SmallSieve(std::vector<logType> &myLogs, int vecMaxSize,
-                              int myPrime, logType LnFB) {
+    void SieveIndex::SmallSieve(std::vector<logType> &myLogs, int vecMaxSize,
+                                int myPrime, logType LnFB) {
         
         for (int j = ind_1; j < vecMaxSize; j += myPrime)
             myLogs[j] += LnFB;
@@ -27,8 +27,8 @@ namespace MPQS {
         ind_2 = ((ind_2 - vecMaxSize) % myPrime) + myPrime;
     }
 
-    void sieveInd::LargeSieve(std::vector<logType> &myLogs, int vecMaxSize,
-                              int myPrime, logType LnFB) {
+    void SieveIndex::LargeSieve(std::vector<logType> &myLogs, int vecMaxSize,
+                                int myPrime, logType LnFB) {
         
         if (ind_1 < vecMaxSize) {
             myLogs[ind_1] += LnFB;
@@ -48,7 +48,7 @@ namespace MPQS {
     void SieveListsInit(const std::vector<int> &facBase,
                         const std::vector<logType> &LnFB,
                         const std::vector<std::size_t> &SieveDist,
-                        std::vector<logType> &myLogs, std::vector<sieveInd> &myStart,
+                        std::vector<logType> &myLogs, std::vector<SieveIndex> &myStart,
                         const mpz_class &firstSqrDiff, const mpz_class &VarA,
                         const mpz_class &VarB, std::size_t strt,
                         int LowBound, int vecMaxSize) {
@@ -58,7 +58,7 @@ namespace MPQS {
         for (std::size_t i = strt, facSize = facBase.size(); i < facSize; ++i) {
             auto&& myPrime = facBase[i];
             Temp = VarA % myPrime;
-            const int AUtil = int_invert(Temp.get_si(), myPrime);
+            const int AUtil = int_invert(Temp.get_ui(), myPrime);
             
             mpz_ui_sub(Temp.get_mpz_t(), SieveDist[i], VarB.get_mpz_t());
             Temp *= AUtil;
@@ -87,7 +87,7 @@ namespace MPQS {
     void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     const std::vector<int> &facBase,
                     const std::vector<logType> &LnFB, vec2dint &powsOfSmooths,
-                    vec2dint &powsOfPartials, std::vector<sieveInd> &myStart,
+                    vec2dint &powsOfPartials, std::vector<SieveIndex> &myStart,
                     hash64vec &partFactorsMap, hash64mpz &partIntvlMap,
                     std::vector<mpz_class> &smoothInterval,
                     std::vector<uint64_t> &largeCoFactors,

@@ -12,7 +12,7 @@ private:
     vec2dint powsOfSmooths;
     vec2dint powsOfPartials;
     
-    std::vector<MPQS::sieveInd> myStart;
+    std::vector<MPQS::SieveIndex> myStart;
     hash64vec partFactorsMap;
     hash64mpz partIntvlMap;
     

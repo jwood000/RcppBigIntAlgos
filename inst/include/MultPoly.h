@@ -5,7 +5,7 @@
 
 namespace MPQS {
     
-    class sieveInd {
+    class SieveIndex {
     private:
         int ind_1;
         int ind_2;
@@ -24,7 +24,7 @@ namespace MPQS {
     void SinglePoly(const std::vector<std::size_t> &SieveDist,
                     const std::vector<int> &facBase,
                     const std::vector<logType> &LnFB, vec2dint &powsOfSmooths,
-                    vec2dint &powsOfPartials, std::vector<sieveInd> &myStart,
+                    vec2dint &powsOfPartials, std::vector<SieveIndex> &myStart,
                     hash64vec &partFactorsMap, hash64mpz &partIntvlMap,
                     std::vector<mpz_class> &smoothInterval,
                     std::vector<std::uint64_t> &largeCoFactors,
