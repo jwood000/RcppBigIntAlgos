@@ -175,7 +175,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     if (cmp(NextPrime, facBase.back()) < 0)
         NextPrime = facBase.back();
     
-    Polynomial myPoly(facSize, vecMaxSize, bShowStats, myNum);
+    Polynomial myPoly(facSize, bShowStats, myNum);
     bool xtraTime = true;
     
     if (IsParallel) {
