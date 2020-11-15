@@ -176,7 +176,7 @@ Big Integer ('bigz') object of length 2:
 
 As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 30 seconds and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 4 minutes.
 
-Finally, we factor [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under 9 hours.
+Finally, we factor [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under 8 hours.
 
 Below are my machine specs and R version info:
 
