@@ -156,20 +156,20 @@ Big Integer ('bigz') object of length 2:
 system.time(print(quadraticSieve(semiPrime120bits)))
 Big Integer ('bigz') object of length 2:
 [1] 638300143449131711  1021796573707617139
- user  system elapsed 
-  0.1     0.0     0.1
+   user  system elapsed 
+  0.077   0.000   0.077
   
 system.time(print(quadraticSieve(semiPrime130bits)))
 Big Integer ('bigz') object of length 2:
 [1] 14334377958732970351 29368224335577838231
    user  system elapsed 
-  0.111   0.001   0.111
+  0.094   0.000   0.094
 
 system.time(print(quadraticSieve(semiPrime140bits)))
 Big Integer ('bigz') object of length 2:
 [1] 143600566714698156857  1131320166687668315849
    user  system elapsed 
-  0.186   0.000   0.186
+  0.153   0.001   0.153
 ```
 
 ### Using Multiple Threads
@@ -214,19 +214,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        58ms        |
+|        59ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      21s 186ms     |   100%   |    16183    |    4089    |    4345    |
+|      20s 477ms     |   100%   |    16183    |    4089    |    4345    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      4s 654ms      |     8301 x 8434    |
+|      4s 715ms      |     8301 x 8434    |
 
 |     Total Time     |
 |--------------------|
-|      26s 122ms     |
+|      25s 470ms     |
 
 Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
@@ -243,19 +243,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        69ms        |
+|        67ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|     3m 6s 335ms    |   100%   |    91223    |    5651    |    7096    |
+|    2m 58s 271ms    |   100%   |    91223    |    5651    |    7096    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      16s 257ms     |    12624 x 12747   |
+|      14s 676ms     |    12625 x 12747   |
 
 |     Total Time     |
 |--------------------|
-|    3m 23s 276ms    |
+|    3m 13s 627ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
@@ -273,19 +273,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        80ms        |
+|        77ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|   8h 10m 0s 953ms  |   100%   |   7351524   |    9203    |    15846   |
+|   7h 38m 7s 662ms  |   100%   |   7351524   |    9203    |    15846   |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|     2m 3s 772ms    |    24929 x 25049   |
+|    2m 23s 964ms    |    24929 x 25049   |
 
 |     Total Time     |
 |--------------------|
-|   8h 12m 8s 489ms  |
+|  7h 40m 35s 880ms  |
 
 Big Integer ('bigz') object of length 2:
 [1] 4868376167980921239824329271069101142472222111193  52733064254484107837300974402288603361507691060217
@@ -305,15 +305,15 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        68ms        |
+|        60ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      10s 577ms     |   100%   |     2963    |    1705    |    2098    |
+|      8s 332ms      |   100%   |     2736    |    1730    |    2074    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|        485ms       |     3763 x 3803    |
+|        520ms       |     3757 x 3804    |
 
 
 Summary Statistics for Factoring:
@@ -321,15 +321,15 @@ Summary Statistics for Factoring:
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|        292ms       |   100%   |      70     |     494    |     319    |
+|        179ms       |   100%   |      57     |     499    |     320    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|        79ms        |      791 x 813     |
+|        48ms        |      786 x 819     |
 
 |     Total Time     |
 |--------------------|
-|      11s 709ms     |
+|      9s 276ms      |
 
 Big Integer ('bigz') object of length 3:
 [1] 11281626468262639417 17955629036507943829 32752213052784053513
