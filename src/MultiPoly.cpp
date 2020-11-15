@@ -3,20 +3,15 @@
 
 namespace MPQS {
 
-    bool sieveInd::IsDivisible(unsigned int myPrime, unsigned int ind) const {
+    bool sieveInd::IsDivisible(std::uint32_t myPrime, std::uint32_t ind) const {
         return !((ind_1 + ind) % myPrime && (ind_2 + ind) % myPrime);
     }
     
     void sieveInd::InitialSet(int temp, int q, int myMin, int myMax, int myPrime) {
         
-        ind_1 = temp;
-        
-        if (ind_1 == 0) {
-            ind_2 = (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
-        } else {
-            ind_1 = (myMin > q) ? myMin - q : myPrime + myMin - q;
-            ind_2 = (myMax > q) ? myMax - q : myPrime + myMax - q;
-        }
+        ind_1 = (temp) ? (myMin > q) ? myMin - q : myPrime + myMin - q : temp;
+        ind_2 = (temp) ? (myMax > q) ? myMax - q : myPrime + myMax - q :
+            (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
     }
     
     void sieveInd::SmallSieve(std::vector<logType> &myLogs, int vecMaxSize,
@@ -145,7 +140,7 @@ namespace MPQS {
                     }
                 }
                 
-                for (int j = strt, facSize = facBase.size(),
+                for (std::uint32_t j = strt, facSize = facBase.size(),
                      ind = vecMaxSize - (lrgLog - chunk); j < facSize; ++j) {
                     if (myStart[j].IsDivisible(facBase[j], ind)) {
                         do {
