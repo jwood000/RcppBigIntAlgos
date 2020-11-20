@@ -32,14 +32,14 @@ namespace MPQS {
         
         if (ind_1 < vecMaxSize) {
             myLogs[ind_1] += LnFB;
-            ind_1 = ((ind_1 - vecMaxSize) % myPrime) + myPrime;
+            ind_1 += (myPrime - vecMaxSize);
         } else {
             ind_1 -= vecMaxSize;
         }
         
         if (ind_2 < vecMaxSize) {
             myLogs[ind_2] += LnFB;
-            ind_2 = ((ind_2 - vecMaxSize) % myPrime) + myPrime;
+            ind_2 += (myPrime - vecMaxSize);
         } else {
             ind_2 -= vecMaxSize;
         }
