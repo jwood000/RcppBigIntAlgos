@@ -1,5 +1,4 @@
 #include "MultPoly.h"
-#include <Rcpp.h>
 
 namespace MPQS {
 
@@ -120,12 +119,9 @@ namespace MPQS {
                     largeLogs.push_back(i + chunk);
                 
             for (const auto lrgLog: largeLogs) {
-                std::vector<int> primeIndexVec;
+                std::vector<int> primeIndexVec = {mpzFacSize, mpzFacSize};
                 const int myIntVal = LowBound + lrgLog;
                 IntVal = (VarA * myIntVal) * myIntVal + (VarB * myIntVal) * 2 + VarC;
-                
-                // Add the index referring to A^2.. (i.e. add it twice)
-                primeIndexVec.insert(primeIndexVec.end(), 2, mpzFacSize);
                 
                 // If Negative, we push zero (i.e. the index referring to -1)
                 if (sgn(IntVal) < 0) {
@@ -161,7 +157,8 @@ namespace MPQS {
                     if (pFacIt != partFactorsMap.end()) {
                         largeCoFactors.push_back(myKey);
                         primeIndexVec.insert(primeIndexVec.begin(),
-                                             pFacIt->second.cbegin(), pFacIt->second.cend());
+                                             pFacIt->second.cbegin(),
+                                             pFacIt->second.cend());
                         
                         powsOfPartials.push_back(primeIndexVec);
                         auto&& intervalIt = partIntvlMap.find(myKey);
@@ -178,7 +175,8 @@ namespace MPQS {
             }
             
             if (chunk + vecMaxSize < TwiceLenB) {
-                std::fill(myLogs.begin(), myLogs.end(), 0);
+                std::fill(myLogs.begin(), myLogs.end(),
+                          static_cast<logType>(0));
                 
                 for (std::size_t i = strt; i < vecMaxStrt; ++i)
                     myStart[i].SmallSieve(myLogs, vecMaxSize, facBase[i], LnFB[i]);
