@@ -376,6 +376,8 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
   * [Integer Factorization using the Quadratic Sieve
 ](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
 
+  * In the stackoverflow question and answer [What is the most efficient factoring algorithm for quadratic sieve extraction phase?](https://stackoverflow.com/q/63541365/4408538) by  [Ilya Gazman](https://github.com/gazman-sdk), an efficient method for checking divisibility is sketched out that utilizes built-in types. You can see more on a video Ilya put on youtube: [E15: Quadratic Sieve Running on Java - Receiving](https://youtu.be/sXg_WrCUX-Q). While `mpz_divisible_ui_p` is very efficient, we found better performance using this method.
+
 
 ## Current Research
 
