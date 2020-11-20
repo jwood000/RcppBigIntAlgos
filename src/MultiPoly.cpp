@@ -8,8 +8,8 @@ namespace MPQS {
     
     void SieveIndex::InitialSet(int temp, int q, int myMin, int myMax, int myPrime) {
         
-        ind_1 = (temp) ? (myMin > q) ? myMin - q : myPrime + myMin - q : temp;
-        ind_2 = (temp) ? (myMax > q) ? myMax - q : myPrime + myMax - q :
+        ind_1 = (temp) ? ((myMin > q) ? myMin - q : myPrime + myMin - q) : temp;
+        ind_2 = (temp) ? ((myMax > q) ? myMax - q : myPrime + myMax - q) :
             (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
     }
     
@@ -99,7 +99,9 @@ namespace MPQS {
         TonelliShanksC(myNum, NextPrime, VarC);
         
         IntVal = VarC * 2u;
-        mpz_invert(IntVal.get_mpz_t(), IntVal.get_mpz_t(), NextPrime.get_mpz_t());
+        mpz_invert(IntVal.get_mpz_t(),
+                   IntVal.get_mpz_t(),
+                   NextPrime.get_mpz_t());
         
         VarA = NextPrime * NextPrime;
         VarB = (IntVal * (myNum - VarC * VarC) + VarC) % VarA;

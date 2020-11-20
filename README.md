@@ -243,19 +243,19 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        67ms        |
+|        71ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    2m 53s 131ms    |   100%   |    91223    |    5651    |    7096    |
+|    2m 49s 163ms    |   100%   |    91223    |    5651    |    7096    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      15s 491ms     |    12625 x 12747   |
+|      15s 589ms     |    12625 x 12747   |
 
 |     Total Time     |
 |--------------------|
-|     3m 9s 270ms    |
+|     3m 5s 409ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
