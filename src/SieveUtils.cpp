@@ -1,5 +1,72 @@
 #include "SieveUtils.h"
 
+int64_t int64_invert(int64_t n, int64_t p) {
+    
+    const int64_t const_p = p;
+    int64_t x = 0;
+    n %= p;
+    
+    for (int64_t u = 1; n; ) {
+        int64_t temp = x - ((p / n) * u);
+        x = u;
+        u = temp;
+        temp = p % n;
+        p = n;
+        n = temp;
+    }
+    
+    return (x + const_p) % const_p;
+}
+
+int64_t GetPowIndex(const mpz_class &myNum, mpz_class &temp,
+                    unsigned long int myR, int64_t primePow) {
+    
+    double myInv = int64_invert(myR + myR, primePow);
+    temp = myNum - (static_cast<double>(myR) * 
+                    static_cast<double>(myR));
+    temp *= myInv;
+    temp += myR;
+    temp %= static_cast<unsigned long int>(primePow);
+    return (temp.get_si());
+}
+
+std::vector<std::size_t> SetHenselLift(const std::vector<int> &facBase,
+                                       const mpz_class &myNum,
+                                       int minPrime, int TwiceLenB) {
+    
+    const std::size_t facSize = facBase.size();
+    std::vector<std::size_t> Hensel;
+    mpz_class p, TS_1, TS_2, temp;
+    
+    for (std::size_t i = 1; i < facSize; ++i) {
+        double primePow = facBase[i];
+        const int myLog = std::floor(dblLogMult * 
+                                     std::log(static_cast<double>(facBase[i])));
+        
+        p = facBase[i];
+        TonelliShanksC(myNum, p, TS_1);
+        TS_2 = p - TS_1;
+        unsigned long int r1 = TS_1.get_ui();
+        unsigned long int r2 = TS_2.get_ui();
+        
+        while (primePow < minPrime) {
+            r1 = GetPowIndex(myNum, temp, r1, primePow);
+            r2 = GetPowIndex(myNum, temp, r2, primePow);
+            primePow *= static_cast<double>(facBase[i]);
+        }
+        
+        for (; primePow < TwiceLenB;) {
+            r1 = GetPowIndex(myNum, temp, r1, primePow);
+            r2 = GetPowIndex(myNum, temp, r2, primePow);
+            Hensel.push_back(r1);
+            Hensel.push_back(r2);
+            primePow *= static_cast<double>(facBase[i]);
+        }
+    }
+    
+    return Hensel;
+}
+
 int int_invert(unsigned int n, unsigned int p) {
     
     int x = 0;

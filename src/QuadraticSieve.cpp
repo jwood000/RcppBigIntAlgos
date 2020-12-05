@@ -146,13 +146,13 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
                           (digCount < 60) ? 1.505 : 
                           (digCount < 65) ? 1.520 : 1.540;
     
-    const logType theCut = std::ceil(100.0 * fudge2 *
+    const logType theCut = std::ceil(dblLogMult * fudge2 *
                                      static_cast<double>(mpz_sizeinbase(Temp.get_mpz_t(), 10)));
     std::vector<logType> LnFB(facSize);
     
     for (std::size_t i = 0; i < facSize; ++i) {
         mpzFacBase.push_back(facBase[i]);
-        LnFB[i] = std::floor(100.0 * std::log(static_cast<double>(facBase[i])));
+        LnFB[i] = std::floor(dblLogMult * std::log(static_cast<double>(facBase[i])));
     }
     
     Temp = sqrt(myNum) - LenB;

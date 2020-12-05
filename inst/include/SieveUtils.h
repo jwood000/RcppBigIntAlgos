@@ -9,6 +9,7 @@
 #include <numeric>
 #include <cmath>
 
+constexpr double dblLogMult = 100.0;
 constexpr double Significand53 = 9007199254740991.0;
 constexpr int L1Cache = 32768;
 
