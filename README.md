@@ -22,92 +22,6 @@ install.packages("RcppBigIntAlgos")
 devtools::install_github("jwood000/RcppBigIntAlgos")
 ```
 
-## Usage
-
-First, we take a look at `divisorsBig`. It is vectorized and can also return a named list.
-``` r
-## Get all divisors of a given number:
-divisorsBig(1000)
-Big Integer ('bigz') object of length 16:
- [1] 1    2    4    5    8    10   20   25   40   50   100  125  200  250  500  1000
- 
- 
- ## Or, get all divisors of a vector:
-divisorsBig(urand.bigz(nb = 2, size = 100, seed = 42), namedList = TRUE)
-Seed initialisation
-$`153675943236425922379228498617`
-Big Integer ('bigz') object of length 16:
- [1] 1                              3                             
- [3] 7                              9                             
- [5] 21                             27                            
- [7] 63                             189                           
- [9] 813100228764158319466817453    2439300686292474958400452359  
-[11] 5691701601349108236267722171   7317902058877424875201357077  
-[13] 17075104804047324708803166513  21953706176632274625604071231 
-[15] 51225314412141974126409499539  153675943236425922379228498617
-
-$`261352009818227569107309994396`
-Big Integer ('bigz') object of length 12:
- [1] 1                              2                             
- [3] 4                              155861                        
- [5] 311722                         623444                        
- [7] 419206873140534785974859       838413746281069571949718      
- [9] 1676827492562139143899436      65338002454556892276827498599 
-[11] 130676004909113784553654997198 261352009818227569107309994396
-```
-
-### Efficiency
-
-It is very efficient as well. It is equipped with a modified merge sort algorithm that significantly outperforms the `std::sort`/`bigvec` (the class utilized in the `R gmp` package) combination.
-
-```r
-hugeNumber <- pow.bigz(2, 100) * pow.bigz(3, 100) * pow.bigz(5, 100)
-system.time(overOneMillion <- divisorsBig(hugeNumber))
-   user  system elapsed 
-  0.364   0.029   0.390
-  
-length(overOneMillion)
-[1] 1030301
-
-## Output is in ascending order
-tail(overOneMillion)
-Big Integer ('bigz') object of length 6:
-[1] 858962534553352218394101882942702121170179203335000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 
-[2] 1030755041464022662072922259531242545404215044002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-[3] 1288443801830028327591152824414053181755268805002500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-[4] 1717925069106704436788203765885404242340358406670000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-[5] 2576887603660056655182305648828106363510537610005000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-[6] 5153775207320113310364611297656212727021075220010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-```
-
-### Correct Ordering
-
- Another benefit is that it will return correct orderings on extremely large numbers when compared to sorting large vectors in `base R`.  Typically in `base R` you must execute the following: `order(asNumeric(myVectorHere))`. When the numbers get large enough, precision is lost which leads to incorrect orderings. Observe:
- 
-```r
-set.seed(101)
-testBaseSort <- do.call(c, lapply(sample(100), function(x) add.bigz(pow.bigz(10,80), x)))
-testBaseSort <- testBaseSort[order(asNumeric(testBaseSort))]
-myDiff <- do.call(c, lapply(1:99, function(x) sub.bigz(testBaseSort[x+1], testBaseSort[x])))
-
-## Should return integer(0) as the difference should always be positive
-## NOTE that the result will be unpredictable because of lack of precision
-which(myDiff < 0)
- [1]  1  3  4  7  9 11 14 17 19 22 24 25 26 28 31 32 33 36 37 38 40 42 45 47 48
-[26] 50 51 54 57 58 59 63 64 65 66 69 70 72 75 78 81 82 85 87 89 91 93 94 97 98
-
-## N.B. The first and second elements are incorrect order (among others)
-head(testBaseSort)
-Big Integer ('bigz') object of length 6:
-[1] 100000000000000000000000000000000000000000000000000000000000000000000000000000038
-[2] 100000000000000000000000000000000000000000000000000000000000000000000000000000005
-[3] 100000000000000000000000000000000000000000000000000000000000000000000000000000070
-[4] 100000000000000000000000000000000000000000000000000000000000000000000000000000064
-[5] 100000000000000000000000000000000000000000000000000000000000000000000000000000024
-[6] 100000000000000000000000000000000000000000000000000000000000000000000000000000029
-
-```
-
 ## The Quadratic Sieve
 
 The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 70 digits (~230 bits) on most standard personal computers. If you have access to powerful computers with many cores, factoring 100+ digit semiprimes in less than a day is not out of the question.
@@ -174,7 +88,7 @@ Big Integer ('bigz') object of length 2:
 
 ### Using Multiple Threads
 
-As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 30 seconds and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 4 minutes.
+As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 30 seconds and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in ~3 minutes.
 
 Finally, we factor [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under 8 hours.
 
@@ -203,7 +117,7 @@ stdThreadMax()
 [1] 8
 ```
 
-### mostWanted1983
+#### mostWanted1983
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
@@ -232,7 +146,7 @@ Big Integer ('bigz') object of length 2:
 [1] 241573142393627673576957439049            45994811347886846310221728895223034301839
 ```
 
-### RSA-79
+#### RSA-79
 
 ```r
 rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
@@ -243,25 +157,25 @@ Summary Statistics for Factoring:
 
 |  Pollard Rho Time  |
 |--------------------|
-|        71ms        |
+|        65ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    2m 49s 163ms    |   100%   |    91223    |    5651    |    7096    |
+|    2m 44s 906ms    |   100%   |    91223    |    5651    |    7096    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      15s 589ms     |    12625 x 12747   |
+|      15s 247ms     |    12625 x 12747   |
 
 |     Total Time     |
 |--------------------|
-|     3m 5s 409ms    |
+|     3m 0s 793ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
 ```
 
-### RSA-99
+#### RSA-99
 
 ```r
 rsa99 <- "256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881"
@@ -348,7 +262,7 @@ Big Integer ('bigz') object of length 5:
 
 However `gmp::factorize` is more suitable for numbers smaller than 70 bits (about 22 decimal digits) and should be used in such cases.
 
-## Safely Interrupt Execution in **`quadraticSieve`**
+### Safely Interrupt Execution in **`quadraticSieve`**
 
 If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution. When you utilize multiple threads with a very large number (e.g. 90 digit semiprime), you will be able to interrupt execution once every ~30 seconds.
 
@@ -361,6 +275,93 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 ##  Error in QuadraticSieveContainer(n) : C++ call interrupted by the user.
 ##  
 ## Timing stopped at: 1.623 0.102 1.726
+```
+
+## Complete Factorization with `divisorsBig`
+
+This function generates the complete factorization for many (possibly large) numbers. It is vectorized and can also return a named list.
+
+``` r
+## Get all divisors of a given number:
+divisorsBig(1000)
+Big Integer ('bigz') object of length 16:
+ [1] 1    2    4    5    8    10   20   25   40   50   100  125  200  250  500  1000
+ 
+ 
+ ## Or, get all divisors of a vector:
+divisorsBig(urand.bigz(nb = 2, size = 100, seed = 42), namedList = TRUE)
+Seed initialisation
+$`153675943236425922379228498617`
+Big Integer ('bigz') object of length 16:
+ [1] 1                              3                             
+ [3] 7                              9                             
+ [5] 21                             27                            
+ [7] 63                             189                           
+ [9] 813100228764158319466817453    2439300686292474958400452359  
+[11] 5691701601349108236267722171   7317902058877424875201357077  
+[13] 17075104804047324708803166513  21953706176632274625604071231 
+[15] 51225314412141974126409499539  153675943236425922379228498617
+
+$`261352009818227569107309994396`
+Big Integer ('bigz') object of length 12:
+ [1] 1                              2                             
+ [3] 4                              155861                        
+ [5] 311722                         623444                        
+ [7] 419206873140534785974859       838413746281069571949718      
+ [9] 1676827492562139143899436      65338002454556892276827498599 
+[11] 130676004909113784553654997198 261352009818227569107309994396
+```
+
+### Efficiency
+
+It is very efficient as well. It is equipped with a modified merge sort algorithm that significantly outperforms the `std::sort`/`bigvec` (the class utilized in the `R gmp` package) combination.
+
+```r
+hugeNumber <- pow.bigz(2, 100) * pow.bigz(3, 100) * pow.bigz(5, 100)
+system.time(overOneMillion <- divisorsBig(hugeNumber))
+   user  system elapsed 
+  0.364   0.029   0.390
+  
+length(overOneMillion)
+[1] 1030301
+
+## Output is in ascending order
+tail(overOneMillion)
+Big Integer ('bigz') object of length 6:
+[1] 858962534553352218394101882942702121170179203335000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 
+[2] 1030755041464022662072922259531242545404215044002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+[3] 1288443801830028327591152824414053181755268805002500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+[4] 1717925069106704436788203765885404242340358406670000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+[5] 2576887603660056655182305648828106363510537610005000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+[6] 5153775207320113310364611297656212727021075220010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+```
+
+### Correct Ordering
+
+ Another benefit is that it will return correct orderings on extremely large numbers when compared to sorting large vectors in `base R`.  Typically in `base R` you must execute the following: `order(asNumeric(myVectorHere))`. When the numbers get large enough, precision is lost which leads to incorrect orderings. Observe:
+ 
+```r
+set.seed(101)
+testBaseSort <- do.call(c, lapply(sample(100), function(x) add.bigz(pow.bigz(10,80), x)))
+testBaseSort <- testBaseSort[order(asNumeric(testBaseSort))]
+myDiff <- do.call(c, lapply(1:99, function(x) sub.bigz(testBaseSort[x+1], testBaseSort[x])))
+
+## Should return integer(0) as the difference should always be positive
+## NOTE that the result will be unpredictable because of lack of precision
+which(myDiff < 0)
+ [1]  1  3  4  7  9 11 14 17 19 22 24 25 26 28 31 32 33 36 37 38 40 42 45 47 48
+[26] 50 51 54 57 58 59 63 64 65 66 69 70 72 75 78 81 82 85 87 89 91 93 94 97 98
+
+## N.B. The first and second elements are incorrect order (among others)
+head(testBaseSort)
+Big Integer ('bigz') object of length 6:
+[1] 100000000000000000000000000000000000000000000000000000000000000000000000000000038
+[2] 100000000000000000000000000000000000000000000000000000000000000000000000000000005
+[3] 100000000000000000000000000000000000000000000000000000000000000000000000000000070
+[4] 100000000000000000000000000000000000000000000000000000000000000000000000000000064
+[5] 100000000000000000000000000000000000000000000000000000000000000000000000000000024
+[6] 100000000000000000000000000000000000000000000000000000000000000000000000000000029
+
 ```
 
 ## Acknowledgments and Resources
