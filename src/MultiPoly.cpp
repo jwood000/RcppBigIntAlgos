@@ -1,4 +1,5 @@
 #include "MultPoly.h"
+#include <Rcpp.h>
 
 namespace MPQS {
 
@@ -6,11 +7,15 @@ namespace MPQS {
         return !((ind_1 + ind) % myPrime && (ind_2 + ind) % myPrime);
     }
     
-    void SieveIndex::InitialSet(int temp, int q, int myMin, int myMax, int myPrime) {
+    void SieveIndex::InitialSet(int temp, int q, int myMin,
+                                int myMax, int myPrime, int vecMaxSize) {
         
         ind_1 = (temp) ? ((myMin > q) ? myMin - q : myPrime + myMin - q) : temp;
         ind_2 = (temp) ? ((myMax > q) ? myMax - q : myPrime + myMax - q) :
             (q == myMin) ? (myMax - myMin) : myPrime - (myMax - myMin);
+        
+        int next_ind_1 = ((ind_1 - vecMaxSize) % myPrime) + myPrime;
+        offset = (next_ind_1 > ind_1) ? next_ind_1 - ind_1 : myPrime - ind_1 + next_ind_1;
     }
     
     void SieveIndex::SmallSieve(std::vector<logType> &myLogs, int vecMaxSize,
@@ -22,12 +27,12 @@ namespace MPQS {
         for (int j = ind_2; j < vecMaxSize; j += myPrime)
             myLogs[j] += LnFB;
         
-        ind_1 = ((ind_1 - vecMaxSize) % myPrime) + myPrime;
-        ind_2 = ((ind_2 - vecMaxSize) % myPrime) + myPrime;
+        ind_1 = (ind_1 + offset >= myPrime) ? ind_1 + offset - myPrime : ind_1 + offset;
+        ind_2 = (ind_2 + offset >= myPrime) ? ind_2 + offset - myPrime : ind_2 + offset;
     }
 
-    void SieveIndex::LargeSieve(std::vector<logType> &myLogs, int vecMaxSize,
-                                int myPrime, logType LnFB) {
+    void SieveIndex::LargeSieve(std::vector<logType> &myLogs,
+                                int vecMaxSize, int myPrime, logType LnFB) {
         
         if (ind_1 < vecMaxSize) {
             myLogs[ind_1] += LnFB;
@@ -71,9 +76,10 @@ namespace MPQS {
             
             const int q = (LowBound % myPrime) + myPrime;
             mpz_mod_ui(Temp.get_mpz_t(), firstSqrDiff.get_mpz_t(), myPrime);
-            
             if (myMin > myMax) {std::swap(myMin, myMax);}
-            myStart[i].InitialSet(Temp.get_si(), q, myMin, myMax, myPrime);
+            
+            myStart[i].InitialSet(Temp.get_si(), q, myMin,
+                                  myMax, myPrime, vecMaxSize);
             
             if (myPrime < vecMaxSize) {
                 myStart[i].SmallSieve(myLogs, vecMaxSize, myPrime, LnFB[i]);
