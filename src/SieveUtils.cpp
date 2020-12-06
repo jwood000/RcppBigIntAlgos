@@ -40,8 +40,6 @@ std::vector<std::size_t> SetHenselLift(const std::vector<int> &facBase,
     
     for (std::size_t i = 1; i < facSize; ++i) {
         double primePow = facBase[i];
-        const int myLog = std::floor(dblLogMult * 
-                                     std::log(static_cast<double>(facBase[i])));
         
         p = facBase[i];
         TonelliShanksC(myNum, p, TS_1);
