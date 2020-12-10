@@ -8,21 +8,22 @@ Quickly generates the complete factorization for many (possibly large) numbers.
 }
 \usage{
 divisorsBig(v, namedList = FALSE, showStats = FALSE,
-            nThreads = NULL, skipExtPolRho = FALSE)
+            nThreads = NULL, skipPolRho = FALSE, skipECM = FALSE)
 }
 \arguments{
   \item{v}{Vector of integers, numerics, string values, or elements of class bigz.}
   \item{namedList}{Logical flag. If \code{TRUE} and the \code{length(v) > 1}, a named list is returned. The default is \code{FALSE}.}
   \item{showStats}{Logical flag passed to \code{\link{quadraticSieve}} (if needed). If \code{TRUE}, summary statistics will be displayed.}
   \item{nThreads}{Number of threads to be used for \code{\link{quadraticSieve}} (if needed.) The default is \code{NULL}.}
-  \item{skipExtPolRho}{Logical flag passed to \code{\link{quadraticSieve}} (if needed) for skipping extended pollard rho algorithm. The default is \code{FALSE}.}
+  \item{skipPolRho}{Logical flag passed to \code{\link{primeFactorizeBig}} (if needed) for skipping the extended pollard rho algorithm. The default is \code{FALSE}.}
+  \item{skipECM}{Logical flag passed to \code{\link{primeFactorizeBig}} (if needed) for skipping the extended elliptic curve algorithm. The default is \code{FALSE}.}
 }
 \details{
 Highly optimized algorithm to generate the complete factorization for many numbers. It is built specifically for the data type that is used in the gmp library (i.e. \href{https://gmplib.org/manual/Nomenclature-and-Types.html#Nomenclature-and-Types}{\code{mpz_t}}).
 
 The main part of this algorithm is essentially the same algorithm that is implemented in \link[RcppAlgos]{divisorsRcpp} from the RcppAlgos package. A modified \href{https://en.wikipedia.org/wiki/Merge_sort}{merge sort} algorithm is implemented to better deal with the \code{mpz_t} data type. This algorithm avoids directly swapping elements of the main factor array of type \code{mpz_t} but instead generates a vector of indexing integers for ordering. 
 
-See this stack overflow post for examples and benchmarks : \href{https://stackoverflow.com/a/49742904/4408538}{R Function for returning ALL factors}.
+See this stackoverflow post for examples and benchmarks : \href{https://stackoverflow.com/a/49742904/4408538}{R Function for returning ALL factors}.
 }
 \value{
 \itemize{
