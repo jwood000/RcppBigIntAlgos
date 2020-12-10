@@ -100,6 +100,4 @@ test_that("quadraticSieve produces appropriate error messages", {
                  "nThreads must be a whole number")
     expect_error(quadraticSieve(1234567, showStats = "T"),
                  "Only logical values are supported for showStats")
-    expect_error(quadraticSieve(1234567, skipExtPolRho = "T"),
-                 "Only logical values are supported for skipExtPolRho")
 })

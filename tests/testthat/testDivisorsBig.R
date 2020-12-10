@@ -19,7 +19,7 @@ test_that("divisorsBig generates correct numbers", {
                                                  namedList = TRUE))), (10^12):(10^12 + 100))
 })
 
-test_that("quadraticSieve generates correct numbers with multiple threads", {
+test_that("divisorsBig generates correct numbers with multiple threads", {
     test1 <- nextprime(urand.bigz(2, 82, 8191))
     expect_equal(prod(divisorsBig(prod(test1), nThreads = 2)), prod(test1)^2)
 
