@@ -1,11 +1,19 @@
 divisorsBig <- function(v, namedList = FALSE, showStats = FALSE,
-                        nThreads = NULL, skipExtPolRho = FALSE) {
-    GetDivisorsC(v, namedList, nThreads, 
-                 pkgEnv$nThreads, showStats, skipExtPolRho)
+                        skipPolRho = FALSE, skipECM = FALSE, nThreads = NULL) {
+    
+    GetDivisorsC(v, namedList, showStats, skipPolRho,
+                 skipECM, nThreads, pkgEnv$nThreads)
 }
 
-quadraticSieve <- function(n, showStats = FALSE, nThreads = NULL, skipExtPolRho = FALSE) {
-    QuadraticSieveContainer(n, showStats, nThreads, pkgEnv$nThreads, skipExtPolRho)
+quadraticSieve <- function(n, showStats = FALSE, nThreads = NULL) {
+    QuadraticSieveContainer(n, showStats, nThreads, pkgEnv$nThreads)
+}
+
+primeFactorizeBig <- function(v, namedList = FALSE, showStats = FALSE,
+                              skipPolRho = FALSE, skipECM = FALSE, nThreads = NULL) {
+    
+    PrimeFactorization(v, namedList, showStats, skipPolRho,
+                       skipECM, nThreads, pkgEnv$nThreads)
 }
 
 stdThreadMax <- function() {

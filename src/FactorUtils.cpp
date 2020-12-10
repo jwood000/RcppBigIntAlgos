@@ -123,7 +123,7 @@ std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,
 }
 
 SEXP FactorNum(mpz_class &val, std::size_t nThreads,
-               bool bShowStats, bool bSkipExtPR) {
+               bool bShowStats, bool bSkipPR, bool bSkipECM) {
     
     if (cmp(val, 1) == 0) {
         mpz_class mpzOne = 1;
@@ -152,13 +152,12 @@ SEXP FactorNum(mpz_class &val, std::size_t nThreads,
         
         if (mpz_sizeinbase(val.get_mpz_t(), 10) > 23) {
             QuadSieveHelper(val, primeFacs, lengths,
-                            nThreads, bShowStats, bSkipExtPR);
+                            nThreads, bShowStats, bSkipPR, bSkipECM);
         } else {
             GetPrimeFactors(val, primeFacs, lengths);
         }
         
         QuickSort(primeFacs, 0, lengths.size() - 1, lengths);
-        
         std::vector<int> myIndex(lengths[0] + 1);
         std::size_t numFacs = 1;
         

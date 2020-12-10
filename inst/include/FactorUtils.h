@@ -5,6 +5,6 @@
 #include "ImportExportMPZ.h"
 
 SEXP FactorNum(mpz_class &val, std::size_t nThreads,
-               bool bShowStats, bool bSkipExtPR);
+               bool bShowStats, bool bSkipPR, bool bSkipECM);
 
 #endif

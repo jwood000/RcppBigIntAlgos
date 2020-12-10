@@ -1,6 +1,6 @@
 #include "RSAFactorUtils.h"
 #include "StatsUtils.h"
-#include <limits>
+#include "LenstraECM.h"
 
 // Max number of iterations in the main loop
 constexpr std::size_t POLLARD_RHO_REPS = 100000u;
@@ -79,7 +79,7 @@ std::size_t GetPower(mpz_class &nMpz) {
 }
 
 void PollardRhoWithConstraint(mpz_class &n, unsigned long int a, std::vector<mpz_class> &factors,
-                              std::vector<std::size_t>& myLens, std::size_t myLimit,
+                              std::vector<std::size_t> &myLens, std::size_t myLimit,
                               std::size_t powMultiplier) {
     
     mpz_class x, z, y, p, t;
@@ -173,48 +173,125 @@ myReturn:
     x = n;
 }
 
-void GetBigPrimeFacs(mpz_class &n, std::vector<mpz_class> &factors,
-                     std::vector<mpz_class> &result,
-                     std::vector<std::size_t>& myLens, 
-                     std::size_t nThreads, bool bShowStats,
-                     std::size_t powMaster) {
+void QuadraticSieveRecurse(mpz_class &n, std::vector<mpz_class> &factors,
+                           std::vector<mpz_class> &results,
+                           std::vector<std::size_t> &myLens, 
+                           std::size_t nThreads, bool bShowStats,
+                           std::size_t powMaster) {
     
     if (mpz_sizeinbase(n.get_mpz_t(), 10) < 24) {
         PollardRhoWithConstraint(n, 1, factors, myLens, 
                                  std::numeric_limits<std::size_t>::max(),
                                  powMaster);
     } else {
-        QuadraticSieve(n, result, nThreads, bShowStats);
+        QuadraticSieve(n, results, nThreads, bShowStats);
         
         for (std::size_t i = 0; i < 2; ++i) {
-            const std::size_t myPow = ((mpz_perfect_power_p(result[i].get_mpz_t())) ?
-                                        GetPower(result[i]) : 1) * powMaster;
+            const std::size_t myPow = ((mpz_perfect_power_p(results[i].get_mpz_t())) ?
+                                        GetPower(results[i]) : 1) * powMaster;
             
-            if (mpz_probab_prime_p(result[i].get_mpz_t(), MR_REPS) == 0) {
+            if (mpz_probab_prime_p(results[i].get_mpz_t(), MR_REPS) == 0) {
                 std::vector<mpz_class> recurseTemp(2);
                 
                 if (bShowStats) {
                     Rcpp::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
-                                << result[i].get_str() << "\n" << std::endl;
+                                << results[i].get_str() << "\n" << std::endl;
                 }
                 
-                GetBigPrimeFacs(result[i], factors, recurseTemp,
-                                myLens, nThreads, bShowStats, myPow);
+                QuadraticSieveRecurse(results[i], factors, recurseTemp,
+                                      myLens, nThreads, bShowStats, myPow);
             } else {
-                n /= result[i];
-                factors.push_back(result[i]);
+                n /= results[i];
+                factors.push_back(results[i]);
                 myLens.push_back(myPow);
 
-                while (mpz_divisible_p(n.get_mpz_t(), result[i].get_mpz_t()))
-                    n /= result[i];
+                while (mpz_divisible_p(n.get_mpz_t(), results[i].get_mpz_t()))
+                    n /= results[i];
             }
         }
     }
 }
 
+void LenstraRecurse(mpz_class &n, std::vector<mpz_class> &factors,
+                    std::vector<mpz_class> &results,
+                    std::vector<mpz_class> &notFactored,
+                    std::vector<std::size_t> &myLens,
+                    const std::vector<unsigned long int> &primes,
+                    std::size_t nThreads, bool bShowStats,
+                    std::size_t powMaster, std::size_t totalCurves,
+                    typeTimePoint checkPoint0) {
+
+    if (mpz_sizeinbase(n.get_mpz_t(), 10) < 24) {
+        PollardRhoWithConstraint(n, 1, factors, myLens, 
+                                 std::numeric_limits<std::size_t>::max(),
+                                 powMaster);
+    } else {
+        std::size_t numCurves = 0;
+        const std::size_t nDig = mpz_sizeinbase(n.get_mpz_t(), 10);
+        const auto myKey = CurveLookup.upper_bound(nDig);
+        const std::size_t maxLoopIter = myKey->second;
+        const bool factor_found = LenstraECM(n, maxLoopIter, primes,
+                                             results, numCurves, nThreads);
+        
+        if (bShowStats) {
+            totalCurves += numCurves;
+            TwoColumnStats(std::chrono::steady_clock::now() - checkPoint0, totalCurves, 0, false);
+        }
+        
+        if (factor_found) {
+            for (std::size_t i = 0; i < 2; ++i) {
+                const std::size_t myPow = ((mpz_perfect_power_p(results[i].get_mpz_t())) ?
+                                               GetPower(results[i]) : 1) * powMaster;
+                
+                if (mpz_probab_prime_p(results[i].get_mpz_t(), MR_REPS) == 0) {
+                    std::vector<mpz_class> recurseTemp(2);
+                    LenstraRecurse(results[i], factors, recurseTemp, notFactored, myLens,
+                                   primes, nThreads, bShowStats, myPow, totalCurves, checkPoint0);
+                } else {
+                    n /= results[i];
+                    factors.push_back(results[i]);
+                    myLens.push_back(myPow);
+                    
+                    while (mpz_divisible_p(n.get_mpz_t(), results[i].get_mpz_t()))
+                        n /= results[i];
+                }
+            }
+        } else {
+            notFactored.push_back(n);
+        }
+    }
+}
+
+void FactorECM(mpz_class &n, std::vector<mpz_class> &factors,
+               std::vector<mpz_class> &notFactored,
+               std::vector<std::size_t> &myLens, 
+               std::size_t nThreads, bool bShowStats,
+               std::size_t powMaster) {
+    
+    const auto t0 = std::chrono::steady_clock::now();
+    const std::size_t nDig = mpz_sizeinbase(n.get_mpz_t(), 10);
+    
+    const auto myKey = CurveLookup.upper_bound(nDig);
+    const std::size_t maxLoopIter = myKey->second;
+    const unsigned long int maxCurves = GetMaxCurves(maxLoopIter);
+    const std::vector<unsigned long int> primes = GenerateNPrimes(maxCurves);
+    
+    std::size_t numCurves = 0;
+    std::vector<mpz_class> results(2);
+    
+    if (bShowStats) {
+        Rcpp::Rcout << "|  Lenstra ECM Time  |  Number of Curves  |\n"
+                    << "|--------------------|--------------------|" << std::endl;
+        TwoColumnStats(std::chrono::steady_clock::now() - t0, 0, 0, false);
+    }
+    
+    LenstraRecurse(n, factors, results, notFactored, myLens, primes,
+                   nThreads, bShowStats, powMaster, numCurves, t0);
+}
+
 void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                      std::vector<std::size_t> &lengths, std::size_t nThreads,
-                     bool bShowStats, bool bSkipExtPR) {
+                     bool bShowStats, bool bSkipPR, bool bSkipECM) {
     
     const auto t0 = std::chrono::steady_clock::now();
     
@@ -226,20 +303,18 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                     << nMpz.get_str() << "\n" << std::endl;
     }
     
-    if (cmp(nMpz, 1) != 0) {
+    if (nMpz > 1) {
         // We now test for larger primes using pollard's rho
         // algorithm, but constrain it to a limited number of checks
         PollardRhoWithConstraint(nMpz, 1, factors, lengths,
                                  POLLARD_RHO_REPS, 1);
         
-        if (bShowStats) {
+        if (bShowStats && !bSkipPR) {
             Rcpp::Rcout << "|  Pollard Rho Time  |\n|--------------------|" << std::endl;
             OneColumnStats(std::chrono::steady_clock::now() - t0);
         }
         
-        if (cmp(nMpz, 1) != 0) {
-            std::vector<mpz_class> result(2);
-            
+        if (nMpz > 1) {
             // Shield quadratic sieve from perfect powers
             const std::size_t myPow = (mpz_perfect_power_p(nMpz.get_mpz_t())) ? GetPower(nMpz) : 1;
             
@@ -253,21 +328,38 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                 // these numbers have a disproportionately smaller prime factor and
                 // can be factorized faster with Pollard's rho algo. The numbers
                 // below were obtain empirically.
-                const std::size_t adder = std::min((digCount > 70) ? (digCount - 70)
-                                                       * 2500000 : 0, 100000000);
+                const std::size_t adder = std::min((digCount > 70) ?
+                                                   (digCount - 70) * 80000 : 0, 2000000);
                 
-                if (adder > 0 && !bSkipExtPR) {
+                if (adder > 0 && !bSkipPR) {
                     PollardRhoWithConstraint(nMpz, 1, factors, lengths,
                                              POLLARD_RHO_REPS + adder, 1);
+                    
+                    if (bShowStats) {
+                        OneColumnStats(std::chrono::steady_clock::now() - t0);
+                        Rcpp::Rcout << "\n" << std::endl;
+                    }
                 }
                 
-                if (bShowStats) {
-                    OneColumnStats(std::chrono::steady_clock::now() - t0);
-                    Rcpp::Rcout << "\n" << std::endl;
+                if (bSkipECM) {
+                    std::vector<mpz_class> results(2);
+                    QuadraticSieveRecurse(nMpz, factors, results,
+                                          lengths, nThreads, bShowStats, myPow);
+                } else {
+                    std::vector<mpz_class> notFactored;
+                    FactorECM(nMpz, factors, notFactored,
+                              lengths, nThreads, bShowStats, myPow);
+                    
+                    if (bShowStats) {
+                        Rcpp::Rcout << "\n" << std::endl;
+                    }
+                    
+                    for (auto n: notFactored) {
+                        std::vector<mpz_class> results(2);
+                        QuadraticSieveRecurse(n, factors, results, lengths,
+                                              nThreads, bShowStats, myPow);
+                    }
                 }
-                
-                GetBigPrimeFacs(nMpz, factors, result, lengths,
-                                nThreads, bShowStats, myPow);
             }
         }
     }
@@ -277,4 +369,83 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
         OneColumnStats(std::chrono::steady_clock::now() - t0);
         Rcpp::Rcout << "\n" << std::endl;
     }
+}
+
+SEXP PrimeFactorizeHuge(mpz_class &nMpz, std::size_t nThreads,
+                        bool bShowStats, bool bSkipPR, bool bSkipECM) {
+    
+    if (sgn(nMpz) == 0)
+        Rcpp::stop("Cannot factorize 0");
+    
+    const std::size_t IsNegative = (sgn(nMpz) < 0) ? 1 : 0;
+    
+    if (IsNegative)
+        nMpz = abs(nMpz);
+    
+    if (cmp(nMpz, 1) == 0) {
+        if (IsNegative) {
+            mpz_class mpzNegOne = -1;
+            Rcpp::RawVector myNegOne(intSize * 4);
+            
+            char* r = (char*) (RAW(myNegOne));
+            ((int*) (r))[0] = 1;
+            
+            myRaw(&r[intSize], mpzNegOne.get_mpz_t(), intSize * 3);
+            myNegOne.attr("class") = Rcpp::CharacterVector::create("bigz");
+            return myNegOne;
+        } else {
+            Rcpp::RawVector noPrimeFacs(intSize);
+            char* r = (char*) (RAW(noPrimeFacs));
+            ((int*) (r))[0] = 0;
+            noPrimeFacs.attr("class") = Rcpp::CharacterVector::create("bigz");
+            return noPrimeFacs;
+        }
+    }
+    
+    std::vector<std::size_t> lengths;
+    std::vector<mpz_class> factors;
+    
+    QuadSieveHelper(nMpz, factors, lengths,
+                    nThreads, bShowStats, bSkipPR, bSkipECM);
+    
+    // Sort the prime factors as well as order the
+    // lengths vector by the order of the factors array
+    QuickSort(factors, 0, factors.size() - 1, lengths);
+    const std::size_t totalNum = std::accumulate(lengths.cbegin(),
+                                                 lengths.cend(), 0u) + IsNegative;
+    std::size_t size = intSize;
+    std::vector<std::size_t> mySizes(totalNum);
+    
+    mpz_class negOne = -1;
+    
+    if (IsNegative) {
+        const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(negOne.get_mpz_t(), 2) + numb - 1) / numb);
+        size += tempSize;
+        mySizes[0] = tempSize;
+    }
+    
+    for (std::size_t i = 0, count = IsNegative; i < factors.size(); ++i) { // adding each bigint's needed size
+        for (std::size_t j = 0; j < lengths[i]; ++j, ++count) {
+            const std::size_t tempSize = intSize * (2 + (mpz_sizeinbase(factors[i].get_mpz_t(), 2) + numb - 1) / numb);
+            size += tempSize;
+            mySizes[count] = tempSize;
+        }
+    }
+    
+    Rcpp::RawVector ans(size);
+    char* r = (char*) (RAW(ans));
+    ((int*) (r))[0] = totalNum; // first int is vector-size-header
+    
+    // current position in pos[] (starting after vector-size-header)
+    std::size_t pos = intSize;
+    
+    if (IsNegative)
+        pos += myRaw(&r[pos], negOne.get_mpz_t(), mySizes.front());
+    
+    for (std::size_t i = 0, count = IsNegative; i < factors.size(); ++i)
+        for (std::size_t j = 0; j < lengths[i]; ++j, ++count)
+            pos += myRaw(&r[pos], factors[i].get_mpz_t(), mySizes[count]);
+    
+    ans.attr("class") = Rcpp::CharacterVector::create("bigz");
+    return ans;
 }

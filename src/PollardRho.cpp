@@ -68,7 +68,7 @@ void PollardRho(mpz_class &n, unsigned long int a,
     std::size_t k = 1u;
     std::size_t q = 1u;
 
-    while (cmp(n, 1) != 0) {
+    while (n != 1) {
         for (;;) {
             do {
                 x *= x;
@@ -109,7 +109,7 @@ void PollardRho(mpz_class &n, unsigned long int a,
             y %= n;
             y += a;
             t = gcd(z - y, n);
-        } while (cmp(t, 1) == 0);
+        } while (t == 1);
 
         n /= t;	/* divide by t, before t is overwritten */
 

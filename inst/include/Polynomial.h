@@ -5,8 +5,6 @@
 #include "MultPoly.h"
 #include "StatsUtils.h"
 
-using typeTimePoint = std::chrono::time_point<std::chrono::steady_clock>;
-
 class Polynomial {
 private:
     vec2dint powsOfSmooths;

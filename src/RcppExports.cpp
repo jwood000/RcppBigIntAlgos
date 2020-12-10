@@ -6,18 +6,19 @@
 using namespace Rcpp;
 
 // GetDivisorsC
-SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RNumThreads, int maxThreads, SEXP RShowStats, SEXP RSkipExtPR);
-RcppExport SEXP _RcppBigIntAlgos_GetDivisorsC(SEXP RvSEXP, SEXP RNamedSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP, SEXP RShowStatsSEXP, SEXP RSkipExtPRSEXP) {
+SEXP GetDivisorsC(SEXP Rv, SEXP RNamed, SEXP RShowStats, SEXP RSkipExtPR, SEXP RSkipECM, SEXP RNumThreads, int maxThreads);
+RcppExport SEXP _RcppBigIntAlgos_GetDivisorsC(SEXP RvSEXP, SEXP RNamedSEXP, SEXP RShowStatsSEXP, SEXP RSkipExtPRSEXP, SEXP RSkipECMSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type Rv(RvSEXP);
     Rcpp::traits::input_parameter< SEXP >::type RNamed(RNamedSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
-    Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
     Rcpp::traits::input_parameter< SEXP >::type RShowStats(RShowStatsSEXP);
     Rcpp::traits::input_parameter< SEXP >::type RSkipExtPR(RSkipExtPRSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetDivisorsC(Rv, RNamed, RNumThreads, maxThreads, RShowStats, RSkipExtPR));
+    Rcpp::traits::input_parameter< SEXP >::type RSkipECM(RSkipECMSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
+    Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetDivisorsC(Rv, RNamed, RShowStats, RSkipExtPR, RSkipECM, RNumThreads, maxThreads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -31,9 +32,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// PrimeFactorization
+SEXP PrimeFactorization(SEXP Rv, SEXP RNamed, SEXP RShowStats, SEXP RSkipExtPR, SEXP RSkipECM, SEXP RNumThreads, int maxThreads);
+RcppExport SEXP _RcppBigIntAlgos_PrimeFactorization(SEXP RvSEXP, SEXP RNamedSEXP, SEXP RShowStatsSEXP, SEXP RSkipExtPRSEXP, SEXP RSkipECMSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type Rv(RvSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RNamed(RNamedSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RShowStats(RShowStatsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RSkipExtPR(RSkipExtPRSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RSkipECM(RSkipECMSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
+    Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(PrimeFactorization(Rv, RNamed, RShowStats, RSkipExtPR, RSkipECM, RNumThreads, maxThreads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // QuadraticSieveContainer
-SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats, SEXP RNumThreads, int maxThreads, SEXP RSkipExtPR);
-RcppExport SEXP _RcppBigIntAlgos_QuadraticSieveContainer(SEXP RnSEXP, SEXP RShowStatsSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP, SEXP RSkipExtPRSEXP) {
+SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats, SEXP RNumThreads, int maxThreads);
+RcppExport SEXP _RcppBigIntAlgos_QuadraticSieveContainer(SEXP RnSEXP, SEXP RShowStatsSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,16 +59,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< SEXP >::type RShowStats(RShowStatsSEXP);
     Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
     Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type RSkipExtPR(RSkipExtPRSEXP);
-    rcpp_result_gen = Rcpp::wrap(QuadraticSieveContainer(Rn, RShowStats, RNumThreads, maxThreads, RSkipExtPR));
+    rcpp_result_gen = Rcpp::wrap(QuadraticSieveContainer(Rn, RShowStats, RNumThreads, maxThreads));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RcppBigIntAlgos_GetDivisorsC", (DL_FUNC) &_RcppBigIntAlgos_GetDivisorsC, 6},
+    {"_RcppBigIntAlgos_GetDivisorsC", (DL_FUNC) &_RcppBigIntAlgos_GetDivisorsC, 7},
     {"_RcppBigIntAlgos_cpp11GetNumThreads", (DL_FUNC) &_RcppBigIntAlgos_cpp11GetNumThreads, 0},
-    {"_RcppBigIntAlgos_QuadraticSieveContainer", (DL_FUNC) &_RcppBigIntAlgos_QuadraticSieveContainer, 5},
+    {"_RcppBigIntAlgos_PrimeFactorization", (DL_FUNC) &_RcppBigIntAlgos_PrimeFactorization, 7},
+    {"_RcppBigIntAlgos_QuadraticSieveContainer", (DL_FUNC) &_RcppBigIntAlgos_QuadraticSieveContainer, 4},
     {NULL, NULL, 0}
 };
 

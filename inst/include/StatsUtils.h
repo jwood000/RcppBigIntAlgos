@@ -15,6 +15,7 @@ constexpr std::size_t maxHours = 999 * 60;
 constexpr std::size_t maxMinutes = (maxHours * 60) + 59;
 
 constexpr std::size_t colOneWidth = 20u;
+using typeTimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 static void MakeStrLen(std::string & myStr, std::size_t myLen) {
     
@@ -109,10 +110,13 @@ void OneColumnStats(typeTime timeDiff) {
 }
 
 template <typename typeTime>
-void TwoColumnStats(typeTime timeDiff, std::size_t nRows, std::size_t nCols) {
+void TwoColumnStats(typeTime timeDiff, std::size_t valOne,
+                    std::size_t valTwo, bool matrix = true) {
+    
     std::string myTime = GetTime(timeDiff);
     MakeStrLen(myTime, colOneWidth);
-    std::string myDim = std::to_string(nRows) + " x " + std::to_string(nCols);
+    std::string myDim = (matrix) ? std::to_string(valOne) + " x "
+                                   + std::to_string(valTwo) : std::to_string(valOne); 
     MakeStrLen(myDim, colOneWidth);
     RcppThread::Rcout << "\r|" << myTime << "|" << myDim << "|";
 }
