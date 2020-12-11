@@ -93,14 +93,10 @@ void PollardRhoWithConstraint(mpz_class &n, unsigned long int a, std::vector<mpz
     while (cmp(n, 1) != 0) {
         for (;;) {
             do {
-                x *= x;
-                x %= n;
-                x += a;
-                
+                x = (x * x) % n + a;
                 t = z - x;
                 mpz_mod(t.get_mpz_t(), t.get_mpz_t(), n.get_mpz_t());
-                p *= t;
-                p %= n;
+                p = (p * t) % n;
                 
                 if (k % 32 == 1) {
                     t = gcd(p, n);
@@ -121,20 +117,15 @@ void PollardRhoWithConstraint(mpz_class &n, unsigned long int a, std::vector<mpz
             k = q;
             q <<= 1;
             
-            for (std::size_t i = 0; i < k; ++i) {
-                x *= x;
-                x %= n;
-                x += a;
-            }
+            for (std::size_t i = 0; i < k; ++i)
+                x = (x * x) % n + a;
             
             y = x;
         }
         
     factor_found:
         do {
-            y *= y;
-            y %= n;
-            y += a;
+            y = (y * y) % n + a;
             t = gcd(z - y, n);
         } while (cmp(t, 1) == 0);
         
