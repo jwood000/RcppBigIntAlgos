@@ -274,7 +274,7 @@ bool LenstraECM(const mpz_class &n, std::size_t maxLoopIter,
         
         std::size_t strt = B1;
         int sectionLength = B2 - B1;
-        numCurves = B2;
+        numCurves = B1;
         
         std::size_t nThrdsThisIter = nThreads;
         std::size_t chunk = sectionLength / nThreads;
@@ -287,8 +287,7 @@ bool LenstraECM(const mpz_class &n, std::size_t maxLoopIter,
             std::vector<char> vecSuccess(nThrdsThisIter);
             std::size_t myEnd = strt + chunk;
 
-            for (std::size_t thrd = 0;
-                 thrd < (nThrdsThisIter - 1); ++thrd, strt = myEnd, myEnd += chunk) {
+            for (std::size_t thrd = 0; thrd < (nThrdsThisIter - 1); ++thrd, strt = myEnd, myEnd += chunk) {
                 myFutures[thrd] = pool.pushReturn(InnerLoop, strt, myEnd, std::cref(k),
                                                   std::ref(vecFactors[thrd]), std::cref(n));
             }
@@ -300,7 +299,8 @@ bool LenstraECM(const mpz_class &n, std::size_t maxLoopIter,
 
             for (std::size_t thrd = 0; thrd < nThrdsThisIter; ++thrd)
                 vecSuccess[thrd] = myFutures[thrd].get();
-
+            
+            numCurves += ((nThrdsThisIter - 1) * chunk + lastEnd - strt);
             sectionLength -= ((nThrdsThisIter - 1) * chunk + lastEnd - strt);
             strt = myEnd;
 
