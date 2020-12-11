@@ -1,3 +1,12 @@
+RcppBigIntAlgos 1.0.0 (Release date: 2020-12-15)
+
+* Added generalized prime factorization function `primeFactorizeBig` which now can utilize the elliptic curve method.
+* Slightly changed the interface to be more consistent.
+
+RcppBigIntAlgos 0.3.5 (Release date: Never Released)
+
+* Improved divisibility checking and data locality for greater efficiency.
+
 RcppBigIntAlgos 0.3.4 (Release date: 2020-11-05)
 
 * Improved sieving and tuning for greater efficiency.
@@ -7,7 +16,7 @@ RcppBigIntAlgos 0.3.3 (Release date: 2020-10-14)
 * Now using bitset for more efficient linear algebra.
 * Also fixed additional memory issues. Confirmed fix by running rhub::check_with_sanitizers(), rhub::check_with_valgrind(), as well as running custom docker clang-ASAN.
 
-RcppBigIntAlgos 0.3.2 (Release date: Never Release)
+RcppBigIntAlgos 0.3.2 (Release date: Never Released)
 
 * Fixed ASAN/UBSAN/valgrind issue. See https://github.com/jwood000/RcppBigIntAlgos/issues/1 for more information.
 
@@ -28,7 +37,7 @@ RcppBigIntAlgos 0.2.4 (Release date: 2020-06-23)
 
 * Fixed link in documentation in accordance with the new policy in Writing R Extensions (section: Cross-references)
 
-RcppBigIntAlgos 0.2.3 (Release date: Never released)
+RcppBigIntAlgos 0.2.3 (Release date: Never Released)
 
 * Replaced array of precalculated interval values by only calculating interval values that meet the threshold. This greatly improves efficiency.
 * Refactored portions of the algorithm in preparation for parallel computing.
@@ -41,13 +50,13 @@ RcppBigIntAlgos 0.2.2 (Release date: 2020-04-19)
 * Improved efficiency by utilizing more light weight data structures
 * Added safety measures to ensure mpz_t arrays don't overflow
 
-RcppBigIntAlgos 0.2.1 (Release date: Never released)
+RcppBigIntAlgos 0.2.1 (Release date: Never Released)
 
 * Added references in DESCRIPTION file
 * Added Mike Tryczak as contributor
 * One can now see summary statistics via the showStats parameter in the quadraticSieve function
 
-RcppBigIntAlgos 0.2.0 (Release date: Never released)
+RcppBigIntAlgos 0.2.0 (Release date: Never Released)
 
 * Now uses Rcpp & RcppThread (Multiple threads are not enabled yet, but will be the focus of the next major release)
 * Changed the package name to be more in line with the related RcppAlgos package
