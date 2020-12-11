@@ -6,7 +6,7 @@ divisorsBig <- function(v, namedList = FALSE, showStats = FALSE,
 }
 
 quadraticSieve <- function(n, showStats = FALSE, nThreads = NULL) {
-    QuadraticSieveContainer(n, showStats, nThreads, pkgEnv$nThreads)
+    PrimeFactorization(n, FALSE, showStats, TRUE, TRUE, nThreads, pkgEnv$nThreads)
 }
 
 primeFactorizeBig <- function(v, namedList = FALSE, showStats = FALSE,
