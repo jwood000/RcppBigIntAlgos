@@ -8,15 +8,15 @@ Quickly generates the prime factorization for many (possibly large) numbers, usi
 }
 \usage{
 primeFactorizeBig(v, namedList = FALSE, showStats = FALSE,
-                  nThreads = NULL, skipPolRho = FALSE, skipECM = FALSE)
+                  skipPolRho = FALSE, skipECM = FALSE, nThreads = NULL)
 }
 \arguments{
   \item{v}{Vector of integers, numerics, string values, or elements of class bigz.}
   \item{namedList}{Logical flag. If \code{TRUE} and the \code{length(v) > 1}, a named list is returned. The default is \code{FALSE}.}
   \item{showStats}{Logical flag passed to \code{\link{quadraticSieve}} (if needed). If \code{TRUE}, summary statistics will be displayed.}
-  \item{nThreads}{Number of threads to be used for \code{\link{quadraticSieve}} (if needed.) The default is \code{NULL}.}
   \item{skipPolRho}{Logical flag for skipping the extended pollard rho algorithm. The default is \code{FALSE}.}
   \item{skipECM}{Logical flag for skipping the extended elliptic curve algorithm. The default is \code{FALSE}.}
+  \item{nThreads}{Number of threads to be used for \code{\link{quadraticSieve}} (if needed.) The default is \code{NULL}.}
 }
 \details{
 Highly optimized algorithm to generate the prime factorization for many numbers.

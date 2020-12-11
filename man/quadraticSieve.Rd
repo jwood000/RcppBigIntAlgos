@@ -1,7 +1,7 @@
 \name{quadraticSieve}
 \alias{quadraticSieve}
 \title{
-Prime Factorization with the Quadratic Sieve
+Prime Factorization with the Parallel Quadratic Sieve
 }
 \description{
 Get the prime factorization of a number, \eqn{n}, using the \href{https://en.wikipedia.org/wiki/Quadratic_sieve}{Quadratic Sieve}.
@@ -27,7 +27,10 @@ When \code{showStats = TRUE}, summary statistics will be shown. The frequency of
   }
 }
 \note{
-Safely interrupt long executing commands by pressing \code{Ctrl + c}, \code{Esc}, or whatever interruption command offered by the user's GUI. If you are using multiple threads, you can still interrupt execution, however there will be a delay up to 30 seconds if the number is very large.
+\itemize{
+\item{Safely interrupt long executing commands by pressing \code{Ctrl + c}, \code{Esc}, or whatever interruption command offered by the user's GUI. If you are using multiple threads, you can still interrupt execution, however there will be a delay up to 30 seconds if the number is very large.}
+\item{Both the extended Pollard's rho algorithm and the elliptic curve method are skipped. For general prime factorization, see \code{primeFactorizeBig}.}
+}
 }
 \value{
 Vector of class bigz
@@ -48,9 +51,9 @@ Vector of class bigz
 Joseph Wood
 }
 \seealso{
-\code{\link[gmp:factor]{factorize}}
+\code{primeFactorizeBig}, \code{\link[gmp:factor]{factorize}}
 }
 \examples{
-mySemiPrime <- prod(nextprime(urand.bigz(2, 40, 17)))
+mySemiPrime <- prod(nextprime(urand.bigz(2, 50, 17)))
 quadraticSieve(mySemiPrime)
 }
