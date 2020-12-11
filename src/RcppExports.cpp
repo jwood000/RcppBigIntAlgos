@@ -22,20 +22,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// QuadraticSieveContainer
-SEXP QuadraticSieveContainer(SEXP Rn, SEXP RShowStats, SEXP RNumThreads, int maxThreads);
-RcppExport SEXP _RcppBigIntAlgos_QuadraticSieveContainer(SEXP RnSEXP, SEXP RShowStatsSEXP, SEXP RNumThreadsSEXP, SEXP maxThreadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type Rn(RnSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type RShowStats(RShowStatsSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type RNumThreads(RNumThreadsSEXP);
-    Rcpp::traits::input_parameter< int >::type maxThreads(maxThreadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(QuadraticSieveContainer(Rn, RShowStats, RNumThreads, maxThreads));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp11GetNumThreads
 int cpp11GetNumThreads();
 RcppExport SEXP _RcppBigIntAlgos_cpp11GetNumThreads() {
@@ -66,7 +52,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBigIntAlgos_GetDivisorsC", (DL_FUNC) &_RcppBigIntAlgos_GetDivisorsC, 7},
-    {"_RcppBigIntAlgos_QuadraticSieveContainer", (DL_FUNC) &_RcppBigIntAlgos_QuadraticSieveContainer, 4},
     {"_RcppBigIntAlgos_cpp11GetNumThreads", (DL_FUNC) &_RcppBigIntAlgos_cpp11GetNumThreads, 0},
     {"_RcppBigIntAlgos_PrimeFactorization", (DL_FUNC) &_RcppBigIntAlgos_PrimeFactorization, 7},
     {NULL, NULL, 0}

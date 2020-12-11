@@ -5,10 +5,6 @@ GetDivisorsC <- function(Rv, RNamed, RShowStats, RSkipExtPR, RSkipECM, RNumThrea
     .Call(`_RcppBigIntAlgos_GetDivisorsC`, Rv, RNamed, RShowStats, RSkipExtPR, RSkipECM, RNumThreads, maxThreads)
 }
 
-QuadraticSieveContainer <- function(Rn, RShowStats, RNumThreads, maxThreads) {
-    .Call(`_RcppBigIntAlgos_QuadraticSieveContainer`, Rn, RShowStats, RNumThreads, maxThreads)
-}
-
 cpp11GetNumThreads <- function() {
     .Call(`_RcppBigIntAlgos_cpp11GetNumThreads`)
 }
