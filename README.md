@@ -11,7 +11,7 @@
 ## Overview
 
 RcppBigIntAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
-factoring big integers. Links to `RcppThread` for factoring in parallel. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a constrained version of the Pollard's rho algorithm is used (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
+factoring big integers. Links to `RcppThread` for factoring integers in parallel. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a simple elliptic curve algorithm is attempted followed by a constrained version of the Pollard's rho algorithm (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
 
 ## Installation
 
@@ -24,7 +24,7 @@ devtools::install_github("jwood000/RcppBigIntAlgos")
 
 ## The Quadratic Sieve
 
-The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 70 digits (~230 bits) on most standard personal computers. If you have access to powerful computers with many cores, factoring 100+ digit semiprimes in less than a day is not out of the question.
+The function `quadraticSieve` implements the multiple polynomial quadratic sieve algorithm. Currently, `quadraticSieve` can comfortably factor numbers with less than 70 digits (~230 bits) on most standard personal computers. If you have access to powerful computers with many cores, factoring 100+ digit semiprimes in less than a day is not out of the question. Note, the function `primeFactorizeBig(n, skipECM = T, skipPolRho = T)` is the same as `quadraticSieve(n)`.
 
 ```r
 ## Generate large semi-primes
@@ -121,14 +121,10 @@ stdThreadMax()
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
-quadraticSieve(mostWanted1983, showStats=TRUE, nThreads=8, skipExtPolRho=TRUE)
+quadraticSieve(mostWanted1983, showStats=TRUE, nThreads=8)
 
 Summary Statistics for Factoring:
     11111111111111111111111111111111111111111111111111111111111111111111111
-
-|  Pollard Rho Time  |
-|--------------------|
-|        57ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
@@ -150,26 +146,22 @@ Big Integer ('bigz') object of length 2:
 
 ```r
 rsa79 <- as.bigz("7293469445285646172092483905177589838606665884410340391954917800303813280275279")
-quadraticSieve(rsa79, showStats=TRUE, nThreads=8, skipExtPolRho=TRUE)
+quadraticSieve(rsa79, showStats = TRUE, nThreads = 8)
 
 Summary Statistics for Factoring:
     7293469445285646172092483905177589838606665884410340391954917800303813280275279
 
-|  Pollard Rho Time  |
-|--------------------|
-|        66ms        |
-
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|    2m 44s 901ms    |   100%   |    91221    |    5651    |    7096    |
+|    2m 40s 597ms    |   100%   |    91221    |    5651    |    7096    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|      13s 672ms     |    12624 x 12747   |
+|      14s 964ms     |    12625 x 12747   |
 
 |     Total Time     |
 |--------------------|
-|    2m 59s 225ms    |
+|    2m 56s 215ms    |
 
 Big Integer ('bigz') object of length 2:
 [1] 848184382919488993608481009313734808977  8598919753958678882400042972133646037727
@@ -180,14 +172,10 @@ Big Integer ('bigz') object of length 2:
 ```r
 rsa99 <- "256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881"
 
-quadraticSieve(rsa99, showStats=TRUE, nThreads=8, skipExtPolRho=TRUE)
+quadraticSieve(rsa99, showStats = TRUE, nThreads = 8)
 
 Summary Statistics for Factoring:
     256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881
-
-|  Pollard Rho Time  |
-|--------------------|
-|        77ms        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
@@ -204,76 +192,138 @@ Summary Statistics for Factoring:
 Big Integer ('bigz') object of length 2:
 [1] 4868376167980921239824329271069101142472222111193  52733064254484107837300974402288603361507691060217
 ```
+## `primeFactorizeBig`
 
-### Factor More Than Just Semiprimes
+As of version `1.0.0`, we can take advantage of the power of Lenstra's elliptic curve method. This method is particularly useful for quickly finding smaller prime factors of very large composite numbers. It is automatically utilized in the vectorized prime factorization function `primeFactorizeBig`. This function should be preferred in most situations and is identical to `quadraticSieve` when both `skipECM` and `skipPolRho` are set to `TRUE`.
 
-If you encounter a number that is a product of multiple large primes, the algorithm will recursively factor the number into two numbers until every part is prime.
+It is optimized for factoring big and small numbers by dynamically using different algorithms based off of the input. It takes cares to not spend too much time in any of the methods and avoids wastefully switching to the quadratic sieve when the number is very large.
+
+For example, using the defaults on `mostWanted1983` above only adds a few seconds.
 
 ```r
-threePrime195bits <- prod(nextprime(urand.bigz(3, 65, 97)))
-quadraticSieve(threePrime195bits, showStats = TRUE)
+primeFactorizeBig(mostWanted1983, showStats=TRUE, nThreads=8)
 
 Summary Statistics for Factoring:
-    6634573213431810791169420577087478977215298519759798575509
+    11111111111111111111111111111111111111111111111111111111111111111111111
 
 |  Pollard Rho Time  |
 |--------------------|
-|        92ms        |
+|        154ms       |
+
+|  Lenstra ECM Time  |  Number of Curves  |
+|--------------------|--------------------|
+|      4s 517ms      |        4181        |
 
 |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
 |--------------------|----------|-------------|------------|------------|
-|      8s 274ms      |   100%   |     2736    |    1730    |    2074    |
+|      19s 639ms     |   100%   |    16183    |    4089    |    4345    |
 
 |  Mat Algebra Time  |    Mat Dimension   |
 |--------------------|--------------------|
-|        552ms       |     3757 x 3804    |
-
-
-Summary Statistics for Factoring:
-    202568699792573213335520384055117307693
-
-|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
-|--------------------|----------|-------------|------------|------------|
-|        190ms       |   100%   |      57     |     499    |     320    |
-
-|  Mat Algebra Time  |    Mat Dimension   |
-|--------------------|--------------------|
-|        79ms        |      786 x 819     |
+|      4s 644ms      |     8301 x 8434    |
 
 |     Total Time     |
 |--------------------|
-|      9s 372ms      |
+|      29s 216ms     |
 
-Big Integer ('bigz') object of length 3:
-[1] 11281626468262639417 17955629036507943829 32752213052784053513
+Big Integer ('bigz') object of length 2:
+[1] 241573142393627673576957439049            45994811347886846310221728895223034301839
 ```
 
-### General Prime Factoring
+### Lentra's power
 
-It can also be used as a general prime factoring function:
+Performing a few iterations of the Pollard's rho algorithm followed by the quadratic sieve can prove to be a terrible solution when the input size is incredibly large. More than likely, your constrained Pollard's rho algorithm won't find any prime factors, and eventually will pass an enormous composite number to the quadratic sieve. The quadratic sieve isn't optimized for finding _smallish_ factors in large composites. It will treat the input similarly to a semiprime of the same size. For example, the number `ecmExpo1` below is 428 digits and if passed to the quadratic sieve algorithm, it could take years to factor as not even the most sophisticated semiprime algorithms can easily factor numbers of this size (See https://en.wikipedia.org/wiki/RSA_Factoring_Challenge). However, with the ECM, this is light work.
 
 ```r
-quadraticSieve(urand.bigz(1, 50, 1))
-Seed initialisation
-Big Integer ('bigz') object of length 5:
-[1] 5       31      307     2441    4702723
+ecmExpo1 <- pow.bigz(prod(nextprime(urand.bigz(10, 47, 13))), 3) * nextprime(urand.bigz(1, 47, 123))
+
+system.time(primeFactorizeBig(ecmExpo1, skipPolRho=TRUE, nThreads=8))
+   user  system elapsed 
+ 17.911   0.081   4.743
+
+
+ecmExpo2 <- pow.bigz(prod(nextprime(urand.bigz(10, 40, 42))), 3) * pow.bigz(prod(nextprime(urand.bigz(10, 45, 42))), 5) * nextprime(urand.bigz(1, 80, 123)) * nextprime(urand.bigz(1, 90, 123))
+
+primeFactorizeBig(ecmExpo2, nThreads=8, showStats=TRUE)
+
+Summary Statistics for Factoring:
+    215590243996472403826986190959172968924582673399860040722565967228161406366421528160220759715319487748182459438846599849086479492406371823155743767776724831907786824847947911279318978691074995051134928403920242678621702805852530836549215396392496547012632510254095452820560897056877208839289455859596425985161415486708317667524364034985007498553043810662487802224636724842739870398138687583364019516727138808818929150447675931521160760469848585726320428719422689614460288917155690252498420348768667307236940996727406088066077174182630522224530495122361513443818343671556622023320404680434511134662288782134897895034832405624062328931996299632052035105693354967480119521413889950571647670948619957219258020882926218179673783234886719528724327466781424377562596208305773866403070803284721517038640418360492984835882655310830736014378303508492181368455405610072971016964625940147583833553074577246736323251622391837090678894432642161330574148459946482734705537584444739753686240736188950594612747228733363204312823260997792251300802876878725604381077823
+
+|  Pollard Rho Time  |
+|--------------------|
+|      19s 281ms     |
+
+|  Lenstra ECM Time  |  Number of Curves  |
+|--------------------|--------------------|
+|      26s 65ms      |        24565       |
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|       1s 32ms      |   100%   |     1482    |    1013    |    1450    |
+
+|  Mat Algebra Time  |    Mat Dimension   |
+|--------------------|--------------------|
+|        313ms       |     2425 x 2463    |
+
+|     Total Time     |
+|--------------------|
+|      46s 868ms     |
+
+Big Integer ('bigz') object of length 82:
+ [1] 66642484459                  66642484459                 
+ [3] 66642484459                  385217678221                
+ [5] 385217678221                 385217678221                
+ [7] 466242793447                 466242793447                
+ [9] 466242793447                 495204258001                
+[11] 495204258001                 495204258001                
+[13] 626806080239                 626806080239                
+[15] 626806080239                 658176330451                
+[17] 658176330451                 658176330451                
+[19] 813161816491                 813161816491                
+[21] 813161816491                 819522058723                
+[23] 819522058723                 819522058723                
+[25] 851683366739                 851683366739                
+[27] 851683366739                 1089476958461               
+[29] 1089476958461                1089476958461               
+[31] 3018545314271                3018545314271               
+[33] 3018545314271                3018545314271               
+[35] 3018545314271                3683752561543               
+[37] 3683752561543                3683752561543               
+[39] 3683752561543                3683752561543               
+[41] 3793739141329                3793739141329               
+[43] 3793739141329                3793739141329               
+[45] 3793739141329                5487523469573               
+[47] 5487523469573                5487523469573               
+[49] 5487523469573                5487523469573               
+[51] 7223875846909                7223875846909               
+[53] 7223875846909                7223875846909               
+[55] 7223875846909                8509743210929               
+[57] 8509743210929                8509743210929               
+[59] 8509743210929                8509743210929               
+[61] 10361847443443               10361847443443              
+[63] 10361847443443               10361847443443              
+[65] 10361847443443               20449385630413              
+[67] 20449385630413               20449385630413              
+[69] 20449385630413               20449385630413              
+[71] 20957363412217               20957363412217              
+[73] 20957363412217               20957363412217              
+[75] 20957363412217               34936543827863              
+[77] 34936543827863               34936543827863              
+[79] 34936543827863               34936543827863              
+[81] 1130548241045557299883517    1051687085486158310119550449
 ```
 
-However `gmp::factorize` is more suitable for numbers smaller than 70 bits (about 22 decimal digits) and should be used in such cases.
-
-### Safely Interrupt Execution in **`quadraticSieve`**
+### Safely Interrupt Execution
 
 If you want to interrupt a command which will take a long time, hit Ctrl + c, or esc if using RStudio, to stop execution. When you utilize multiple threads with a very large number (e.g. 90 digit semiprime), you will be able to interrupt execution once every ~30 seconds.
 
 ```r
 ## User hits Ctrl + c
 ## system.time(quadraticSieve(prod(nextprime(urand.bigz(2, 100, 42)))))
-## Seed default initialisation
 ## Seed initialisation
-## 
-##  Error in QuadraticSieveContainer(n) : C++ call interrupted by the user.
-##  
-## Timing stopped at: 1.623 0.102 1.726
+## Error in PrimeFactorization(n, FALSE, showStats, TRUE, TRUE, nThreads,  :
+##   C++ call interrupted by the user.
+## Timing stopped at: 2.164 0.039 2.167
 ```
 
 ## Complete Factorization with `divisorsBig`
@@ -381,7 +431,7 @@ Big Integer ('bigz') object of length 6:
 
 ## Current Research
 
-Currenlty, our main focus for version `0.4.0` will be implementing the self initiallizing quadratic sieve.
+Currenlty, our main focus for version `1.1.0` will be implementing the self initiallizing quadratic sieve.
 
 ## Contact
 

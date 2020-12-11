@@ -33,7 +33,9 @@ Highly optimized algorithm to generate the prime factorization for many numbers.
 \author{
 Joseph Wood
 }
-
+\note{
+Note, the function \code{primeFactorizeBig(n, skipECM = T, skipPolRho = T)} is the same as \code{quadraticSieve(n)}
+}
 \seealso{
 \code{\link[RcppAlgos]{primeFactorize}}, \code{\link[numbers]{primeFactors}}, \code{\link[gmp:factor]{factorize}}
 }
