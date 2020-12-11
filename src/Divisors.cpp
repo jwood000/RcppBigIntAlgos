@@ -1,4 +1,4 @@
-#include "FactorUtils.h"
+#include "DivisorsUtils.h"
 #include "CleanConvert.h"
 
 // [[Rcpp::export]]

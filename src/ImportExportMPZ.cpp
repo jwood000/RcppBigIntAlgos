@@ -1,17 +1,16 @@
-/* This file contains utility functions that
- * are used for converting to and from type mpz_t,
- * as well as sorting an array of type mpz_t.
- * 
- * createMPZArray and myRaw are slightly modified versions
- * of "bigvec create_vector(const SEXP & param)" and 
- * "int biginteger::as_raw(char* raw) const", respectively,
- * from the source files bigintegerR.cc/ biginteger.cc from
- * the R gmp package.
- * 
- * The quickSort function is based off of the quicksort
- * algorithm in C++ found here:
- *      http://www.algolist.net/Algorithms/Sorting/Quicksort
- */
+// This file contains utility functions that
+// are used for converting to and from type mpz_t,
+// as well as sorting an array of type mpz_t.
+// 
+// createMPZArray and myRaw are slightly modified versions
+// of "bigvec create_vector(const SEXP & param)" and 
+// "int biginteger::as_raw(char* raw) const", respectively,
+// from the source files bigintegerR.cc/ biginteger.cc from
+// the R gmp package.
+// 
+// The quickSort function is based off of the quicksort
+// algorithm in C++ found here:
+//      http://www.algolist.net/Algorithms/Sorting/Quicksort
 
 #include "ImportExportMPZ.h"
 

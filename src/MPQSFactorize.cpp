@@ -1,17 +1,4 @@
-/*! 
- *  \file RSAFactorize.cc
- *  
- *  \version 2
- *
- *  \date Created: 2017-10-06
- *  \date Last modified: Time-stamp: <2020-09-13 jwood000>
- *
- *  \author Joseph Wood
- *
- *  \note Licence: GPL (>=) 2  
- */
-
-#include "RSAFactorUtils.h"
+#include "PrimeFactorUtils.h"
 #include "CleanConvert.h"
 
 // [[Rcpp::export]]

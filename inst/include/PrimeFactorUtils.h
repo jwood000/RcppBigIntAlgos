@@ -1,5 +1,5 @@
-#ifndef RSA_FACTOR_UTILS_H
-#define RSA_FACTOR_UTILS_H
+#ifndef PRIME_FACTOR_UTILS_H
+#define PRIME_FACTOR_UTILS_H
 
 #include "QuadraticSieve.h"
 #include "ImportExportMPZ.h"

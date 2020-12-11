@@ -1,5 +1,4 @@
 #include "MultPoly.h"
-#include <Rcpp.h>
 
 namespace MPQS {
 

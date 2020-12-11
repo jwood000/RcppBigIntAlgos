@@ -17,8 +17,8 @@
 // 
 // Note Licence: GPL (>=) 2
 
-#include "FactorUtils.h"
-#include "RSAFactorUtils.h"
+#include "DivisorsUtils.h"
+#include "PrimeFactorUtils.h"
 #include "Cpp14MakeUnique.h"
 
 std::vector<int> myMergeSort(mpz_t *const arr, const std::vector<int> &indPass,

@@ -1,18 +1,12 @@
-/*! 
- *  \file tonelliShanks.cc
- *  \brief C function for obtaining quadratic residues via Tonelli Shanks algorithm
- *
- *  \version 2
- *
- *  \date Created: 10/06/17
- *
- *  \author Joseph Wood (C adaptation of algorithm obtained from the following 
- *      journal article: Brown, Ezra B. “Square Roots from 1; 24, 51, 10 to Dan Shanks.” 
- *                          The College Mathematics Journal, vol. 30, 1999, pp. 82–95.)
- *      URL: https://www.math.vt.edu/people/brown/doc/sqrts.pdf
- *
- *  \note Licence: GPL (>=) 2
-*/
+// brief C++ function for obtaining quadratic residues via Tonelli Shanks algorithm
+// date Created: 10/06/17
+// 
+// C++ adaptation of algorithm obtained from the following 
+// journal article: Brown, Ezra B. “Square Roots from 1; 24, 51, 10 to Dan Shanks.” 
+//                         The College Mathematics Journal, vol. 30, 1999, pp. 82–95.
+//     URL: https://www.math.vt.edu/people/brown/doc/sqrts.pdf
+// 
+// note Licence: GPL (>=) 2
 
 #include <cstdlib>
 #include "GmpxxCopy.h"

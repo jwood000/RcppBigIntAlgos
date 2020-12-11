@@ -1,5 +1,5 @@
-#ifndef FACTOR_UTILS_H
-#define FACTOR_UTILS_H
+#ifndef DIVISORS_UTILS_H
+#define DIVISORS_UTILS_H
 
 #include "PollardRho.h"
 #include "ImportExportMPZ.h"

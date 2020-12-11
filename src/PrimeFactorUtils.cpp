@@ -1,4 +1,4 @@
-#include "RSAFactorUtils.h"
+#include "PrimeFactorUtils.h"
 #include "StatsUtils.h"
 #include "LenstraECM.h"
 

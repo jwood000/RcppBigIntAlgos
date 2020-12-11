@@ -1,4 +1,4 @@
-#include "RSAFactorUtils.h"
+#include "PrimeFactorUtils.h"
 #include "CleanConvert.h"
 
 // [[Rcpp::export]]
