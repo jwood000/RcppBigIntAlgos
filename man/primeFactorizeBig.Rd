@@ -33,7 +33,7 @@ See \code{\link{quadraticSieve}} for information regarding \code{showStats}.
 }
 \references{
 \itemize{
-\item{\href{http://www.hyperelliptic.org/tanja/SHARCS/talks06/Gaj.pdf}{Gaj K. et al. (2006) Implementing the Elliptic Curve Method of Factoring in Reconfigurable Hardware. In: Goubin L., Matsui M. (eds) Cryptographic Hardware and Embedded Systems - CHES 2006. CHES 2006. Lecture Notes in Computer Science, vol 4249. Springer, Berlin, Heidelberg. https://doi.org/10.1007/11894063_10}}
+\item{\href{https://www.iacr.org/archive/ches2006/10/10.pdf}{Gaj K. et al. (2006) Implementing the Elliptic Curve Method of Factoring in Reconfigurable Hardware. In: Goubin L., Matsui M. (eds) Cryptographic Hardware and Embedded Systems - CHES 2006. CHES 2006. Lecture Notes in Computer Science, vol 4249. Springer, Berlin, Heidelberg. https://doi.org/10.1007/11894063_10}}
 \item{\href{https://en.wikipedia.org/wiki/Integer_factorization}{Integer Factorization}}
 }
 }
