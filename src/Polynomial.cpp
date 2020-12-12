@@ -140,8 +140,6 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
                                  std::size_t vecMaxStrt, typeTimePoint checkPoint0) {
     
     auto checkPoint1 = std::chrono::steady_clock::now();
-    auto checkPoint2 = checkPoint1;
-    
     auto showStatsTime = (checkPoint1 - checkPoint0);
     GetNPrimes(mpzFacBase, NextPrime, myNum, MinPolysPerThrd);
     
@@ -156,14 +154,11 @@ void Polynomial::InitialParSieve(const std::vector<std::size_t> &SieveDist,
     if ((checkPoint3 - checkPoint1) > checkInterTime) {
         // Check for user interrupt and udpate timepoint
         RcppThread::checkUserInterrupt();
-        checkPoint1 = std::chrono::steady_clock::now();
     }
     
-    if (bShowStats && (checkPoint3 - checkPoint2) > showStatsTime) {
+    if (bShowStats && (checkPoint3 - checkPoint1) > showStatsTime) {
         MakeStats(SaPThresh, nPolys, nSmooth,
                   nPartial, checkPoint3 - checkPoint0);
-        
-        checkPoint2 = std::chrono::steady_clock::now();
         UpdateStatTime(nSmooth + nPartial, facSize,
                        checkPoint3 - checkPoint0, showStatsTime);
     }

@@ -386,8 +386,6 @@ SEXP PrimeFactorizeHuge(mpz_class &nMpz, std::size_t nThreads,
             return myNegOne;
         } else {
             Rcpp::RawVector noPrimeFacs(intSize);
-            char* r = (char*) (RAW(noPrimeFacs));
-            ((int*) (r))[0] = 0;
             noPrimeFacs.attr("class") = Rcpp::CharacterVector::create("bigz");
             return noPrimeFacs;
         }
