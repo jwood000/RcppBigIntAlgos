@@ -131,7 +131,7 @@ void QuadraticSieve(const mpz_class &myNum, std::vector<mpz_class> &factors,
     const std::size_t facSize = facBase.size();
     const int vecMaxSize = GetVecMax(facBase.back(), LenB, nThreads);
     
-    if (vecMaxSize < 2 * LenB) {LenB = (vecMaxSize) * (1 + LenB / (vecMaxSize));}
+    if (vecMaxSize < static_cast<int>(2 * LenB)) {LenB = (vecMaxSize) * (1 + LenB / (vecMaxSize));}
     const int TwiceLenB = 2 * LenB;
     
     // This array will be passed to solutionSeach.

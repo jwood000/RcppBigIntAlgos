@@ -232,10 +232,10 @@ void SetThreadsIters(int sectionLength,
                      std::size_t &nThrdsThisIter,
                      std::size_t &chunk) {
     
-    if (sectionLength > (maxThreads * maxIterPerThrd)) {
+    if (sectionLength > static_cast<int>(maxThreads * maxIterPerThrd)) {
         nThrdsThisIter = maxThreads;
         chunk = maxIterPerThrd;
-    } else if (sectionLength > (maxThreads * maxThreads * minIterPerThrd)) {
+    } else if (sectionLength > static_cast<int>(maxThreads * maxThreads * minIterPerThrd)) {
         nThrdsThisIter = maxThreads;
         chunk = (sectionLength + nThrdsThisIter - 1) / nThrdsThisIter;
     } else {
