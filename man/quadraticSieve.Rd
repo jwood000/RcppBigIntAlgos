@@ -28,8 +28,9 @@ When \code{showStats = TRUE}, summary statistics will be shown. The frequency of
 }
 \note{
 \itemize{
-\item{Safely interrupt long executing commands by pressing \code{Ctrl + c}, \code{Esc}, or whatever interruption command offered by the user's GUI. If you are using multiple threads, you can still interrupt execution, however there will be a delay up to 30 seconds if the number is very large.}
+\item{\code{\link{primeFactorizeBig}} is preferred for general prime factorization.}
 \item{Both the extended Pollard's rho algorithm and the elliptic curve method are skipped. For general prime factorization, see \code{primeFactorizeBig}.}
+\item{Safely interrupt long executing commands by pressing \code{Ctrl + c}, \code{Esc}, or whatever interruption command offered by the user's GUI. If you are using multiple threads, you can still interrupt execution, however there will be a delay up to 30 seconds if the number is very large.}
 \item{Note, the function \code{primeFactorizeBig(n, skipECM = T, skipPolRho = T)} is the same as \code{quadraticSieve(n)}}
 }
 }

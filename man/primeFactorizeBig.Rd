@@ -13,13 +13,17 @@ primeFactorizeBig(v, namedList = FALSE, showStats = FALSE,
 \arguments{
   \item{v}{Vector of integers, numerics, string values, or elements of class bigz.}
   \item{namedList}{Logical flag. If \code{TRUE} and the \code{length(v) > 1}, a named list is returned. The default is \code{FALSE}.}
-  \item{showStats}{Logical flag passed to \code{\link{quadraticSieve}} (if needed). If \code{TRUE}, summary statistics will be displayed.}
+  \item{showStats}{Logical flag for showing summary statistics. The default is \code{FALSE}.}
   \item{skipPolRho}{Logical flag for skipping the extended pollard rho algorithm. The default is \code{FALSE}.}
   \item{skipECM}{Logical flag for skipping the extended elliptic curve algorithm. The default is \code{FALSE}.}
-  \item{nThreads}{Number of threads to be used for \code{\link{quadraticSieve}} (if needed.) The default is \code{NULL}.}
+  \item{nThreads}{Number of threads to be used for the elliptic curve method and the quadratic sieve.s The default is \code{NULL}.}
 }
 \details{
-Highly optimized algorithm to generate the prime factorization for many numbers.
+This function should be preferred in most situations and is identical to \code{\link{quadraticSieve}} when both \code{skipECM} and  \code{skipPolRho} are set to \code{TRUE}.
+
+It is optimized for factoring big and small numbers by dynamically using different algorithms based off of the input. It takes cares to not spend too much time in any of the methods and avoids wastefully switching to the quadratic sieve when the number is very large.
+
+See \code{\link{quadraticSieve}} for information regarding \code{showStats}.
 }
 \value{
 \itemize{
@@ -28,7 +32,10 @@ Highly optimized algorithm to generate the prime factorization for many numbers.
 }
 }
 \references{
-\href{https://en.wikipedia.org/wiki/Integer_factorization}{Integer Factorization}
+\itemize{
+\item{\href{http://www.hyperelliptic.org/tanja/SHARCS/talks06/Gaj.pdf}{Gaj K. et al. (2006) Implementing the Elliptic Curve Method of Factoring in Reconfigurable Hardware. In: Goubin L., Matsui M. (eds) Cryptographic Hardware and Embedded Systems - CHES 2006. CHES 2006. Lecture Notes in Computer Science, vol 4249. Springer, Berlin, Heidelberg. https://doi.org/10.1007/11894063_10}}
+\item{\href{https://en.wikipedia.org/wiki/Integer_factorization}{Integer Factorization}}
+}
 }
 \author{
 Joseph Wood
@@ -37,7 +44,7 @@ Joseph Wood
 Note, the function \code{primeFactorizeBig(n, skipECM = T, skipPolRho = T)} is the same as \code{quadraticSieve(n)}
 }
 \seealso{
-\code{\link[RcppAlgos]{primeFactorize}}, \code{\link[numbers]{primeFactors}}, \code{\link[gmp:factor]{factorize}}
+\code{\link[RcppAlgos]{primeFactorize}}, \code{\link[numbers]{primeFactors}}, \code{\link[gmp:factor]{factorize}}, \code{\link{quadraticSieve}}
 }
 \examples{
 ## Get the prime factorization of a single number
