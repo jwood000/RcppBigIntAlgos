@@ -107,7 +107,7 @@ Running under: macOS Catalina 10.15.7
 .
 .
 other attached packages:
-[1] RcppBigIntAlgos_0.3.5 gmp_0.6-0            
+[1] RcppBigIntAlgos_1.0.0 gmp_0.6-0            
 
 loaded via a namespace (and not attached):
 [1] compiler_4.0.3 tools_4.0.3    Rcpp_1.0.5
@@ -272,43 +272,9 @@ Summary Statistics for Factoring:
 Big Integer ('bigz') object of length 82:
  [1] 66642484459                  66642484459                 
  [3] 66642484459                  385217678221                
- [5] 385217678221                 385217678221                
- [7] 466242793447                 466242793447                
- [9] 466242793447                 495204258001                
-[11] 495204258001                 495204258001                
-[13] 626806080239                 626806080239                
-[15] 626806080239                 658176330451                
-[17] 658176330451                 658176330451                
-[19] 813161816491                 813161816491                
-[21] 813161816491                 819522058723                
-[23] 819522058723                 819522058723                
-[25] 851683366739                 851683366739                
-[27] 851683366739                 1089476958461               
-[29] 1089476958461                1089476958461               
-[31] 3018545314271                3018545314271               
-[33] 3018545314271                3018545314271               
-[35] 3018545314271                3683752561543               
-[37] 3683752561543                3683752561543               
-[39] 3683752561543                3683752561543               
-[41] 3793739141329                3793739141329               
-[43] 3793739141329                3793739141329               
-[45] 3793739141329                5487523469573               
-[47] 5487523469573                5487523469573               
-[49] 5487523469573                5487523469573               
-[51] 7223875846909                7223875846909               
-[53] 7223875846909                7223875846909               
-[55] 7223875846909                8509743210929               
-[57] 8509743210929                8509743210929               
-[59] 8509743210929                8509743210929               
-[61] 10361847443443               10361847443443              
-[63] 10361847443443               10361847443443              
-[65] 10361847443443               20449385630413              
-[67] 20449385630413               20449385630413              
-[69] 20449385630413               20449385630413              
-[71] 20957363412217               20957363412217              
-[73] 20957363412217               20957363412217              
-[75] 20957363412217               34936543827863              
-[77] 34936543827863               34936543827863              
+  .      .                             .
+  .      .                             .
+  .      .                             .
 [79] 34936543827863               34936543827863              
 [81] 1130548241045557299883517    1051687085486158310119550449
 ```
@@ -427,6 +393,8 @@ Big Integer ('bigz') object of length 6:
 ](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
 
   * In the stackoverflow question and answer [What is the most efficient factoring algorithm for quadratic sieve extraction phase?](https://stackoverflow.com/q/63541365/4408538) by  [Ilya Gazman](https://github.com/gazman-sdk), an efficient method for checking divisibility is sketched out that utilizes built-in types. You can see more on a video Ilya put on youtube: [E15: Quadratic Sieve Running on Java - Receiving](https://youtu.be/sXg_WrCUX-Q). While `mpz_divisible_ui_p` is very efficient, we found better performance using this method.
+  
+  * [Implementing the Elliptic Curve Method of Factoring in Reconfigurable Hardware](<https://www.iacr.org/archive/ches2006/10/10.pdf>).
 
 
 ## Current Research
