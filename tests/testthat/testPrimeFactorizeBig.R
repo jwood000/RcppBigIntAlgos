@@ -36,4 +36,8 @@ test_that("primeFactorizeBig generates correct numbers with multiple threads", {
 
 test_that("primeFactorizeBig produces appropriate error messages", {
     expect_error(primeFactorizeBig(0), "Cannot factorize 0")
+    expect_error(primeFactorizeBig(1234567, skipPolRho = "T"),
+                 "Only logical values are supported for skipPolRho")
+    expect_error(primeFactorizeBig(1234567, skipECM = "T"),
+                 "Only logical values are supported for skipECM")
 })

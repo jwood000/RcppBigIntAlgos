@@ -43,4 +43,12 @@ test_that("divisorsBig generates correct numbers with multiple threads", {
 
 test_that("divisorsBig produces appropriate error messages", {
     expect_error(divisorsBig(0), "Cannot factorize 0")
+    expect_error(divisorsBig(1234567, skipPolRho = "T"),
+                 "Only logical values are supported for skipPolRho")
+    expect_error(divisorsBig(1234567, skipECM = "T"),
+                 "Only logical values are supported for skipECM")
+    expect_error(divisorsBig(1234567, nThreads = "9"),
+                 "This type is not supported! No conversion possible for nThreads")
+    expect_error(divisorsBig(1234567, nThreads = 3.5),
+                 "nThreads must be a whole number")
 })
