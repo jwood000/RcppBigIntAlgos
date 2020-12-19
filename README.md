@@ -88,9 +88,12 @@ Big Integer ('bigz') object of length 2:
 
 ### Using Multiple Threads
 
-As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). For example, we factor the largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 25 seconds and [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) can be factored in under 3 minutes.
+As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). Below, are a few examples:
 
-Finally, we factor [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) in under 8 hours.
+  1. The largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 25 seconds.
+  2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 3 minutes.
+  3. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 8 hours.
+  4. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 16 hours.
 
 Below are my machine specs and R version info:
 
@@ -117,7 +120,7 @@ stdThreadMax()
 [1] 8
 ```
 
-#### mostWanted1983
+#### Most Wanted 1983
 
 ```r
 mostWanted1983 <- as.bigz(div.bigz(sub.bigz(pow.bigz(10, 71), 1), 9))
@@ -192,7 +195,32 @@ Summary Statistics for Factoring:
 Big Integer ('bigz') object of length 2:
 [1] 4868376167980921239824329271069101142472222111193  52733064254484107837300974402288603361507691060217
 ```
-## `primeFactorizeBig`
+
+#### RSA-100
+
+```r
+quadraticSieve(rsa100, showStats=TRUE, nThreads=8)
+
+Summary Statistics for Factoring:
+    1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139
+
+|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
+|--------------------|----------|-------------|------------|------------|
+|  15h 26m 53s 383ms |   100%   |   14999534  |    9230    |    16665   |
+
+|  Mat Algebra Time  |    Mat Dimension   |
+|--------------------|--------------------|
+|    2m 22s 560ms    |    25799 x 25895   |
+
+|     Total Time     |
+|--------------------|
+|  15h 29m 26s 293ms |
+
+Big Integer ('bigz') object of length 2:
+[1] 37975227936943673922808872755445627854565536638199 40094690950920881030683735292761468389214899724061
+```
+
+## **`primeFactorizeBig`**
 
 As of version `1.0.0`, we can take advantage of the power of Lenstra's elliptic curve method. This method is particularly useful for quickly finding smaller prime factors of very large composite numbers. It is automatically utilized in the vectorized prime factorization function `primeFactorizeBig`. This function should be preferred in most situations and is identical to `quadraticSieve` when both `skipECM` and `skipPolRho` are set to `TRUE`.
 
@@ -292,7 +320,7 @@ If you want to interrupt a command which will take a long time, hit Ctrl + c, or
 ## Timing stopped at: 2.164 0.039 2.167
 ```
 
-## Complete Factorization with `divisorsBig`
+## Complete Factorization with **`divisorsBig`**
 
 This function generates the complete factorization for many (possibly large) numbers. It is vectorized and can also return a named list.
 
