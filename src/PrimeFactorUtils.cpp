@@ -185,7 +185,7 @@ void QuadraticSieveRecurse(mpz_class &n, std::vector<mpz_class> &factors,
                 std::vector<mpz_class> recurseTemp(2);
                 
                 if (bShowStats) {
-                    Rcpp::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
+                    RcppThread::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
                                 << results[i].get_str() << "\n" << std::endl;
                 }
                 
@@ -271,7 +271,7 @@ void FactorECM(mpz_class &n, std::vector<mpz_class> &factors,
     std::vector<mpz_class> results(2);
     
     if (bShowStats) {
-        Rcpp::Rcout << "|  Lenstra ECM Time  |  Number of Curves  |\n"
+        RcppThread::Rcout << "|  Lenstra ECM Time  |  Number of Curves  |\n"
                     << "|--------------------|--------------------|" << std::endl;
         TwoColumnStats(std::chrono::steady_clock::now() - t0, 0, 0, false);
     }
@@ -290,7 +290,7 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
     TrialDivision(nMpz, factors, lengths);
     
     if (bShowStats) {
-        Rcpp::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
+        RcppThread::Rcout << "\nSummary Statistics for Factoring:\n" << "    "
                     << nMpz.get_str() << "\n" << std::endl;
     }
     
@@ -301,7 +301,7 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                                  POLLARD_RHO_REPS, 1);
         
         if (bShowStats && !bSkipPR) {
-            Rcpp::Rcout << "|  Pollard Rho Time  |\n|--------------------|" << std::endl;
+            RcppThread::Rcout << "|  Pollard Rho Time  |\n|--------------------|" << std::endl;
             OneColumnStats(std::chrono::steady_clock::now() - t0);
         }
         
@@ -312,23 +312,30 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
             if (mpz_probab_prime_p(nMpz.get_mpz_t(), MR_REPS) != 0) {
                 factors.push_back(nMpz);
                 lengths.push_back(myPow);
+                
+                if (bShowStats) {
+                    RcppThread::Rcout << "\n" << std::endl;
+                }
             } else {
-                const int digCount = mpz_sizeinbase(nMpz.get_mpz_t(), 10);
-                
-                // We add additional iterations for very large numbers. Sometimes,
-                // these numbers have a disproportionately smaller prime factor and
-                // can be factorized faster with Pollard's rho algo. The numbers
-                // below were obtain empirically.
-                const std::size_t adder = std::min((digCount > 70) ?
-                                                   (digCount - 70) * 80000 : 0, 2000000);
-                
-                if (adder > 0 && !bSkipPR) {
-                    PollardRhoWithConstraint(nMpz, 1, factors, lengths,
-                                             POLLARD_RHO_REPS + adder, 1);
+                if (!bSkipPR) {
+                    const int digCount = mpz_sizeinbase(nMpz.get_mpz_t(), 10);
+                    
+                    // We add additional iterations for very large numbers. Sometimes,
+                    // these numbers have a disproportionately smaller prime factor and
+                    // can be factorized faster with Pollard's rho algo. The numbers
+                    // below were obtain empirically.
+                    const std::size_t adder = std::min((digCount > 70) ?
+                                                       (digCount - 70) * 80000 : 0, 2000000);
+                    
+                    
+                    if (adder > 0) {
+                        PollardRhoWithConstraint(nMpz, 1, factors, lengths,
+                                                 POLLARD_RHO_REPS + adder, 1);
+                    }
                     
                     if (bShowStats) {
                         OneColumnStats(std::chrono::steady_clock::now() - t0);
-                        Rcpp::Rcout << "\n" << std::endl;
+                        RcppThread::Rcout << "\n" << std::endl;
                     }
                 }
                 
@@ -342,7 +349,7 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                               lengths, nThreads, bShowStats, myPow);
                     
                     if (bShowStats) {
-                        Rcpp::Rcout << "\n" << std::endl;
+                        RcppThread::Rcout << "\n" << std::endl;
                     }
                     
                     for (auto n: notFactored) {
@@ -352,13 +359,17 @@ void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,
                     }
                 }
             }
+        } else {
+            if (bShowStats) {
+                RcppThread::Rcout << "\n" << std::endl;
+            }
         }
     }
     
     if (bShowStats) {
-        Rcpp::Rcout << "|     Total Time     |\n|--------------------|" << std::endl;
+        RcppThread::Rcout << "|     Total Time     |\n|--------------------|" << std::endl;
         OneColumnStats(std::chrono::steady_clock::now() - t0);
-        Rcpp::Rcout << "\n" << std::endl;
+        RcppThread::Rcout << "\n" << std::endl;
     }
 }
 

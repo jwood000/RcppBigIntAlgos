@@ -1,3 +1,7 @@
+RcppBigIntAlgos 1.0.1 (Release date: 2020-01-09)
+
+* Fixed showStats option for smaller numbers
+
 RcppBigIntAlgos 1.0.0 (Release date: 2020-12-15)
 
 * Added generalized prime factorization function `primeFactorizeBig` which now can utilize the elliptic curve method.
