@@ -1,7 +1,7 @@
 #ifndef LENSTRA_ECM_H
 #define LENSTRA_ECM_H
 
-#include "ImportExportMPZ.h"
+#include "CppConvert/GmpConvert.h"
 #include <limits>
 #include <map>
 

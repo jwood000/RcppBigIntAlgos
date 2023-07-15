@@ -10,8 +10,7 @@
 
 ## Overview
 
-RcppBigIntAlgos uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently
-factoring big integers. Links to `RcppThread` for factoring integers in parallel. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a simple elliptic curve algorithm is attempted followed by a constrained version of the Pollard's rho algorithm (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
+RcppBigIntAlgos is multithreaded and uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a simple elliptic curve algorithm is attempted followed by a constrained version of the Pollard's rho algorithm (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
 
 ## Installation
 
@@ -88,7 +87,7 @@ Big Integer ('bigz') object of length 2:
 
 ### Using Multiple Threads
 
-As of version `0.3.0`, we can utilize multiple threads with the help of [RcppThread](https://github.com/tnagler/RcppThread). Below, are a few examples:
+As of version `0.3.0`, we can utilize multiple threads. Below, are a few examples:
 
   1. The largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 25 seconds.
   2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 3 minutes.

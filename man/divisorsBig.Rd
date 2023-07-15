@@ -58,5 +58,6 @@ system.time(myFacs <- divisorsBig(myVec))
 myFacsWithNames <- divisorsBig(myVec, namedList = TRUE)
 
 ## Get the complete factorization for a large semiprime
-divisorsBig(prod(nextprime(urand.bigz(2, size = 65, seed = 3))))
+big = gmp::prod.bigz(gmp::nextprime(gmp::urand.bigz(2, size = 65, seed = 3)))
+divisorsBig(big)
 }

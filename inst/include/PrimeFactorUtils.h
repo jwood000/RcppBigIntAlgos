@@ -1,8 +1,8 @@
 #ifndef PRIME_FACTOR_UTILS_H
 #define PRIME_FACTOR_UTILS_H
 
+#include "CppConvert/GmpConvert.h"
 #include "QuadraticSieve.h"
-#include "ImportExportMPZ.h"
 #include "PollardRho.h"
 
 void QuadSieveHelper(mpz_class &nMpz, std::vector<mpz_class> &factors,

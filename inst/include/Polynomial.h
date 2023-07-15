@@ -1,7 +1,6 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
-#include "Cpp14MakeUnique.h"
 #include "MultPoly.h"
 #include "StatsUtils.h"
 

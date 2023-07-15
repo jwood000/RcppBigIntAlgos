@@ -1,7 +1,7 @@
 #ifndef REDUCE_MATRIX_H
 #define REDUCE_MATRIX_H
 
-#include "GmpxxCopy.h"
+#include <gmpxx.h>
 #include <vector>
 #include <numeric>
 #include <cstdint>
