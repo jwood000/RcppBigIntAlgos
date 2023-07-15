@@ -1,4 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 \.travis\.yml
-readme_script*
+readme_script.R
+^\.github$
+LICENSE

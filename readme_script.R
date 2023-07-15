@@ -171,6 +171,7 @@ reprex::reprex({
     #'
 
     hugeNumber <- pow.bigz(2, 100) * pow.bigz(3, 100) * pow.bigz(5, 100)
+    system.time(overOneMillion <- divisorsBig(hugeNumber))
 
     length(overOneMillion)
 
