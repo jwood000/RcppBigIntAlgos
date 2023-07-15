@@ -1,3 +1,4 @@
+#include <vector>
 #include <gmpxx.h>
 #include <thread>
 #include <string>
