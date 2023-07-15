@@ -3,7 +3,7 @@
 ![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
-[![Coverage status](<https://codecov.io/gh/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg>)](<https://app.codecov.io/gh/jwood000/RcppBigIntAlgos/branch/main>)
+[![Coverage status](https://codecov.io/github/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg?token=LMO4DH4OtN)](https://codecov.io/github/jwood000/RcppBigIntAlgos)
 [![Codacy Badge](<https://app.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c>)](<https://app.codacy.com/gh/jwood000/RcppBigIntAlgos/dashboard?utm_source=github.com&utm_medium=referral&utm_content=jwood000/RcppBigIntAlgos&utm_campaign=Badge_Grade>)
 
 # RcppBigIntAlgos

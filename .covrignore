@@ -1,4 +1,4 @@
-inst/StatsUtils.h
+inst/include/StatsUtils.h
 src/StdConvert.cpp
 src/GmpConvert.cpp
 src/ConvertUtils.cpp
