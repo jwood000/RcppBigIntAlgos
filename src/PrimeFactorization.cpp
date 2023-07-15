@@ -1,11 +1,14 @@
-#include "PrimeFactorUtils.h"
-#include "CleanConvert.h"
+#include "cpp11/strings.hpp"
+#include "cpp11/list.hpp"
 
-// [[Rcpp::export]]
+#include "PrimeFactorUtils.h"
+#include "CppConvert.h"
+
+[[cpp11::register]]
 SEXP PrimeFactorization(SEXP Rv, SEXP RNamed, SEXP RShowStats,
                         SEXP RSkipExtPR, SEXP RSkipECM,
                         SEXP RNumThreads, int maxThreads) {
-    
+
     std::size_t vSize = 0;
 
     switch (TYPEOF(Rv)) {
@@ -13,57 +16,56 @@ SEXP PrimeFactorization(SEXP Rv, SEXP RNamed, SEXP RShowStats,
             const char* raw = (char*)RAW(Rv);
             vSize = ((int*)raw)[0];
             break;
-        }
-        default:
+        } default: {
             vSize = LENGTH(Rv);
+        }
     }
 
     int nThreads = 1;
-    const bool bShowStats = convertLogical(RShowStats, "showStats");
-    const bool bSkipPR = convertLogical(RSkipExtPR, "skipPolRho");
-    const bool bSkipECM = convertLogical(RSkipECM, "skipECM");
+    const bool bShowStats = CppConvert::convertFlag(RShowStats, "showStats");
+    const bool bSkipPR = CppConvert::convertFlag(RSkipExtPR, "skipPolRho");
+    const bool bSkipECM = CppConvert::convertFlag(RSkipECM, "skipECM");
 
-    if (!Rf_isNull(RNumThreads))
-        convertInt(RNumThreads, nThreads, "nThreads");
+    if (!Rf_isNull(RNumThreads)) {
+        CppConvert::convertPrimitive(
+            RNumThreads, nThreads, VecType::Integer, "nThreads"
+        );
+    }
 
     if (vSize > 0) {
         if (vSize == 1) {
             mpz_class myNum;
-            convertMpzClass(Rv, myNum);
-            return PrimeFactorizeHuge(myNum, nThreads, bShowStats, bSkipPR, bSkipECM);
+            CppConvert::convertMpzClass(Rv, myNum, "n", true);
+
+            cpp11::sexp res = PrimeFactorizeHuge(
+                myNum, nThreads, bShowStats, bSkipPR, bSkipECM
+            );
+
+            return res;
         } else {
             std::vector<mpz_class> myVec(vSize);
-            CreateMPZVector(Rv, myVec, vSize);
-            Rcpp::List res(vSize);
-            bool isNamed = false;
-
-            if (!Rf_isNull(RNamed)) {
-                if (TYPEOF(RNamed) == LGLSXP) {
-                    double dblInp = Rcpp::as<double>(RNamed);
-
-                    if (Rcpp::NumericVector::is_na(dblInp) || std::isnan(dblInp))
-                        Rcpp::stop("namedList cannot be NA or NaN");
-
-                    isNamed = Rcpp::as<bool>(RNamed);
-                } else {
-                    Rcpp::stop("Only logical values are supported for namedList");
-                }
-            }
+            CppConvert::convertMPZVector(Rv, myVec, vSize, "v", true);
+            cpp11::writable::list res(vSize);
+            const bool isNamed = CppConvert::convertFlag(RNamed, "namedList");
 
             if (isNamed) {
-                Rcpp::CharacterVector myNames(vSize);
+                cpp11::writable::strings myNames(vSize);
 
                 for (std::size_t i = 0; i < vSize; ++i)
                     myNames[i] = myVec[i].get_str();
 
                 for (std::size_t i = 0; i < vSize; ++i) {
-                    res[i] = PrimeFactorizeHuge(myVec[i], nThreads, bShowStats, bSkipPR, bSkipECM);
+                    res[i] = PrimeFactorizeHuge(
+                        myVec[i], nThreads, bShowStats, bSkipPR, bSkipECM
+                    );
                 }
 
                 res.attr("names") = myNames;
             } else {
                 for (std::size_t i = 0; i < vSize; ++i) {
-                    res[i] = PrimeFactorizeHuge(myVec[i], nThreads, bShowStats, bSkipPR, bSkipECM);
+                    res[i] = PrimeFactorizeHuge(
+                        myVec[i], nThreads, bShowStats, bSkipPR, bSkipECM
+                    );
                 }
             }
 
@@ -71,6 +73,6 @@ SEXP PrimeFactorization(SEXP Rv, SEXP RNamed, SEXP RShowStats,
         }
     }
 
-    Rcpp::IntegerVector resTrivial(1);
+    cpp11::writable::integers resTrivial(1);
     return resTrivial;
 }

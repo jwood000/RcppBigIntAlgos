@@ -1,8 +1,7 @@
 #ifndef QUADRATICSIEVE_GMP_H
 #define QUADRATICSIEVE_GMP_H
 
-#include <Rcpp.h>
-#include "GmpxxCopy.h"
+#include "CppConvert.h"
 
 // Factoring with Multiple Polynomial Quadratic Sieve.
 // 

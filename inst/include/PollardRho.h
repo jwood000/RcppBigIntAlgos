@@ -1,8 +1,7 @@
 #ifndef POLLARDRHO_GMP_R
 #define POLLARDRHO_GMP_R
 
-#include <Rcpp.h>
-#include "GmpxxCopy.h"
+#include "CppConvert.h"
 #include "Primes.h"
 
 void GetPrimeFactors(mpz_class &t, std::vector<mpz_class> &factors,
