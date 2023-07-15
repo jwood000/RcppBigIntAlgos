@@ -1,17 +1,17 @@
 reprex::reprex({
     #' [![CRAN status](https://www.r-pkg.org/badges/version/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
-    #' [![Travis build status](https://travis-ci.com/jwood000/RcppBigIntAlgos.svg?branch=master)](https://travis-ci.com/jwood000/RcppBigIntAlgos)
+    #' [![R build status](<https://github.com/jwood000/RcppBigIntAlgos/workflows/R-CMD-check/badge.svg>)](<https://github.com/jwood000/RcppBigIntAlgos/actions>)
     #' ![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
     #' ![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
     #' [![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
-    #' [![Coverage status](https://codecov.io/gh/jwood000/RcppBigIntAlgos/branch/master/graph/badge.svg)](https://codecov.io/github/jwood000/RcppBigIntAlgos?branch=master)
+    #' [![Coverage status](https://codecov.io/gh/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg)](https://codecov.io/github/jwood000/RcppBigIntAlgos?branch=main)
     #' [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c)](https://app.codacy.com/manual/jwood000/RcppBigIntAlgos?utm_source=github.com&utm_medium=referral&utm_content=jwood000/RcppBigIntAlgos&utm_campaign=Badge_Grade)
     #'
     #' # RcppBigIntAlgos
     #'
     #' ## Overview
     #'
-    #' `RcppBigIntAlgos` FIXME is multithreaded and uses the C library GMP (GNU Multiple Precision Arithmetic) for efficiently factoring big integers. For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a simple elliptic curve algorithm is attempted followed by a constrained version of the Pollard's rho algorithm (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
+    #' `RcppBigIntAlgos` is an `R` package for efficiently factoring large integers. It is multithreaded and uses the C library GMP (GNU Multiple Precision Arithmetic). For very large integers, prime factorization is carried out by a variant of the quadratic sieve algorithm that implements multiple polynomials. For smaller integers, a simple elliptic curve algorithm is attempted followed by a constrained version of the Pollard's rho algorithm (original code from <https://gmplib.org/>... this is the same algorithm found in the [R gmp package](<https://CRAN.R-project.org/package=gmp>) called by the function `factorize`). Finally, one can quickly obtain a complete factorization of a given number `n` via `divisorsBig`.
     #'
     #' ## Installation
     #'
@@ -219,7 +219,7 @@ reprex::reprex({
     #'
     #' ## Current Research
     #'
-    #' Currently, our main focus for version `1.1.0` will be implementing the self initiallizing quadratic sieve.
+    #' Currently, our main focus for version `1.2.0` will be implementing the self initializing quadratic sieve.
     #'
     #' ## Contact
     #'
