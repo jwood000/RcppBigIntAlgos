@@ -56,6 +56,6 @@ Joseph Wood
 \code{primeFactorizeBig}, \code{\link[gmp:factor]{factorize}}
 }
 \examples{
-mySemiPrime <- gmp::prod(gmp::nextprime(gmp::urand.bigz(2, 50, 17)))
+mySemiPrime <- gmp::prod.bigz(gmp::nextprime(gmp::urand.bigz(2, 50, 17)))
 quadraticSieve(mySemiPrime)
 }
