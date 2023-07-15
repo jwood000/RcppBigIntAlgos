@@ -13,6 +13,9 @@ test_that("divisorsBig generates correct numbers", {
                                              25,40,50,100,125,
                                              200,250,500,1000))
 
+    ## Need to test stdThreadMax as well
+    expect_true(is.integer(stdThreadMax()))
+
     ## Test Names
     expect_equal(
         as.integer(names(divisorsBig(100, namedList = TRUE))), integer(0)
