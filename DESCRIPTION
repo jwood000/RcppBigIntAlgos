@@ -26,7 +26,7 @@ Suggests: testthat, numbers, RcppAlgos
 NeedsCompilation: yes
 URL: https://github.com/jwood000/RcppBigIntAlgos, https://gmplib.org/,
         http://mathworld.wolfram.com/QuadraticSieve.html,
-        http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf,
+        https://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf,
         https://www.math.colostate.edu/~hulpke/lectures/m400c/quadsievex.pdf,
         https://blogs.msdn.microsoft.com/devdev/2006/06/19/factoring-large-numbers-with-quadratic-sieve/
 BugReports: https://github.com/jwood000/RcppBigIntAlgos/issues

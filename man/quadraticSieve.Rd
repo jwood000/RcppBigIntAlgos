@@ -44,7 +44,7 @@ Vector of class bigz
        Cambridge: Cambridge University Press.}}
 \item{\href{http://www.ams.org/journals/mcom/1987-48-177/S0025-5718-1987-0866119-8/S0025-5718-1987-0866119-8.pdf}{Silverman, R. D. (1987). The Multiple Polynomial Quadratic Sieve.
                Mathematics of Computation, 48(177), 329-339. doi:10.2307/2007894}}
-\item{\href{http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf}{Integer Factorization using the Quadratic Sieve}}
+\item{\href{https://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf}{Integer Factorization using the Quadratic Sieve}}
 \item{\href{https://codegolf.stackexchange.com/questions/8629/fastest-semiprime-factorization/9088#9088}{From https://codegolf.stackexchange.com/ (Credit to user primo for answer)
        P., & Chowdhury, S. (2012, October 7). Fastest semiprime factorization. Retrieved October 06, 2017}}
 }

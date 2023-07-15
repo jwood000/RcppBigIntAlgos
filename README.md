@@ -1,9 +1,9 @@
-[![CRAN status](https://www.r-pkg.org/badges/version/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
+[![CRAN status](<https://www.r-pkg.org/badges/version/RcppBigIntAlgos>)](<https://cran.r-project.org/package=RcppBigIntAlgos>)
 [![R build status](<https://github.com/jwood000/RcppBigIntAlgos/workflows/R-CMD-check/badge.svg>)](<https://github.com/jwood000/RcppBigIntAlgos/actions>)
-![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
-![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
-[![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
-[![Coverage status](https://codecov.io/github/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg?token=LMO4DH4OtN)](https://codecov.io/github/jwood000/RcppBigIntAlgos)
+![](<http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange>)
+![](<http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen>)
+[![Dependencies](<https://tinyverse.netlify.com/badge/RcppBigIntAlgos>)](<https://cran.r-project.org/package=RcppBigIntAlgos>)
+[![Coverage status](<https://codecov.io/github/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg?token=LMO4DH4OtN>)](<https://app.codecov.io/github/jwood000/RcppBigIntAlgos>)
 [![Codacy Badge](<https://app.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c>)](<https://app.codacy.com/gh/jwood000/RcppBigIntAlgos/dashboard?utm_source=github.com&utm_medium=referral&utm_content=jwood000/RcppBigIntAlgos&utm_campaign=Badge_Grade>)
 
 # RcppBigIntAlgos
@@ -419,7 +419,7 @@ Big Integer ('bigz') object of length 6:
   * [Implementing the Elliptic Curve Method of Factoring in Reconfigurable Hardware](<https://www.iacr.org/archive/ches2006/10/10.pdf>) by Gaj K. et al.
   
   * [Integer Factorization using the Quadratic Sieve
-](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
+](<https://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
 
   * In the stackoverflow question and answer [What is the most efficient factoring algorithm for quadratic sieve extraction phase?](https://stackoverflow.com/q/63541365/4408538) by  [Ilya Gazman](https://github.com/gazman-sdk), an efficient method for checking divisibility is sketched out that utilizes built-in types. You can see more on a video Ilya put on youtube: [E15: Quadratic Sieve Running on Java - Receiving](https://youtu.be/sXg_WrCUX-Q). While `mpz_divisible_ui_p` is very efficient, we found better performance using this method.
 
