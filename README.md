@@ -46,22 +46,22 @@ nchar(as.character(semiPrime140bits))
 ## Using factorize from gmp package which implements pollard's rho algorithm
 ##**************gmp::factorize*********************
 system.time(print(factorize(semiPrime120bits)))
-Big Integer ('bigz') object of length 2:
-[1] 638300143449131711  1021796573707617139
-   user  system elapsed 
-125.117   0.139 125.113
+#> Big Integer ('bigz') object of length 2:
+#> [1] 638300143449131711  1021796573707617139
+#>    user  system elapsed 
+#> 100.788   0.291 101.112 
 
 system.time(print(factorize(semiPrime130bits)))
-Big Integer ('bigz') object of length 2:
-[1] 14334377958732970351 29368224335577838231
-    user   system  elapsed 
-1437.246    0.309 1437.505
-
+#> Big Integer ('bigz') object of length 2:
+#> [1] 14334377958732970351 29368224335577838231
+#>      user   system  elapsed 
+#>  1253.060    2.612 1256.065 
+ 
 system.time(print(factorize(semiPrime140bits)))
-Big Integer ('bigz') object of length 2:
-[1] 143600566714698156857  1131320166687668315849
-    user   system  elapsed 
-2239.374    0.299 2239.641
+#> Big Integer ('bigz') object of length 2:
+#> [1] 143600566714698156857  1131320166687668315849
+#>     user   system  elapsed 
+#> 1673.666    3.154 1676.838 
 
 
 ##**************quadraticSieve*********************
@@ -90,9 +90,9 @@ Big Integer ('bigz') object of length 2:
 As of version `0.3.0`, we can utilize multiple threads. Below, are a few examples:
 
   1. The largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 25 seconds.
-  2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 3 minutes.
-  3. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 8 hours.
-  4. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 16 hours.
+  2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 2 minutes.
+  3. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 5 hours.
+  4. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 10 hours.
 
 Below are my machine specs and R version info:
 
@@ -173,50 +173,54 @@ Big Integer ('bigz') object of length 2:
 
 ```r
 rsa99 <- "256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881"
-
+ 
 quadraticSieve(rsa99, showStats=TRUE, nThreads=8)
-
-Summary Statistics for Factoring:
-    256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881
-
-|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
-|--------------------|----------|-------------|------------|------------|
-|   7h 2m 48s 595ms  |   100%   |   7351308   |    9203    |    15846   |
-
-|  Mat Algebra Time  |    Mat Dimension   |
-|--------------------|--------------------|
-|     2m 2s 479ms    |    24929 x 25049   |
-
-|     Total Time     |
-|--------------------|
-|   7h 4m 55s 252ms  |
-
-Big Integer ('bigz') object of length 2:
-[1] 4868376167980921239824329271069101142472222111193  52733064254484107837300974402288603361507691060217
+#> 
+#> Summary Statistics for Factoring:
+#>     256724393281137036243618548169692747168133997830674574560564321074494892576105743931776484232708881
+#> 
+#> |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
+#> |--------------------|----------|-------------|------------|------------|
+#> |  4h 41m 28s 410ms  |   100%   |   7351308   |    9203    |    15846   |
+#> 
+#> |  Mat Algebra Time  |    Mat Dimension   |
+#> |--------------------|--------------------|
+#> |      31s 359ms     |    24929 x 25049   |
+#> 
+#> |     Total Time     |
+#> |--------------------|
+#> |   4h 42m 1s 55ms   |
+#> 
+#> Big Integer ('bigz') object of length 2:
+#> [1] 4868376167980921239824329271069101142472222111193 
+#> [2] 52733064254484107837300974402288603361507691060217
 ```
 
 #### RSA-100
 
 ```r
-quadraticSieve(rsa100, showStats=TRUE, nThreads=8)
+rsa100 <- "1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139"
 
-Summary Statistics for Factoring:
-    1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139
-
-|      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
-|--------------------|----------|-------------|------------|------------|
-|  15h 26m 53s 383ms |   100%   |   14999534  |    9230    |    16665   |
-
-|  Mat Algebra Time  |    Mat Dimension   |
-|--------------------|--------------------|
-|    2m 22s 560ms    |    25799 x 25895   |
-
-|     Total Time     |
-|--------------------|
-|  15h 29m 26s 293ms |
-
-Big Integer ('bigz') object of length 2:
-[1] 37975227936943673922808872755445627854565536638199 40094690950920881030683735292761468389214899724061
+quadraticSieve(rsa100, showStats = TRUE, nThreads = 8)
+#> 
+#> Summary Statistics for Factoring:
+#>     1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139
+#> 
+#> |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
+#> |--------------------|----------|-------------|------------|------------|
+#> |   9h 43m 9s 13ms   |   100%   |   14999534  |    9230    |    16665   |
+#> 
+#> |  Mat Algebra Time  |    Mat Dimension   |
+#> |--------------------|--------------------|
+#> |      34s 414ms     |    25799 x 25895   |
+#> 
+#> |     Total Time     |
+#> |--------------------|
+#> |  9h 43m 45s 242ms  |
+#> 
+#> Big Integer ('bigz') object of length 2:
+#> [1] 37975227936943673922808872755445627854565536638199
+#> [2] 40094690950920881030683735292761468389214899724061
 ```
 
 ## **`primeFactorizeBig`**
