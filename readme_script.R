@@ -4,8 +4,8 @@ reprex::reprex({
     #' ![](http://cranlogs.r-pkg.org/badges/RcppBigIntAlgos?color=orange)
     #' ![](http://cranlogs.r-pkg.org/badges/grand-total/RcppBigIntAlgos?color=brightgreen)
     #' [![Dependencies](https://tinyverse.netlify.com/badge/RcppBigIntAlgos)](https://cran.r-project.org/package=RcppBigIntAlgos)
-    #' [![Coverage status](https://codecov.io/gh/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg)](https://codecov.io/github/jwood000/RcppBigIntAlgos?branch=main)
-    #' [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c)](https://app.codacy.com/manual/jwood000/RcppBigIntAlgos?utm_source=github.com&utm_medium=referral&utm_content=jwood000/RcppBigIntAlgos&utm_campaign=Badge_Grade)
+    #' [![Coverage status](<https://codecov.io/github/jwood000/RcppBigIntAlgos/branch/main/graph/badge.svg?token=LMO4DH4OtN>)](<https://app.codecov.io/github/jwood000/RcppBigIntAlgos>)
+    #' [![Codacy Badge](<https://app.codacy.com/project/badge/Grade/3be4c3c9e3554125b8cc0e13decaf95c>)](<https://app.codacy.com/gh/jwood000/RcppBigIntAlgos/dashboard?utm_source=github.com&utm_medium=referral&utm_content=jwood000/RcppBigIntAlgos&utm_campaign=Badge_Grade>)
     #'
     #' # RcppBigIntAlgos
     #'
@@ -46,11 +46,11 @@ reprex::reprex({
 
     ## Using factorize from gmp package which implements pollard's rho algorithm
     ##**************gmp::factorize*********************
-    system.time(print(factorize(semiPrime120bits)))
-
-    system.time(print(factorize(semiPrime130bits)))
-
-    system.time(print(factorize(semiPrime140bits)))
+    # system.time(print(factorize(semiPrime120bits)))
+    #
+    # system.time(print(factorize(semiPrime130bits)))
+    #
+    # system.time(print(factorize(semiPrime140bits)))
 
     ##**************quadraticSieve*********************
     ## quadraticSieve is much faster and scales better
@@ -66,9 +66,9 @@ reprex::reprex({
     #' As of version `0.3.0`, we can utilize multiple threads. Below, are a few examples:
     #'
     #'  1. The largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 25 seconds.
-    #'  2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 3 minutes.
-    #'  3. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 8 hours.
-    #'  4. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 16 hours.
+    #'  2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 2 minutes.
+    #'  3. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 5 hours.
+    #'  4. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 10 hours.
     #'
     #' Below are my machine specs and R version info:
 
@@ -138,6 +138,8 @@ reprex::reprex({
     head(ecm2)
 
     tail(ecm2)
+
+    length(ecm2)
 
     #'
     #' ### Safely Interrupt Execution
@@ -225,4 +227,5 @@ reprex::reprex({
     #'
     #' If you would like to report a bug, have a question, or have suggestions for possible improvements, please file an [issue](<https://github.com/jwood000/RcppBigIntAlgos/issues>).
     #'
+
 }, advertise = FALSE, venue = "r", html_preview = FALSE, wd = ".")
