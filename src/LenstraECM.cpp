@@ -290,7 +290,6 @@ bool LenstraECM(const mpz_class &n, std::size_t maxLoopIter,
         int sectionLength = B2 - B1;
         numCurves = B1;
 
-        nThreads = 1;
         std::size_t nThrdsThisIter = nThreads;
         std::size_t chunk = sectionLength / nThreads;
         SetThreadsIters(sectionLength, nThreads, nThrdsThisIter, chunk);
