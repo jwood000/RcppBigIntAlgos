@@ -2,6 +2,8 @@
 ^\.Rproj\.user$
 \.travis\.yml
 readme_script.R
+SO_factorize.R
 ^\.github$
 LICENSE
 .covrignore
+scripts/*

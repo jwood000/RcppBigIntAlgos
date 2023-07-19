@@ -2,6 +2,8 @@ RcppBigIntAlgos 1.1.0 (Release date: TBD)
 
 * Migrated from Rcpp to cpp11
 * Fixed C++ requirements per new CRAN policy
+* Added github actions
+* Dropped RcppThread in favor of the standard library
 
 RcppBigIntAlgos 1.0.1 (Release date: 2020-01-09)
 

@@ -102,8 +102,9 @@ As of version `0.3.0`, we can utilize multiple threads. Below, are a few example
 
 1.  The largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 14 seconds.
 2.  [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 2 minutes.
-3.  [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 5 hours.
-4.  [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 10 hours.
+3.  A 300-bit (91-digits) semiprime in 1 hour.
+4.  [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 5 hours.
+5.  [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 10 hours.
 
 Below are my machine specs and R version info:
 
@@ -131,16 +132,10 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] RcppBigIntAlgos_1.1.0 gmp_0.7-2            
+#> [1] RcppBigIntAlgos_1.1.0    gmp_0.7-2
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] styler_1.10.1     digest_0.6.31     fastmap_1.1.1     xfun_0.39        
-#>  [5] magrittr_2.0.3    glue_1.6.2        R.utils_2.12.2    knitr_1.42       
-#>  [9] htmltools_0.5.5   rmarkdown_2.21    lifecycle_1.0.3   cli_3.6.1        
-#> [13] R.methodsS3_1.8.2 vctrs_0.6.2       reprex_2.0.2      withr_2.5.0      
-#> [17] compiler_4.3.1    R.oo_1.25.0       R.cache_0.16.0    purrr_1.0.1      
-#> [21] rstudioapi_0.15.0 tools_4.3.1       evaluate_0.21     yaml_2.3.7       
-#> [25] rlang_1.1.1       fs_1.6.2
+#> [1] compiler_4.3.1
 
 ## Maximum number of available threads
 stdThreadMax()
@@ -197,6 +192,38 @@ quadraticSieve(rsa79, showStats = TRUE, nThreads = 8)
 #> Big Integer ('bigz') object of length 2:
 #> [1] 848184382919488993608481009313734808977 
 #> [2] 8598919753958678882400042972133646037727
+```
+
+### Random 300-bit Semiprime
+
+```r
+semi_prime_300_bit <- prod(nextprime(urand.bigz(nb = 2, size = 150, seed = 42)))
+#> Seed default initialisation
+#> Seed initialisation
+
+nchar(as.character(semi_prime_300_bit))
+#> [1] 91
+
+quadraticSieve(semi_prime_300_bit, showStats=TRUE, nThreads=8)
+#> 
+#> Summary Statistics for Factoring:
+#>     1598678911004402782180963020655649301157676037614983547537229086778878619660017752047003277
+#> 
+#> |      MPQS Time     | Complete | Polynomials |   Smooths  |  Partials  |
+#> |--------------------|----------|-------------|------------|------------|
+#> |   1h 3m 4s 604ms   |   100%   |   2447868   |    6835    |    12143   |
+#> 
+#> |  Mat Algebra Time  |    Mat Dimension   |
+#> |--------------------|--------------------|
+#> |      13s 202ms     |    18892 x 18978   |
+#> 
+#> |     Total Time     |
+#> |--------------------|
+#> |   1h 3m 18s 733ms  |
+#> 
+#> Big Integer ('bigz') object of length 2:
+#> [1] 1262920060924323380524693068285713630353017593
+#> [2] 1265859146963220756974764147023611562195937589
 ```
 
 #### RSA-99
@@ -298,7 +325,8 @@ primeFactorizeBig(mostWanted1983, showStats = TRUE, nThreads = 8)
 Performing a few iterations of the Pollard’s rho algorithm followed by the quadratic sieve can prove to be a terrible solution when the input size is incredibly large. More than likely, your constrained Pollard’s rho algorithm won’t find any prime factors, and eventually will pass an enormous composite number to the quadratic sieve. The quadratic sieve isn’t optimized for finding *smallish* factors in large composites. It will treat the input similarly to a semiprime of the same size. For example, the number `ecmExpo1` below is 428 digits and if passed to the quadratic sieve algorithm, it could take years to factor as not even the most sophisticated semiprime algorithms can easily factor numbers of this size (See <https://en.wikipedia.org/wiki/RSA_Factoring_Challenge>). However, with the ECM, this is light work.
 
 ``` r
-ecmExpo1 <- pow.bigz(prod(nextprime(urand.bigz(10, 47, 13))), 3) * nextprime(urand.bigz(1, 47, 123))
+ecmExpo1 <- pow.bigz(prod(nextprime(urand.bigz(10, 47, 13))), 3) *
+            nextprime(urand.bigz(1, 47, 123))
 #> Seed initialisation
 #> Seed initialisation
 
@@ -306,7 +334,10 @@ system.time(primeFactorizeBig(ecmExpo1, skipPolRho = TRUE, nThreads = 8))
 #>    user  system elapsed 
 #>  10.768   0.024   2.840
 
-ecmExpo2 <- pow.bigz(prod(nextprime(urand.bigz(10, 40, 42))), 3) * pow.bigz(prod(nextprime(urand.bigz(10, 45, 42))), 5) * nextprime(urand.bigz(1, 80, 123)) * nextprime(urand.bigz(1, 90, 123))
+ecmExpo2 <- pow.bigz(prod(nextprime(urand.bigz(10, 40, 42))), 3) *
+            pow.bigz(prod(nextprime(urand.bigz(10, 45, 42))), 5) *
+            nextprime(urand.bigz(1, 80, 123)) *
+            nextprime(urand.bigz(1, 90, 123))
 #> Seed initialisation
 #> Seed initialisation
 #> Seed initialisation
@@ -471,6 +502,10 @@ head(testBaseSort)
   * [Integer Factorization using the Quadratic Sieve](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
 
   * In the stackoverflow question and answer [What is the most efficient factoring algorithm for quadratic sieve extraction phase?](<https://stackoverflow.com/q/63541365/4408538>) by [Ilya Gazman](<https://github.com/gazman-sdk>), an efficient method for checking divisibility is sketched out that utilizes built-in types. You can see more on a video Ilya put on youtube: [E15: Quadratic Sieve Running on Java - Receiving](<https://youtu.be/sXg_WrCUX-Q>). While `mpz_divisible_ui_p` is very efficient, we found better performance using this method.
+  
+  * [R Function for returning ALL factors](<https://stackoverflow.com/a/49742904/4408538>)
+  
+  * [Issues factoring large prime that is 99 digits long](<https://stackoverflow.com/a/66128627/4408538>)
 
 ## Current Research
 

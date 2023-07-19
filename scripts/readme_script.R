@@ -67,8 +67,9 @@ reprex::reprex({
     #'
     #'  1. The largest [Cunnaningham Most Wanted](<https://www.lehigh.edu/~bad0/msg06332.html>) number from the first edition released in 1983 in less than 25 seconds.
     #'  2. [RSA-79](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 2 minutes.
-    #'  3. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 5 hours.
-    #'  4. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 10 hours.
+    #'  3. A 300-bit (91-digits) semiprime in 1 hour.
+    #'  4. [RSA-99](<https://members.loria.fr/PZimmermann/records/rsa.html>) under 5 hours.
+    #'  5. [RSA-100](<https://en.wikipedia.org/wiki/RSA-100>) under 10 hours.
     #'
     #' Below are my machine specs and R version info:
 
@@ -218,6 +219,10 @@ reprex::reprex({
     #' * [Integer Factorization using the Quadratic Sieve](<http://micsymposium.org/mics_2011_proceedings/mics2011_submission_28.pdf>) by Chad Seibert
     #'
     #' * In the stackoverflow question and answer [What is the most efficient factoring algorithm for quadratic sieve extraction phase?](https://stackoverflow.com/q/63541365/4408538) by  [Ilya Gazman](https://github.com/gazman-sdk), an efficient method for checking divisibility is sketched out that utilizes built-in types. You can see more on a video Ilya put on youtube: [E15: Quadratic Sieve Running on Java - Receiving](https://youtu.be/sXg_WrCUX-Q). While `mpz_divisible_ui_p` is very efficient, we found better performance using this method.
+    #'
+    #' * [R Function for returning ALL factors](<https://stackoverflow.com/a/49742904/4408538>)
+    #'
+    #' * [Issues factoring large prime that is 99 digits long](<https://stackoverflow.com/a/66128627/4408538>)
     #'
     #' ## Current Research
     #'
