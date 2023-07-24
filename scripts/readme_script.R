@@ -222,7 +222,7 @@ reprex::reprex({
     #'
     #' * [R Function for returning ALL factors](<https://stackoverflow.com/a/49742904/4408538>)
     #'
-    #' * [Issues factoring large prime that is 99 digits long](<https://stackoverflow.com/a/66128627/4408538>)
+    #' * [Issues factoring large number that is 99 digits long](<https://stackoverflow.com/a/66128627/4408538>)
     #'
     #' ## Current Research
     #'
